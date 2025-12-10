@@ -283,6 +283,7 @@
         <div class="header">
             <h1>🔪 Knife Inventory Manager v11</h1>
             <p>Manage Aaron and Pop's inventory and sales tracking</p>
+            <button class="nav-link" onclick="saveAppData()" style="margin-top:15px;">💾 Save All Data</button>
         </div>
 
         <div class="nav-tabs">
@@ -903,7 +904,23 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
+          authDomain: "knife-inventory-management.firebaseapp.com",
+          projectId: "knife-inventory-management",
+          storageBucket: "knife-inventory-management.firebasestorage.app",
+          messagingSenderId: "944440388498",
+          appId: "1:944440388498:web:8eadb87306507966f1af4b",
+          measurementId: "G-SSQ4E6R5TW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
         let salesSheetCount = 0;
         let aaronSalesSheetCount = 0;
 
@@ -1155,8 +1172,45 @@
             }
         }
 
-        updateAllInventories();
+        // ----- Firebase Save/Load helpers -----
+        function collectFormData() {
+            const data = {};
+            document.querySelectorAll('input').forEach(input => {
+                const key = `${input.className}|${input.getAttribute('data-product') || ''}|${input.getAttribute('data-sheet') || ''}|${input.getAttribute('data-row') || ''}|${input.placeholder || ''}`;
+                data[key] = input.value;
+            });
+            return data;
+        }
+
+        function applyFormData(data) {
+            if (!data) return;
+            document.querySelectorAll('input').forEach(input => {
+                const key = `${input.className}|${input.getAttribute('data-product') || ''}|${input.getAttribute('data-sheet') || ''}|${input.getAttribute('data-row') || ''}|${input.placeholder || ''}`;
+                if (data[key] !== undefined) {
+                    input.value = data[key];
+                }
+            });
+            updateAllInventories();
+        }
+
+        async function saveAppData() {
+            const formData = collectFormData();
+            await set(ref(db, 'knifeInventoryManagerV11'), formData);
+            alert('Data saved to cloud.');
+        }
+
+        async function loadAppDataFromFirebase() {
+            const snapshot = await get(ref(db, 'knifeInventoryManagerV11'));
+            if (snapshot.exists()) {
+                applyFormData(snapshot.val());
+            } else {
+                updateAllInventories();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAppDataFromFirebase();
+        });
     </script>
 </body>
 </html>
-
