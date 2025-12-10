@@ -930,26 +930,31 @@
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            evt.currentTarget.classList.add('active');
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
         }
+        window.openTab = openTab;
 
-        // Aaron Modal Functions
         function openNewAaronSalesSheetModal() {
             document.getElementById('newAaronSalesModal').classList.add('active');
         }
+        window.openNewAaronSalesSheetModal = openNewAaronSalesSheetModal;
 
         function closeNewAaronSalesSheetModal() {
             document.getElementById('newAaronSalesModal').classList.remove('active');
         }
+        window.closeNewAaronSalesSheetModal = closeNewAaronSalesSheetModal;
 
-        // Pop Modal Functions
         function openNewSalesSheetModal() {
             document.getElementById('newSalesModal').classList.add('active');
         }
+        window.openNewSalesSheetModal = openNewSalesSheetModal;
 
         function closeNewSalesSheetModal() {
             document.getElementById('newSalesModal').classList.remove('active');
         }
+        window.closeNewSalesSheetModal = closeNewSalesSheetModal;
 
         function createNewAaronSalesSheet() {
             const sheetName = document.getElementById('aaronSheetName').value.trim();
@@ -1004,6 +1009,7 @@
 
             setTimeout(() => openTab({ currentTarget: navLink }, sheetId), 100);
         }
+        window.createNewAaronSalesSheet = createNewAaronSalesSheet;
 
         function createNewSalesSheet() {
             const sheetName = document.getElementById('sheetName').value.trim();
@@ -1058,6 +1064,7 @@
 
             setTimeout(() => openTab({ currentTarget: navLink }, sheetId), 100);
         }
+        window.createNewSalesSheet = createNewSalesSheet;
 
         function calculateUnitsSold(sheet, row) {
             const brought = document.querySelector(`input.units-brought[data-sheet="${sheet}"][data-row="${row}"]`);
@@ -1077,7 +1084,6 @@
             const popSheets = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
             let totalSold = new Array(8).fill(0);
 
-            // Static Pop sheets
             popSheets.forEach(sheet => {
                 for (let row = 0; row < 8; row++) {
                     const soldInput = document.querySelector(`input.units-sold[data-sheet="${sheet}"][data-row="${row}"]`);
@@ -1087,7 +1093,6 @@
                 }
             });
 
-            // Dynamic Pop sheets
             document.querySelectorAll('.tab-content[id^="sales-sheet-"]').forEach(sheet => {
                 const sheetId = sheet.id;
                 for (let row = 0; row < 8; row++) {
@@ -1114,7 +1119,6 @@
         function updateAaronInventory() {
             let totalSold = new Array(8).fill(0);
 
-            // Dynamic Aaron sheets
             document.querySelectorAll('.tab-content[id^="aaron-sales-sheet-"]').forEach(sheet => {
                 const sheetId = sheet.id;
                 for (let row = 0; row < 8; row++) {
@@ -1142,6 +1146,7 @@
             updatePopInventory();
             updateAaronInventory();
         }
+        window.updateAllInventories = updateAllInventories;
 
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('units-brought') || e.target.classList.contains('units-left') ||
@@ -1170,9 +1175,8 @@
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
             }
-        }
+        };
 
-        // ----- Firebase Save/Load helpers -----
         function collectFormData() {
             const data = {};
             document.querySelectorAll('input').forEach(input => {
@@ -1198,6 +1202,7 @@
             await set(ref(db, 'knifeInventoryManagerV11'), formData);
             alert('Data saved to cloud.');
         }
+        window.saveAppData = saveAppData;
 
         async function loadAppDataFromFirebase() {
             const snapshot = await get(ref(db, 'knifeInventoryManagerV11'));
