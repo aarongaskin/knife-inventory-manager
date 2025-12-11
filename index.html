@@ -1427,3 +1427,81 @@
         }
 
         function refreshSalesCharts() {
+            updateChartsData();
+            const labels = products;
+            const data = chartData.slice();
+            const total = data.reduce((a, b) => a + b, 0);
+            if (total === 0) {
+                if (pieChart) pieChart.destroy();
+                if (barChart) barChart.destroy();
+                const ctx1 = document.getElementById('salesPieChart').getContext('2d');
+                const ctx2 = document.getElementById('salesBarChart').getContext('2d');
+                pieChart = new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['No sales yet'],
+                        datasets: [{ data: [1], backgroundColor: ['#ccc'] }]
+                    },
+                    options: { plugins:{legend:{position:'bottom'}} }
+                });
+                barChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Units Sold',
+                            data: new Array(8).fill(0),
+                            backgroundColor: '#667eea'
+                        }]
+                    },
+                    options: { scales:{y:{beginAtZero:true}} }
+                });
+                return;
+            }
+
+            const ctxPie = document.getElementById('salesPieChart').getContext('2d');
+            const ctxBar = document.getElementById('salesBarChart').getContext('2d');
+
+            if (pieChart) pieChart.destroy();
+            if (barChart) barChart.destroy();
+
+            pieChart = new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#6366F1','#EC4899','#10B981','#F59E0B',
+                            '#3B82F6','#8B5CF6','#F97316','#EF4444'
+                        ]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: data,
+                        backgroundColor: '#6366F1'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        window.refreshSalesCharts = refreshSalesCharts;
+    </script>
+</body>
+</html>
