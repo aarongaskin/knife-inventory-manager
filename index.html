@@ -1178,10 +1178,19 @@
             }
         };
 
+        // Safe key builder for Firebase
+        function makeKey(input) {
+            const cls = input.className || '';
+            const prod = input.getAttribute('data-product') || '';
+            const sheet = input.getAttribute('data-sheet') || '';
+            const row = input.getAttribute('data-row') || '';
+            return [cls, prod, sheet, row].join('|');
+        }
+
         function collectFormData() {
             const data = {};
             document.querySelectorAll('input').forEach(input => {
-                const key = `${input.className}|${input.getAttribute('data-product') || ''}|${input.getAttribute('data-sheet') || ''}|${input.getAttribute('data-row') || ''}|${input.placeholder || ''}`;
+                const key = makeKey(input);
                 data[key] = input.value;
             });
             return data;
@@ -1190,7 +1199,7 @@
         function applyFormData(data) {
             if (!data) return;
             document.querySelectorAll('input').forEach(input => {
-                const key = `${input.className}|${input.getAttribute('data-product') || ''}|${input.getAttribute('data-sheet') || ''}|${input.getAttribute('data-row') || ''}|${input.placeholder || ''}`;
+                const key = makeKey(input);
                 if (data[key] !== undefined) {
                     input.value = data[key];
                 }
