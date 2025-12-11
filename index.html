@@ -37,6 +37,8 @@
         input[readonly] { background-color: #f8f9fa; color: #666; }
         .revenue-row { font-weight: 700; background: #fffacd; border-top: 2px solid #667eea; }
         .tax-summary-row { font-weight: 700; background: #e0e7ff; }
+        .aaron-take-row { font-weight: 700; background: #c8e6c9; }
+        .pop-take-row { font-weight: 700; background: #bbdefb; }
         .total-row { font-weight: 700; background: #eef2ff; }
         .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
         .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
@@ -397,10 +399,10 @@
             </div>
         </div>
 
-        <!-- Modal for New Sales Sheet -->
+        <!-- Modal for New Pop Sales Sheet -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
-                <h3>Create New Sales Sheet</h3>
+                <h3>Create New Pop Sales Sheet</h3>
                 <form onsubmit="event.preventDefault(); createNewSalesSheet();">
                     <div class="form-group">
                         <label for="sheetName">Sheet Name</label>
@@ -589,6 +591,8 @@
                             ${products.map((p, i) => `<tr><td>${p}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}"></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="${i}" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td></tr>`).join('')}
                             <tr class="revenue-row"><td><strong>TOTAL REVENUE</strong></td><td colspan="2"><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td><td></td></tr>
                             <tr class="tax-summary-row" id="tax-row-${sheetId}" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="2"><input type="text" class="tax-summary" data-sheet="${sheetId}" readonly style="font-weight: bold;"></td><td></td></tr>
+                            <tr class="aaron-take-row"><td><strong>Aaron's Take</strong></td><td colspan="2"><input type="text" class="aaron-take" data-sheet="${sheetId}" readonly style="font-weight: bold;"></td><td></td></tr>
+                            <tr class="pop-take-row"><td><strong>Pop's Take</strong></td><td colspan="2"><input type="text" class="pop-take" data-sheet="${sheetId}" readonly style="font-weight: bold;"></td><td></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -674,6 +678,28 @@
             const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
             if (revenueEl) revenueEl.value = totalRevenue.toFixed(2);
             updateManualTax(sheetId);
+            updateAaronAndPopTake(sheetId);
+        }
+
+        function updateAaronAndPopTake(sheetId) {
+            const aaronTakeEl = document.querySelector(`.aaron-take[data-sheet="${sheetId}"]`);
+            const popTakeEl = document.querySelector(`.pop-take[data-sheet="${sheetId}"]`);
+            
+            if (!aaronTakeEl || !popTakeEl) return;
+
+            let totalUnits = 0;
+            for (let i = 0; i < 8; i++) {
+                const unitsSold = parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
+                totalUnits += unitsSold;
+            }
+
+            const aaronTake = totalUnits * 10;
+            const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+            const totalRevenue = parseFloat(revenueEl?.value || 0);
+            const popTake = totalRevenue - aaronTake;
+
+            aaronTakeEl.value = `$${aaronTake.toFixed(2)}`;
+            popTakeEl.value = `$${popTake.toFixed(2)}`;
         }
 
         function updateAllInventories() {
@@ -698,8 +724,10 @@
                 const currentStock = document.querySelector(`.pop-storage[data-product="${i}"]`);
                 if (currentStock) {
                     const storage = parseFloat(currentStock.value || 0);
-                    const currentVal = storage - (sold >= 0 ? sold : 0);
+                    const currentVal = storage + brought - (sold >= 0 ? sold : 0);
                     document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
+                    document.querySelector(`.pop-show[data-product="${i}"]`).value = brought >= 0 ? brought : 0;
+                    document.querySelector(`.pop-post-show[data-product="${i}"]`).value = left >= 0 ? left : 0;
                 }
             }
 
@@ -712,9 +740,11 @@
             
             for (let i = 0; i < 8; i++) {
                 let sold = 0;
+                let brought = 0;
+                let left = 0;
                 if (activeSheet) {
-                    const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activeSheet}"][data-row="${i}"]`)?.value || 0);
-                    const left = parseFloat(document.querySelector(`.units-left[data-sheet="${activeSheet}"][data-row="${i}"]`)?.value || 0);
+                    brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activeSheet}"][data-row="${i}"]`)?.value || 0);
+                    left = parseFloat(document.querySelector(`.units-left[data-sheet="${activeSheet}"][data-row="${i}"]`)?.value || 0);
                     sold = brought - left;
                 }
 
@@ -722,8 +752,10 @@
                 if (soldSpan) soldSpan.textContent = sold >= 0 ? sold : 0;
 
                 const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                const currentVal = storage - (sold >= 0 ? sold : 0);
+                const currentVal = storage + brought - (sold >= 0 ? sold : 0);
                 document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
+                document.querySelector(`.aaron-show[data-product="${i}"]`).value = brought >= 0 ? brought : 0;
+                document.querySelector(`.aaron-post-show[data-product="${i}"]`).value = left >= 0 ? left : 0;
             }
 
             const total = Array.from(document.querySelectorAll('.aaron-current-stock')).reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
