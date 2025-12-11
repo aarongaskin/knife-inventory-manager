@@ -730,23 +730,19 @@
             <div class="tab-section">
                 <h2>Wetumpka, Alabama - December 12-13</h2>
                 <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
-                        <label for="tax-required-wetumpka">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="state-select-wetumpka">State:</label>
-                        <select id="state-select-wetumpka" class="state-select" data-sheet="wetumpka" onchange="updateCityDropdown('wetumpka')">
-                            <option value="">-- Select State --</option>
-                        </select>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="city-select-wetumpka">City:</label>
-                        <select id="city-select-wetumpka" class="city-select" data-sheet="wetumpka" onchange="updateTaxCalculation('wetumpka')">
-                            <option value="">-- Select City --</option>
-                        </select>
-                    </div>
-                </div>
+    <div class="tax-control-group">
+        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
+        <label for="tax-required-wetumpka">Sales Tax Required?</label>
+    </div>
+    <div class="tax-control-group" id="tax-input-group-wetumpka" style="display: none;">
+        <label for="tax-rate-wetumpka">Tax Rate (%):</label>
+        <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25">
+    </div>
+    <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka"> Use this sheet as Pop's active show
+    </label>
+</div>
+
                 <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
                     <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka">
                     Use this sheet as Pop's active show
