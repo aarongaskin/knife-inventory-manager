@@ -254,6 +254,22 @@
             background: #5568d3;
         }
 
+        .total-row {
+            font-weight: 700;
+            background: #eef2ff;
+        }
+
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .chart-box {
+            flex: 1 1 300px;
+            min-width: 260px;
+        }
+
         @media (max-width: 768px) {
             .nav-tabs {
                 justify-content: flex-start;
@@ -291,6 +307,7 @@
             <button class="tab-btn" onclick="openTab(event, 'pop-nav')">Pop Navigation</button>
             <button class="tab-btn" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
             <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'sales-charts')">Sales Charts</button>
         </div>
 
         <!-- Aaron Navigation -->
@@ -383,7 +400,8 @@
                         <tr>
                             <th>Product Name</th>
                             <th>Selling Price</th>
-                            <th>Base Stock</th>
+                            <th>Storage Knives On Hand</th>
+                            <th>Show Knives On Hand</th>
                             <th>Total Sold</th>
                             <th>Current Stock</th>
                         </tr>
@@ -392,58 +410,70 @@
                         <tr>
                             <td>Full Tang</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="0"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="0"></td>
                             <td><span class="total-sold" data-product="0">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>8" Rat</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="1"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="1"></td>
                             <td><span class="total-sold" data-product="1">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>6" Rat</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="2"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="2"></td>
                             <td><span class="total-sold" data-product="2">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>8" Stag</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="3"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="3"></td>
                             <td><span class="total-sold" data-product="3">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>6" Stag</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="4"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="4"></td>
                             <td><span class="total-sold" data-product="4">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>Grooved</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="5"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="5"></td>
                             <td><span class="total-sold" data-product="5">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>Folders</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="6"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="6"></td>
                             <td><span class="total-sold" data-product="6">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td>
                         </tr>
                         <tr>
                             <td>Clipped Folder</td>
                             <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td>
-                            <td><input type="number" placeholder="Enter base stock" class="aaron-base-stock" data-product="7"></td>
+                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7"></td>
+                            <td><input type="number" placeholder="Show" class="aaron-show" data-product="7"></td>
                             <td><span class="total-sold" data-product="7">0</span></td>
                             <td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="5">Total knives on hand</td>
+                            <td><input type="number" id="aaron-total-on-hand" readonly value="0"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -459,7 +489,8 @@
                         <tr>
                             <th>Product Name</th>
                             <th>Selling Price</th>
-                            <th>Base Stock</th>
+                            <th>Storage Knives On Hand</th>
+                            <th>Show Knives On Hand</th>
                             <th>Total Sold</th>
                             <th>Current Stock</th>
                         </tr>
@@ -468,58 +499,70 @@
                         <tr>
                             <td>Full Tang</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td>
-                            <td><input type="number" value="314" class="pop-base-stock" data-product="0"></td>
+                            <td><input type="number" value="314" class="pop-storage" data-product="0"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="0"></td>
                             <td><span class="total-sold-pop" data-product="0">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td>
                         </tr>
                         <tr>
                             <td>8" Rat</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td>
-                            <td><input type="number" value="112" class="pop-base-stock" data-product="1"></td>
+                            <td><input type="number" value="112" class="pop-storage" data-product="1"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="1"></td>
                             <td><span class="total-sold-pop" data-product="1">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td>
                         </tr>
                         <tr>
                             <td>6" Rat</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td>
-                            <td><input type="number" value="164" class="pop-base-stock" data-product="2"></td>
+                            <td><input type="number" value="164" class="pop-storage" data-product="2"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="2"></td>
                             <td><span class="total-sold-pop" data-product="2">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td>
                         </tr>
                         <tr>
                             <td>8" Stag</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td>
-                            <td><input type="number" value="91" class="pop-base-stock" data-product="3"></td>
+                            <td><input type="number" value="91" class="pop-storage" data-product="3"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="3"></td>
                             <td><span class="total-sold-pop" data-product="3">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td>
                         </tr>
                         <tr>
                             <td>6" Stag</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td>
-                            <td><input type="number" value="132" class="pop-base-stock" data-product="4"></td>
+                            <td><input type="number" value="132" class="pop-storage" data-product="4"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="4"></td>
                             <td><span class="total-sold-pop" data-product="4">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td>
                         </tr>
                         <tr>
                             <td>Grooved</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td>
-                            <td><input type="number" value="17" class="pop-base-stock" data-product="5"></td>
+                            <td><input type="number" value="17" class="pop-storage" data-product="5"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="5"></td>
                             <td><span class="total-sold-pop" data-product="5">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td>
                         </tr>
                         <tr>
                             <td>Folders</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td>
-                            <td><input type="number" value="66" class="pop-base-stock" data-product="6"></td>
+                            <td><input type="number" value="66" class="pop-storage" data-product="6"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="6"></td>
                             <td><span class="total-sold-pop" data-product="6">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td>
                         </tr>
                         <tr>
                             <td>Clipped Folder</td>
                             <td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td>
-                            <td><input type="number" value="18" class="pop-base-stock" data-product="7"></td>
+                            <td><input type="number" value="18" class="pop-storage" data-product="7"></td>
+                            <td><input type="number" placeholder="Show" class="pop-show" data-product="7"></td>
                             <td><span class="total-sold-pop" data-product="7">0</span></td>
                             <td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="5">Total knives on hand</td>
+                            <td><input type="number" id="pop-total-on-hand" readonly value="0"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -860,6 +903,25 @@
                 </table>
             </div>
         </div>
+
+        <!-- Sales Charts -->
+        <div id="sales-charts" class="tab-content">
+            <div class="tab-section">
+                <h2>Sales Tracking Charts</h2>
+                <p>Shows overall knife sales percentages for Pop and Aaron combined.</p>
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3>Sales percentage by knife</h3>
+                        <vas id="salessPieChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>Total units sold by knife</h3>
+                        <vas id="salessBarChart"></canvas>
+                    </div>
+                </div>
+                <button class="nav-link" onclick="refreshSalesCharts()">🔄 Refresh Charts</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for New Aaron Sales Sheet -->
@@ -904,6 +966,9 @@
         </div>
     </div>
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
@@ -933,6 +998,9 @@
             document.getElementById(tabName).classList.add('active');
             if (evt && evt.currentTarget) {
                 evt.currentTarget.classList.add('active');
+            }
+            if (tabName === 'sales-charts') {
+                refreshSalesCharts();
             }
         }
         window.openTab = openTab;
@@ -1107,14 +1175,25 @@
             for (let i = 0; i < 8; i++) {
                 const totalSoldEl = document.querySelector(`.total-sold-pop[data-product="${i}"]`);
                 const currentStockEl = document.querySelector(`.pop-current-stock[data-product="${i}"]`);
-                const baseStockEl = document.querySelector(`.pop-base-stock[data-product="${i}"]`);
+                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                const showEl = document.querySelector(`.pop-show[data-product="${i}"]`);
 
                 if (totalSoldEl) totalSoldEl.textContent = totalSold[i];
-                if (currentStockEl && baseStockEl) {
-                    const base = parseInt(baseStockEl.value) || 0;
+                if (currentStockEl && storageEl) {
+                    const storage = parseInt(storageEl.value) || 0;
+                    const show = showEl ? (parseInt(showEl.value) || 0) : 0;
+                    const base = storage + show;
                     currentStockEl.value = Math.max(0, base - totalSold[i]);
                 }
             }
+
+            // total knives on hand for Pop
+            let popTotal = 0;
+            document.querySelectorAll('.pop-current-stock').forEach(inp => {
+                popTotal += parseInt(inp.value) || 0;
+            });
+            const popTotalEl = document.getElementById('pop-total-on-hand');
+            if (popTotalEl) popTotalEl.value = popTotal;
         }
 
         function updateAaronInventory() {
@@ -1133,25 +1212,38 @@
             for (let i = 0; i < 8; i++) {
                 const totalSoldEl = document.querySelector(`.total-sold[data-product="${i}"]`);
                 const currentStockEl = document.querySelector(`.aaron-current-stock[data-product="${i}"]`);
-                const baseStockEl = document.querySelector(`.aaron-base-stock[data-product="${i}"]`);
+                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                const showEl = document.querySelector(`.aaron-show[data-product="${i}"]`);
 
                 if (totalSoldEl) totalSoldEl.textContent = totalSold[i];
-                if (currentStockEl && baseStockEl) {
-                    const base = parseInt(baseStockEl.value) || 0;
+                if (currentStockEl && storageEl) {
+                    const storage = parseInt(storageEl.value) || 0;
+                    const show = showEl ? (parseInt(showEl.value) || 0) : 0;
+                    const base = storage + show;
                     currentStockEl.value = Math.max(0, base - totalSold[i]);
                 }
             }
+
+            // total knives on hand for Aaron
+            let aaronTotal = 0;
+            document.querySelectorAll('.aaron-current-stock').forEach(inp => {
+                aaronTotal += parseInt(inp.value) || 0;
+            });
+            const aaronTotalEl = document.getElementById('aaron-total-on-hand');
+            if (aaronTotalEl) aaronTotalEl.value = aaronTotal;
         }
 
         function updateAllInventories() {
             updatePopInventory();
             updateAaronInventory();
+            updateChartsData();
         }
         window.updateAllInventories = updateAllInventories;
 
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('units-brought') || e.target.classList.contains('units-left') ||
-                e.target.classList.contains('pop-base-stock') || e.target.classList.contains('aaron-base-stock')) {
+                e.target.classList.contains('pop-storage') || e.target.classList.contains('aaron-storage') ||
+                e.target.classList.contains('pop-show') || e.target.classList.contains('aaron-show')) {
                 const sheet = e.target.getAttribute('data-sheet');
                 const row = e.target.getAttribute('data-row');
                 if (sheet && row) {
@@ -1170,6 +1262,10 @@
                     calculateUnitsSold(sheet, row);
                 }
             }
+            if (e.target.classList.contains('pop-storage') || e.target.classList.contains('aaron-storage') ||
+                e.target.classList.contains('pop-show') || e.target.classList.contains('aaron-show')) {
+                updateAllInventories();
+            }
         });
 
         window.onclick = function(event) {
@@ -1178,7 +1274,6 @@
             }
         };
 
-        // Safe key builder for Firebase
         function makeKey(input) {
             const cls = input.className || '';
             const prod = input.getAttribute('data-product') || '';
@@ -1226,6 +1321,103 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadAppDataFromFirebase();
         });
+
+        // ---- Charts ----
+        let pieChart = null;
+        let barChart = null;
+        let chartData = new Array(8).fill(0);
+
+        function updateChartsData() {
+            // combine Pop + Aaron total sold
+            const combined = new Array(8).fill(0);
+
+            for (let i = 0; i < 8; i++) {
+                const popSoldEl = document.querySelector(`.total-sold-pop[data-product="${i}"]`);
+                const aaronSoldEl = document.querySelector(`.total-sold[data-product="${i}"]`);
+                const popVal = popSoldEl ? (parseInt(popSoldEl.textContent) || 0) : 0;
+                const aaronVal = aaronSoldEl ? (parseInt(aaronSoldEl.textContent) || 0) : 0;
+                combined[i] = popVal + aaronVal;
+            }
+            chartData = combined;
+        }
+
+        function refreshSalesCharts() {
+            updateChartsData();
+            const labels = products;
+            const data = chartData.slice();
+            const total = data.reduce((a, b) => a + b, 0);
+            if (total === 0) {
+                // nothing sold yet - avoid weird charts
+                if (pieChart) pieChart.destroy();
+                if (barChart) barChart.destroy();
+                const ctx1 = document.getElementById('salesPieChart').getContext('2d');
+                const ctx2 = document.getElementById('salesBarChart').getContext('2d');
+                pieChart = new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['No sales yet'],
+                        datasets: [{ data: [1], backgroundColor: ['#ccc'] }]
+                    },
+                    options: { plugins:{legend:{position:'bottom'}} }
+                });
+                barChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Units Sold',
+                            data: new Array(8).fill(0),
+                            backgroundColor: '#667eea'
+                        }]
+                    },
+                    options: { scales:{y:{beginAtZero:true}} }
+                });
+                return;
+            }
+
+            const ctxPie = document.getElementById('salesPieChart').getContext('2d');
+            const ctxBar = document.getElementById('salesBarChart').getContext('2d');
+
+            if (pieChart) pieChart.destroy();
+            if (barChart) barChart.destroy();
+
+            pieChart = new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#6366F1','#EC4899','#10B981','#F59E0B',
+                            '#3B82F6','#8B5CF6','#F97316','#EF4444'
+                        ]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: data,
+                        backgroundColor: '#6366F1'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        window.refreshSalesCharts = refreshSalesCharts;
     </script>
 </body>
 </html>
