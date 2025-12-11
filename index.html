@@ -270,6 +270,26 @@
             min-width: 260px;
         }
 
+        .active-sheet-row {
+            background-color: #fef9c3;
+        }
+
+        .active-toggle-cell {
+            width: 130px;
+            font-size: 12px;
+        }
+
+        .active-toggle-cell label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .active-toggle-cell input[type="radio"] {
+            width: auto;
+        }
+
         @media (max-width: 768px) {
             .nav-tabs {
                 justify-content: flex-start;
@@ -587,10 +607,14 @@
             </div>
         </div>
 
-        <!-- Wetumpka Sales Tracking -->
+        <!-- Wetumpka Sales Tracking (Pop, with active radio) -->
         <div id="wetumpka" class="tab-content">
             <div class="tab-section">
                 <h2>Wetumpka, Alabama - December 12-13</h2>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka">
+                    Use this sheet as Pop's active show
+                </label>
                 <table>
                     <thead>
                         <tr>
@@ -654,10 +678,14 @@
             </div>
         </div>
 
-        <!-- Mesquite Sales Tracking -->
+        <!-- Mesquite (Pop) -->
         <div id="mesquite" class="tab-content">
             <div class="tab-section">
                 <h2>Mesquite, Texas - December 20-21</h2>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="mesquite">
+                    Use this sheet as Pop's active show
+                </label>
                 <table>
                     <thead>
                         <tr>
@@ -721,10 +749,14 @@
             </div>
         </div>
 
-        <!-- Trussville Sales Tracking -->
+        <!-- Trussville (Pop) -->
         <div id="trussville" class="tab-content">
             <div class="tab-section">
                 <h2>Trussville, Alabama - January 3-4</h2>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="trussville">
+                    Use this sheet as Pop's active show
+                </label>
                 <table>
                     <thead>
                         <tr>
@@ -788,10 +820,14 @@
             </div>
         </div>
 
-        <!-- Columbia Sales Tracking -->
+        <!-- Columbia (Pop) -->
         <div id="columbia" class="tab-content">
             <div class="tab-section">
                 <h2>Columbia, Tennessee - January 10-11</h2>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="columbia">
+                    Use this sheet as Pop's active show
+                </label>
                 <table>
                     <thead>
                         <tr>
@@ -855,10 +891,14 @@
             </div>
         </div>
 
-        <!-- Hattiesburg Sales Tracking -->
+        <!-- Hattiesburg (Pop) -->
         <div id="hattiesburg" class="tab-content">
             <div class="tab-section">
                 <h2>Hattiesburg, Mississippi - January 17</h2>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="hattiesburg">
+                    Use this sheet as Pop's active show
+                </label>
                 <table>
                     <thead>
                         <tr>
@@ -1010,6 +1050,10 @@
 
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
 
+        // Active sheet ids (saved as strings)
+        let activePopSheetId = '';
+        let activeAaronSheetId = '';
+
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1059,6 +1103,10 @@
                 <div id="${sheetId}" class="tab-content">
                     <div class="tab-section">
                         <h2>${displayName}</h2>
+                        <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                            <input type="radio" name="aaron-active-sheet" class="aaron-active-radio" value="${sheetId}">
+                            Use this sheet as Aaron's active show
+                        </label>
                         <table>
                             <thead>
                                 <tr>
@@ -1114,6 +1162,10 @@
                 <div id="${sheetId}" class="tab-content">
                     <div class="tab-section">
                         <h2>${displayName}</h2>
+                        <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                            <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="${sheetId}">
+                            Use this sheet as Pop's active show
+                        </label>
                         <table>
                             <thead>
                                 <tr>
@@ -1168,28 +1220,20 @@
         }
 
         function updatePopInventory() {
-            const popSheetsFixed = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
+            // Determine active Pop sheet id from radio
+            const activeRadio = document.querySelector('input.pop-active-radio:checked');
+            activePopSheetId = activeRadio ? activeRadio.value : '';
 
             for (let i = 0; i < 8; i++) {
-                let totalBrought = 0;
-                let totalLeft = 0;
+                let showFromActive = 0;
+                let postShowFromActive = 0;
 
-                // Fixed Pop sheets
-                popSheetsFixed.forEach(sheet => {
-                    const broughtInput = document.querySelector(`input.units-brought[data-sheet="${sheet}"][data-row="${i}"]`);
-                    const leftInput    = document.querySelector(`input.units-left[data-sheet="${sheet}"][data-row="${i}"]`);
-                    if (broughtInput) totalBrought += parseInt(broughtInput.value) || 0;
-                    if (leftInput)    totalLeft    += parseInt(leftInput.value)    || 0;
-                });
-
-                // Dynamic Pop sheets
-                document.querySelectorAll('.tab-content[id^="sales-sheet-"]').forEach(sheet => {
-                    const sheetId = sheet.id;
-                    const broughtInput = document.querySelector(`input.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    const leftInput    = document.querySelector(`input.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    if (broughtInput) totalBrought += parseInt(broughtInput.value) || 0;
-                    if (leftInput)    totalLeft    += parseInt(leftInput.value)    || 0;
-                });
+                if (activePopSheetId) {
+                    const broughtInput = document.querySelector(`input.units-brought[data-sheet="${activePopSheetId}"][data-row="${i}"]`);
+                    const leftInput    = document.querySelector(`input.units-left[data-sheet="${activePopSheetId}"][data-row="${i}"]`);
+                    if (broughtInput) showFromActive     = parseInt(broughtInput.value) || 0;
+                    if (leftInput)    postShowFromActive = parseInt(leftInput.value)    || 0;
+                }
 
                 const showEl     = document.querySelector(`.pop-show[data-product="${i}"]`);
                 const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
@@ -1197,22 +1241,23 @@
                 const currentEl  = document.querySelector(`.pop-current-stock[data-product="${i}"]`);
                 const soldEl     = document.querySelector(`.total-sold-pop[data-product="${i}"]`);
 
-                if (showEl)     showEl.value     = totalBrought;
-                if (postShowEl) postShowEl.value = totalLeft;
+                if (showEl)     showEl.value     = showFromActive;
+                if (postShowEl) postShowEl.value = postShowFromActive;
 
                 const storageVal = storageEl ? (parseInt(storageEl.value) || 0) : 0;
-                const current    = Math.max(0, storageVal + totalBrought - totalLeft);
+                const current    = Math.max(0, storageVal + showFromActive - postShowFromActive);
                 if (currentEl) currentEl.value = current;
 
-                // Total sold for Pop from all Pop sheets
+                // Total sold for Pop: sum across ALL Pop sheets (fixed + dynamic)
                 let totalSold = 0;
-                popSheetsFixed.forEach(sheet => {
-                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sheet}"][data-row="${i}"]`);
+                const fixedSheets = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
+                fixedSheets.forEach(sheetId => {
+                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     if (soldInput) totalSold += parseInt(soldInput.value) || 0;
                 });
                 document.querySelectorAll('.tab-content[id^="sales-sheet-"]').forEach(sheet => {
-                    const sheetId = sheet.id;
-                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const sid = sheet.id;
+                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sid}"][data-row="${i}"]`);
                     if (soldInput) totalSold += parseInt(soldInput.value) || 0;
                 });
                 if (soldEl) soldEl.textContent = totalSold;
@@ -1227,17 +1272,19 @@
         }
 
         function updateAaronInventory() {
-            for (let i = 0; i < 8; i++) {
-                let totalBrought = 0;
-                let totalLeft = 0;
+            const activeRadio = document.querySelector('input.aaron-active-radio:checked');
+            activeAaronSheetId = activeRadio ? activeRadio.value : '';
 
-                document.querySelectorAll('.tab-content[id^="aaron-sales-sheet-"]').forEach(sheet => {
-                    const sheetId = sheet.id;
-                    const broughtInput = document.querySelector(`input.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    const leftInput    = document.querySelector(`input.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    if (broughtInput) totalBrought += parseInt(broughtInput.value) || 0;
-                    if (leftInput)    totalLeft    += parseInt(leftInput.value)    || 0;
-                });
+            for (let i = 0; i < 8; i++) {
+                let showFromActive = 0;
+                let postShowFromActive = 0;
+
+                if (activeAaronSheetId) {
+                    const broughtInput = document.querySelector(`input.units-brought[data-sheet="${activeAaronSheetId}"][data-row="${i}"]`);
+                    const leftInput    = document.querySelector(`input.units-left[data-sheet="${activeAaronSheetId}"][data-row="${i}"]`);
+                    if (broughtInput) showFromActive     = parseInt(broughtInput.value) || 0;
+                    if (leftInput)    postShowFromActive = parseInt(leftInput.value)    || 0;
+                }
 
                 const showEl     = document.querySelector(`.aaron-show[data-product="${i}"]`);
                 const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
@@ -1245,18 +1292,18 @@
                 const currentEl  = document.querySelector(`.aaron-current-stock[data-product="${i}"]`);
                 const soldEl     = document.querySelector(`.total-sold[data-product="${i}"]`);
 
-                if (showEl)     showEl.value     = totalBrought;
-                if (postShowEl) postShowEl.value = totalLeft;
+                if (showEl)     showEl.value     = showFromActive;
+                if (postShowEl) postShowEl.value = postShowFromActive;
 
                 const storageVal = storageEl ? (parseInt(storageEl.value) || 0) : 0;
-                const current    = Math.max(0, storageVal + totalBrought - totalLeft);
+                const current    = Math.max(0, storageVal + showFromActive - postShowFromActive);
                 if (currentEl) currentEl.value = current;
 
-                // Total sold for Aaron
+                // Total sold for Aaron (all Aaron sheets)
                 let totalSold = 0;
                 document.querySelectorAll('.tab-content[id^="aaron-sales-sheet-"]').forEach(sheet => {
-                    const sheetId = sheet.id;
-                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const sid = sheet.id;
+                    const soldInput = document.querySelector(`input.units-sold[data-sheet="${sid}"][data-row="${i}"]`);
                     if (soldInput) totalSold += parseInt(soldInput.value) || 0;
                 });
                 if (soldEl) soldEl.textContent = totalSold;
@@ -1279,10 +1326,11 @@
 
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('units-brought') || e.target.classList.contains('units-left') ||
-                e.target.classList.contains('pop-storage') || e.target.classList.contains('aaron-storage')) {
+                e.target.classList.contains('pop-storage') || e.target.classList.contains('aaron-storage') ||
+                e.target.classList.contains('pop-active-radio') || e.target.classList.contains('aaron-active-radio')) {
                 const sheet = e.target.getAttribute('data-sheet');
                 const row = e.target.getAttribute('data-row');
-                if (sheet && row) {
+                if (sheet && row && (e.target.classList.contains('units-brought') || e.target.classList.contains('units-left'))) {
                     calculateUnitsSold(sheet, row);
                 } else {
                     updateAllInventories();
@@ -1314,14 +1362,20 @@
             const prod = input.getAttribute('data-product') || '';
             const sheet = input.getAttribute('data-sheet') || '';
             const row = input.getAttribute('data-row') || '';
-            return [cls, prod, sheet, row].join('|');
+            const nameAttr = input.getAttribute('name') || '';
+            const valueAttr = input.type === 'radio' ? input.value || '' : '';
+            return [cls, prod, sheet, row, nameAttr, valueAttr].join('|');
         }
 
         function collectFormData() {
             const data = {};
             document.querySelectorAll('input').forEach(input => {
                 const key = makeKey(input);
-                data[key] = input.value;
+                if (input.type === 'radio') {
+                    data[key] = input.checked ? '1' : '0';
+                } else {
+                    data[key] = input.value;
+                }
             });
             return data;
         }
@@ -1331,7 +1385,11 @@
             document.querySelectorAll('input').forEach(input => {
                 const key = makeKey(input);
                 if (data[key] !== undefined) {
-                    input.value = data[key];
+                    if (input.type === 'radio') {
+                        input.checked = data[key] === '1';
+                    } else {
+                        input.value = data[key];
+                    }
                 }
             });
             updateAllInventories();
