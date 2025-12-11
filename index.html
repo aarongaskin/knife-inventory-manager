@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,6 +104,9 @@
             flex-wrap: wrap;
             align-items: center;
         }
+        .tax-rate-input { width: 100px; }
+        .tax-input-group { display: none; }
+        .tax-input-group.active { display: flex !important; }
 
         .tax-control-group {
             display: flex;
@@ -729,25 +733,20 @@
         <div id="wetumpka" class="tab-content">
             <div class="tab-section">
                 <h2>Wetumpka, Alabama - December 12-13</h2>
-                <div class="tax-controls">
-    <div class="tax-control-group">
-        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
-        <label for="tax-required-wetumpka">Sales Tax Required?</label>
-    </div>
-    <div class="tax-control-group" id="tax-input-group-wetumpka" style="display: none;">
-        <label for="tax-rate-wetumpka">Tax Rate (%):</label>
-        <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25">
-    </div>
-    <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka"> Use this sheet as Pop's active show
-    </label>
-</div>
-
-                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka">
-                    Use this sheet as Pop's active show
-                </label>
-                <table>
+        <div class="tax-controls">
+            <div class="tax-control-group">
+                <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
+                <label for="tax-required-wetumpka">Sales Tax Required?</label>
+            </div>
+            <div class="tax-control-group" id="tax-input-group-wetumpka" style="display: none;">
+                <label for="tax-rate-wetumpka">Tax Rate (%):</label>
+                <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25">
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka"> Use this sheet as Pop's active show
+            </label>
+        </div>
+        <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -824,29 +823,20 @@
         <div id="mesquite" class="tab-content">
             <div class="tab-section">
                 <h2>Mesquite, Texas - December 20-21</h2>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-mesquite" class="tax-checkbox" data-sheet="mesquite">
-                        <label for="tax-required-mesquite">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="state-select-mesquite">State:</label>
-                        <select id="state-select-mesquite" class="state-select" data-sheet="mesquite" onchange="updateCityDropdown('mesquite')">
-                            <option value="">-- Select State --</option>
-                        </select>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="city-select-mesquite">City:</label>
-                        <select id="city-select-mesquite" class="city-select" data-sheet="mesquite" onchange="updateTaxCalculation('mesquite')">
-                            <option value="">-- Select City --</option>
-                        </select>
-                    </div>
-                </div>
-                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="mesquite">
-                    Use this sheet as Pop's active show
-                </label>
-                <table>
+        <div class="tax-controls">
+            <div class="tax-control-group">
+                <input type="checkbox" id="tax-required-mesquite" class="tax-checkbox" data-sheet="mesquite">
+                <label for="tax-required-mesquite">Sales Tax Required?</label>
+            </div>
+            <div class="tax-control-group" id="tax-input-group-mesquite" style="display: none;">
+                <label for="tax-rate-mesquite">Tax Rate (%):</label>
+                <input type="number" id="tax-rate-mesquite" class="tax-rate-input" data-sheet="mesquite" step="0.01" min="0" max="20" placeholder="8.25">
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="mesquite"> Use this sheet as Pop's active show
+            </label>
+        </div>
+        <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -923,29 +913,20 @@
         <div id="trussville" class="tab-content">
             <div class="tab-section">
                 <h2>Trussville, Alabama - January 3-4</h2>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-trussville" class="tax-checkbox" data-sheet="trussville">
-                        <label for="tax-required-trussville">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="state-select-trussville">State:</label>
-                        <select id="state-select-trussville" class="state-select" data-sheet="trussville" onchange="updateCityDropdown('trussville')">
-                            <option value="">-- Select State --</option>
-                        </select>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="city-select-trussville">City:</label>
-                        <select id="city-select-trussville" class="city-select" data-sheet="trussville" onchange="updateTaxCalculation('trussville')">
-                            <option value="">-- Select City --</option>
-                        </select>
-                    </div>
-                </div>
-                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="trussville">
-                    Use this sheet as Pop's active show
-                </label>
-                <table>
+        <div class="tax-controls">
+            <div class="tax-control-group">
+                <input type="checkbox" id="tax-required-trussville" class="tax-checkbox" data-sheet="trussville">
+                <label for="tax-required-trussville">Sales Tax Required?</label>
+            </div>
+            <div class="tax-control-group" id="tax-input-group-trussville" style="display: none;">
+                <label for="tax-rate-trussville">Tax Rate (%):</label>
+                <input type="number" id="tax-rate-trussville" class="tax-rate-input" data-sheet="trussville" step="0.01" min="0" max="20" placeholder="8.25">
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="trussville"> Use this sheet as Pop's active show
+            </label>
+        </div>
+        <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -1022,29 +1003,20 @@
         <div id="columbia" class="tab-content">
             <div class="tab-section">
                 <h2>Columbia, Tennessee - January 10-11</h2>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-columbia" class="tax-checkbox" data-sheet="columbia">
-                        <label for="tax-required-columbia">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="state-select-columbia">State:</label>
-                        <select id="state-select-columbia" class="state-select" data-sheet="columbia" onchange="updateCityDropdown('columbia')">
-                            <option value="">-- Select State --</option>
-                        </select>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="city-select-columbia">City:</label>
-                        <select id="city-select-columbia" class="city-select" data-sheet="columbia" onchange="updateTaxCalculation('columbia')">
-                            <option value="">-- Select City --</option>
-                        </select>
-                    </div>
-                </div>
-                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="columbia">
-                    Use this sheet as Pop's active show
-                </label>
-                <table>
+        <div class="tax-controls">
+            <div class="tax-control-group">
+                <input type="checkbox" id="tax-required-columbia" class="tax-checkbox" data-sheet="columbia">
+                <label for="tax-required-columbia">Sales Tax Required?</label>
+            </div>
+            <div class="tax-control-group" id="tax-input-group-columbia" style="display: none;">
+                <label for="tax-rate-columbia">Tax Rate (%):</label>
+                <input type="number" id="tax-rate-columbia" class="tax-rate-input" data-sheet="columbia" step="0.01" min="0" max="20" placeholder="8.25">
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="columbia"> Use this sheet as Pop's active show
+            </label>
+        </div>
+        <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -1121,29 +1093,20 @@
         <div id="hattiesburg" class="tab-content">
             <div class="tab-section">
                 <h2>Hattiesburg, Mississippi - January 17</h2>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-hattiesburg" class="tax-checkbox" data-sheet="hattiesburg">
-                        <label for="tax-required-hattiesburg">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="state-select-hattiesburg">State:</label>
-                        <select id="state-select-hattiesburg" class="state-select" data-sheet="hattiesburg" onchange="updateCityDropdown('hattiesburg')">
-                            <option value="">-- Select State --</option>
-                        </select>
-                    </div>
-                    <div class="tax-control-group">
-                        <label for="city-select-hattiesburg">City:</label>
-                        <select id="city-select-hattiesburg" class="city-select" data-sheet="hattiesburg" onchange="updateTaxCalculation('hattiesburg')">
-                            <option value="">-- Select City --</option>
-                        </select>
-                    </div>
-                </div>
-                <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="hattiesburg">
-                    Use this sheet as Pop's active show
-                </label>
-                <table>
+        <div class="tax-controls">
+            <div class="tax-control-group">
+                <input type="checkbox" id="tax-required-hattiesburg" class="tax-checkbox" data-sheet="hattiesburg">
+                <label for="tax-required-hattiesburg">Sales Tax Required?</label>
+            </div>
+            <div class="tax-control-group" id="tax-input-group-hattiesburg" style="display: none;">
+                <label for="tax-rate-hattiesburg">Tax Rate (%):</label>
+                <input type="number" id="tax-rate-hattiesburg" class="tax-rate-input" data-sheet="hattiesburg" step="0.01" min="0" max="20" placeholder="8.25">
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
+                <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="hattiesburg"> Use this sheet as Pop's active show
+            </label>
+        </div>
+        <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
@@ -1283,123 +1246,21 @@
 
     <script>
         // US Sales Tax Database
-        const TAX_DATABASE = {
-            "Alabama": {"rate": 0.04, "cities": ["Wetumpka", "Trussville", "Birmingham", "Montgomery", "Huntsville", "Mobile", "Tuscaloosa"]},
-            "Alaska": {"rate": 0.00, "cities": ["Anchorage", "Juneau", "Fairbanks", "Ketchikan", "Sitka"]},
-            "Arizona": {"rate": 0.056, "cities": ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale", "Glendale", "Gilbert"]},
-            "Arkansas": {"rate": 0.065, "cities": ["Little Rock", "Fort Smith", "Fayetteville", "Springdale", "Jonesboro", "Pine Bluff"]},
-            "California": {"rate": 0.0725, "cities": ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Fresno", "Sacramento", "Oakland"]},
-            "Colorado": {"rate": 0.029, "cities": ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Lakewood", "Thornton"]},
-            "Connecticut": {"rate": 0.065, "cities": ["Bridgeport", "New Haven", "Hartford", "Waterbury", "Danbury", "Stamford"]},
-            "Delaware": {"rate": 0.00, "cities": ["Wilmington", "Dover", "Newark", "Middletown", "Smyrna"]},
-            "Florida": {"rate": 0.06, "cities": ["Jacksonville", "Miami", "Tampa", "Orlando", "St. Petersburg", "Hialeah", "Fort Lauderdale"]},
-            "Georgia": {"rate": 0.04, "cities": ["Atlanta", "Augusta", "Columbus", "Savannah", "Macon", "Albany"]},
-            "Hawaii": {"rate": 0.04, "cities": ["Honolulu", "Hilo", "Kailua", "Kaneohe", "Mililani"]},
-            "Idaho": {"rate": 0.06, "cities": ["Boise", "Meridian", "Nampa", "Idaho Falls", "Pocatello", "Caldwell"]},
-            "Illinois": {"rate": 0.0625, "cities": ["Chicago", "Aurora", "Rockford", "Joliet", "Naperville", "Springfield", "Peoria"]},
-            "Indiana": {"rate": 0.07, "cities": ["Indianapolis", "Fort Wayne", "Evansville", "South Bend", "Bloomington", "Gary"]},
-            "Iowa": {"rate": 0.06, "cities": ["Des Moines", "Cedar Rapids", "Davenport", "Iowa City", "Dubuque", "Ames"]},
-            "Kansas": {"rate": 0.0685, "cities": ["Kansas City", "Wichita", "Overland Park", "Topeka", "Olathe", "Lawrence"]},
-            "Kentucky": {"rate": 0.06, "cities": ["Louisville", "Lexington", "Bowling Green", "Owensboro", "Covington", "Richmond"]},
-            "Louisiana": {"rate": 0.07, "cities": ["New Orleans", "Baton Rouge", "Shreveport", "Lafayette", "Lake Charles", "Monroe"]},
-            "Maine": {"rate": 0.055, "cities": ["Portland", "Lewiston", "Bangor", "South Portland", "Auburn", "Waterville"]},
-            "Maryland": {"rate": 0.06, "cities": ["Baltimore", "Columbia", "Germantown", "Silver Spring", "Towson", "Glen Burnie"]},
-            "Massachusetts": {"rate": 0.0625, "cities": ["Boston", "Worcester", "Springfield", "Cambridge", "Lowell", "Brockton"]},
-            "Michigan": {"rate": 0.06, "cities": ["Detroit", "Grand Rapids", "Warren", "Sterling Heights", "Ann Arbor", "Lansing"]},
-            "Minnesota": {"rate": 0.0685, "cities": ["Minneapolis", "St. Paul", "Bloomington", "Rochester", "Saint Cloud", "Duluth"]},
-            "Mississippi": {"rate": 0.07, "cities": ["Hattiesburg", "Jackson", "Gulfport", "Biloxi", "Southaven", "Greenville"]},
-            "Missouri": {"rate": 0.0725, "cities": ["Kansas City", "St. Louis", "Springfield", "Columbia", "Independence", "Lee's Summit"]},
-            "Montana": {"rate": 0.00, "cities": ["Billings", "Missoula", "Great Falls", "Butte", "Bozeman"]},
-            "Nebraska": {"rate": 0.055, "cities": ["Omaha", "Lincoln", "Bellevue", "Grand Island", "Kearney"]},
-            "Nevada": {"rate": 0.0685, "cities": ["Las Vegas", "Henderson", "Reno", "North Las Vegas", "Sparks"]},
-            "New Hampshire": {"rate": 0.00, "cities": ["Manchester", "Nashua", "Concord", "Derry", "Portsmouth"]},
-            "New Jersey": {"rate": 0.0625, "cities": ["Newark", "Jersey City", "Paterson", "Elizabeth", "Trenton", "Clifton"]},
-            "New Mexico": {"rate": 0.0525, "cities": ["Albuquerque", "Las Cruces", "Rio Rancho", "Santa Fe", "Roswell"]},
-            "New York": {"rate": 0.04, "cities": ["New York City", "Buffalo", "Rochester", "Syracuse", "Yonkers", "Albany"]},
-            "North Carolina": {"rate": 0.04, "cities": ["Charlotte", "Raleigh", "Greensboro", "Durham", "Winston-Salem", "Fayetteville"]},
-            "North Dakota": {"rate": 0.05, "cities": ["Bismarck", "Fargo", "Grand Forks", "Minot", "Williston"]},
-            "Ohio": {"rate": 0.0575, "cities": ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron", "Dayton"]},
-            "Oklahoma": {"rate": 0.045, "cities": ["Oklahoma City", "Tulsa", "Norman", "Broken Arrow", "Edmond", "Lawton"]},
-            "Oregon": {"rate": 0.00, "cities": ["Portland", "Eugene", "Salem", "Gresham", "Hillsboro"]},
-            "Pennsylvania": {"rate": 0.06, "cities": ["Philadelphia", "Pittsburgh", "Allentown", "Erie", "Reading", "Scranton"]},
-            "Rhode Island": {"rate": 0.07, "cities": ["Providence", "Warwick", "Cranston", "Pawtucket", "Newport"]},
-            "South Carolina": {"rate": 0.05, "cities": ["Charleston", "Columbia", "Greenville", "Spartanburg", "Myrtle Beach"]},
-            "South Dakota": {"rate": 0.045, "cities": ["Sioux Falls", "Rapid City", "Aberdeen", "Brookings", "Watertown"]},
-            "Tennessee": {"rate": 0.07, "cities": ["Columbia", "Nashville", "Memphis", "Knoxville", "Chattanooga", "Clarksville"]},
-            "Texas": {"rate": 0.0625, "cities": ["Mesquite", "Houston", "Dallas", "Austin", "San Antonio", "Fort Worth", "El Paso"]},
-            "Utah": {"rate": 0.0595, "cities": ["Salt Lake City", "Provo", "West Valley City", "Lehi", "Ogden", "Orem"]},
-            "Vermont": {"rate": 0.06, "cities": ["Burlington", "Montpelier", "Rutland", "Barre", "South Burlington"]},
-            "Virginia": {"rate": 0.0575, "cities": ["Virginia Beach", "Richmond", "Arlington", "Alexandria", "Roanoke", "Norfolk"]},
-            "Washington": {"rate": 0.065, "cities": ["Seattle", "Tacoma", "Vancouver", "Bellevue", "Kent", "Everett"]},
-            "West Virginia": {"rate": 0.06, "cities": ["Charleston", "Huntington", "Parkersburg", "Morgantown", "Wheeling"]},
-            "Wisconsin": {"rate": 0.05, "cities": ["Milwaukee", "Madison", "Green Bay", "Kenosha", "Racine", "Appleton"]},
-            "Wyoming": {"rate": 0.04, "cities": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs"]}
-        };
-
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
         let salesSheetCount = 0;
         let aaronSalesSheetCount = 0;
 
         // Initialize state and city dropdowns
-        function initializeDropdowns() {
-            sheets.forEach(sheet => {
-                const stateSelect = document.getElementById(`state-select-${sheet}`);
-                if (stateSelect) {
-                    Object.keys(TAX_DATABASE).forEach(state => {
-                        const option = document.createElement('option');
-                        option.value = state;
-                        option.textContent = state;
-                        stateSelect.appendChild(option);
-                    });
+        function {
+            
                 }
             });
         }
 
         // Update city dropdown based on selected state
-        function updateCityDropdown(sheet) {
-            const stateSelect = document.getElementById(`state-select-${sheet}`);
-            const citySelect = document.getElementById(`city-select-${sheet}`);
-            const state = stateSelect.value;
-
-            citySelect.innerHTML = '<option value="">-- Select City --</option>';
-
-            if (state && TAX_DATABASE[state]) {
-                TAX_DATABASE[state].cities.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city;
-                    option.textContent = city;
-                    citySelect.appendChild(option);
-                });
-            }
-        }
-
         // Calculate and update tax
-        function updateTaxCalculation(sheet) {
-            const taxCheckbox = document.getElementById(`tax-required-${sheet}`);
-            const stateSelect = document.getElementById(`state-select-${sheet}`);
-            const taxRow = document.getElementById(`tax-row-${sheet}`);
-            const taxSummary = document.querySelector(`.tax-summary[data-sheet="${sheet}"]`);
-
-            if (!taxCheckbox.checked) {
-                taxRow.style.display = 'none';
-                return;
-            }
-
-            const state = stateSelect.value;
-            if (!state || !TAX_DATABASE[state]) {
-                taxRow.style.display = 'none';
-                return;
-            }
-
-            const taxRate = TAX_DATABASE[state].rate;
-            const subtotal = parseFloat(document.querySelector(`.revenue-total[data-sheet="${sheet}"]`).value) || 0;
-            const taxAmount = subtotal * taxRate;
-            const total = subtotal + taxAmount;
-
-            taxSummary.value = `$${subtotal.toFixed(2)} | $${taxAmount.toFixed(2)} | $${total.toFixed(2)}`;
-            taxRow.style.display = 'table-row';
-        }
+        
 
         // Update revenue calculation
         function updateRevenue(sheet) {
@@ -1416,7 +1277,7 @@
                 revenueEl.value = totalRevenue.toFixed(2);
             }
 
-            updateTaxCalculation(sheet);
+            updateManualTax(sheetId);
         }
 
         // Tab navigation
@@ -1465,13 +1326,13 @@
                         </div>
                         <div class="tax-control-group">
                             <label for="state-select-${sheetId}">State:</label>
-                            <select id="state-select-${sheetId}" class="state-select" data-sheet="${sheetId}" onchange="updateCityDropdown('${sheetId}')">
+                            <select id="state-select-${sheetId}" class="state-select" data-sheet="${sheetId}">
                                 <option value="">-- Select State --</option>
                             </select>
                         </div>
                         <div class="tax-control-group">
                             <label for="city-select-${sheetId}">City:</label>
-                            <select id="city-select-${sheetId}" class="city-select" data-sheet="${sheetId}" onchange="updateTaxCalculation('${sheetId}')">
+                            <select id="city-select-${sheetId}" class="city-select" data-sheet="${sheetId}">
                                 <option value="">-- Select City --</option>
                             </select>
                         </div>
@@ -1528,7 +1389,7 @@
 
             // Initialize dropdowns for new sheet
             const stateSelect = document.getElementById(`state-select-${sheetId}`);
-            Object.keys(TAX_DATABASE).forEach(state => {
+            Object.keys().forEach(state => {
                 const option = document.createElement('option');
                 option.value = state;
                 option.textContent = state;
@@ -1560,13 +1421,13 @@
                         </div>
                         <div class="tax-control-group">
                             <label for="state-select-${sheetId}">State:</label>
-                            <select id="state-select-${sheetId}" class="state-select" data-sheet="${sheetId}" onchange="updateCityDropdown('${sheetId}')">
+                            <select id="state-select-${sheetId}" class="state-select" data-sheet="${sheetId}">
                                 <option value="">-- Select State --</option>
                             </select>
                         </div>
                         <div class="tax-control-group">
                             <label for="city-select-${sheetId}">City:</label>
-                            <select id="city-select-${sheetId}" class="city-select" data-sheet="${sheetId}" onchange="updateTaxCalculation('${sheetId}')">
+                            <select id="city-select-${sheetId}" class="city-select" data-sheet="${sheetId}">
                                 <option value="">-- Select City --</option>
                             </select>
                         </div>
@@ -1623,7 +1484,7 @@
 
             // Initialize dropdowns for new sheet
             const stateSelect = document.getElementById(`state-select-${sheetId}`);
-            Object.keys(TAX_DATABASE).forEach(state => {
+            Object.keys().forEach(state => {
                 const option = document.createElement('option');
                 option.value = state;
                 option.textContent = state;
@@ -1800,7 +1661,7 @@
                     const sheet = inp.dataset.sheet;
                     if (sheet) {
                         if (inp.classList.contains('tax-checkbox')) {
-                            updateTaxCalculation(sheet);
+                            updateManualTax(sheetId);
                         } else {
                             updateRevenue(sheet);
                             updateAllInventories();
@@ -1908,7 +1769,7 @@
                 if (taxCheckbox) taxCheckbox.checked = data.taxSettings[sheet].required;
                 if (stateSelect) stateSelect.value = data.taxSettings[sheet].state;
                 if (citySelect) {
-                    updateCityDropdown(sheet);
+                    
                     citySelect.value = data.taxSettings[sheet].city;
                 }
             });
@@ -1917,12 +1778,54 @@
         }
 
         window.addEventListener('load', () => {
-            initializeDropdowns();
             attachEventListeners();
             initCharts();
             loadAppData();
             updateAllInventories();
         });
+    
+
+        // Manual Tax System
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bind all existing tax checkboxes
+            document.querySelectorAll('.tax-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const sheetId = this.dataset.sheet;
+                    const taxGroup = document.getElementById(`tax-input-group-${sheetId}`);
+                    if (this.checked && taxGroup) {
+                        taxGroup.style.display = 'flex';
+                    } else if (taxGroup) {
+                        taxGroup.style.display = 'none';
+                    }
+                    updateManualTax(sheetId);
+                });
+            });
+
+            document.querySelectorAll('.tax-rate-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    updateManualTax(this.dataset.sheet);
+                });
+            });
+        });
+
+        function updateManualTax(sheetId) {
+            const taxCheckbox = document.getElementById(`tax-required-${sheetId}`);
+            const taxRateInput = document.getElementById(`tax-rate-${sheetId}`);
+            const taxRow = document.getElementById(`tax-row-${sheetId}`);
+            const taxSummary = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
+
+            if (!taxCheckbox?.checked || !taxRow || !taxSummary) return;
+
+            const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+            const subtotal = parseFloat(revenueEl?.value || 0);
+            const taxRate = parseFloat(taxRateInput?.value || 0) / 100;
+            const taxAmount = subtotal * taxRate;
+            const total = subtotal + taxAmount;
+
+            taxSummary.value = `$${subtotal.toFixed(2)} / $${taxAmount.toFixed(2)} / $${total.toFixed(2)}`;
+            taxRow.style.display = 'table-row';
+        }
+
     </script>
 </body>
 </html>
