@@ -620,43 +620,58 @@
 
         function attachEventListeners() {
             document.querySelectorAll('.units-brought').forEach(input => {
-                input.addEventListener('input', function() {
-                    const sheetId = this.dataset.sheet;
-                    const row = this.dataset.row;
-                    updateSalesCalculations(sheetId, row);
-                });
+                input.removeEventListener('input', handleUnitsBroughtChange);
+                input.addEventListener('input', handleUnitsBroughtChange);
             });
 
             document.querySelectorAll('.units-left').forEach(input => {
-                input.addEventListener('input', function() {
-                    const sheetId = this.dataset.sheet;
-                    const row = this.dataset.row;
-                    updateSalesCalculations(sheetId, row);
-                });
+                input.removeEventListener('input', handleUnitsLeftChange);
+                input.addEventListener('input', handleUnitsLeftChange);
             });
 
-            document.querySelectorAll('.pop-price, .aaron-price, .pop-storage, .aaron-storage, .pop-show, .aaron-show, .pop-post-show, .aaron-post-show').forEach(input => {
+            document.querySelectorAll('.pop-price, .aaron-price, .pop-storage, .aaron-storage').forEach(input => {
+                input.removeEventListener('input', updateAllInventories);
                 input.addEventListener('input', updateAllInventories);
             });
 
             document.querySelectorAll('.tax-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const sheetId = this.dataset.sheet;
-                    const taxGroup = document.getElementById(`tax-input-group-${sheetId}`);
-                    if (this.checked && taxGroup) {
-                        taxGroup.style.display = 'flex';
-                    } else if (taxGroup) {
-                        taxGroup.style.display = 'none';
-                    }
-                    updateManualTax(sheetId);
-                });
+                checkbox.removeEventListener('change', handleTaxCheckboxChange);
+                checkbox.addEventListener('change', handleTaxCheckboxChange);
             });
 
             document.querySelectorAll('.tax-rate-input').forEach(input => {
-                input.addEventListener('input', function() {
-                    updateManualTax(this.dataset.sheet);
-                });
+                input.removeEventListener('input', handleTaxRateChange);
+                input.addEventListener('input', handleTaxRateChange);
             });
+        }
+
+        function handleUnitsBroughtChange(e) {
+            const sheetId = this.dataset.sheet;
+            const row = this.dataset.row;
+            updateSalesCalculations(sheetId, row);
+            updateInventoryShowAndPostShow();
+        }
+
+        function handleUnitsLeftChange(e) {
+            const sheetId = this.dataset.sheet;
+            const row = this.dataset.row;
+            updateSalesCalculations(sheetId, row);
+            updateInventoryShowAndPostShow();
+        }
+
+        function handleTaxCheckboxChange(e) {
+            const sheetId = this.dataset.sheet;
+            const taxGroup = document.getElementById(`tax-input-group-${sheetId}`);
+            if (this.checked && taxGroup) {
+                taxGroup.style.display = 'flex';
+            } else if (taxGroup) {
+                taxGroup.style.display = 'none';
+            }
+            updateManualTax(sheetId);
+        }
+
+        function handleTaxRateChange(e) {
+            updateManualTax(this.dataset.sheet);
         }
 
         function updateSalesCalculations(sheetId, row) {
@@ -702,11 +717,53 @@
             popTakeEl.value = `$${popTake.toFixed(2)}`;
         }
 
+        function updateInventoryShowAndPostShow() {
+            const activePopSheet = document.querySelector('input[name="pop-active-sheet"]:checked')?.value;
+            const activeAaronSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
+
+            // Update Pop Inventory Show/Post Show columns
+            for (let i = 0; i < 8; i++) {
+                let show = 0;
+                let postShow = 0;
+
+                if (activePopSheet) {
+                    const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activePopSheet}"][data-row="${i}"]`)?.value || 0);
+                    const left = parseFloat(document.querySelector(`.units-left[data-sheet="${activePopSheet}"][data-row="${i}"]`)?.value || 0);
+                    show = brought;
+                    postShow = left;
+                }
+
+                const showEl = document.querySelector(`.pop-show[data-product="${i}"]`);
+                const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
+                if (showEl) showEl.value = show;
+                if (postShowEl) postShowEl.value = postShow;
+            }
+
+            // Update Aaron Inventory Show/Post Show columns
+            for (let i = 0; i < 8; i++) {
+                let show = 0;
+                let postShow = 0;
+
+                if (activeAaronSheet) {
+                    const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activeAaronSheet}"][data-row="${i}"]`)?.value || 0);
+                    const left = parseFloat(document.querySelector(`.units-left[data-sheet="${activeAaronSheet}"][data-row="${i}"]`)?.value || 0);
+                    show = brought;
+                    postShow = left;
+                }
+
+                const showEl = document.querySelector(`.aaron-show[data-product="${i}"]`);
+                const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
+                if (showEl) showEl.value = show;
+                if (postShowEl) postShowEl.value = postShow;
+            }
+        }
+
         function updateAllInventories() {
             updatePopInventory();
             updateAaronInventory();
             updateMasterInventory();
             updateChartsData();
+            updateInventoryShowAndPostShow();
         }
 
         function updatePopInventory() {
