@@ -483,6 +483,7 @@
                 });
             });
 
+            // Load data first, then setup listeners
             loadAppData();
             attachEventListeners();
             initCharts();
@@ -493,15 +494,15 @@
             const taxRateInput = document.getElementById(`tax-rate-${sheetId}`);
             const taxRow = document.getElementById(`tax-row-${sheetId}`);
             const taxSummary = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
-            
+
             if (!taxCheckbox?.checked || !taxRow || !taxSummary) return;
-            
+
             const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
             const subtotal = parseFloat(revenueEl?.value || 0);
             const taxRate = parseFloat(taxRateInput?.value || 0) / 100;
             const taxAmount = subtotal * taxRate;
             const total = subtotal + taxAmount;
-            
+
             taxSummary.value = `$${subtotal.toFixed(2)} / $${taxAmount.toFixed(2)} / $${total.toFixed(2)}`;
             taxRow.style.display = 'table-row';
         }
@@ -554,7 +555,7 @@
             document.getElementById('dynamic-sales-links').appendChild(link);
 
             document.querySelector('.container').appendChild(newTab);
-            
+
             attachEventListeners();
             closeNewSalesSheetModal();
             document.getElementById('sheetName').value = '';
@@ -611,7 +612,7 @@
             document.getElementById('dynamic-aaron-sales-links').appendChild(link);
 
             document.querySelector('.container').appendChild(newTab);
-            
+
             attachEventListeners();
             closeNewAaronSalesSheetModal();
             document.getElementById('aaronSheetName').value = '';
@@ -684,7 +685,7 @@
         function updateAaronAndPopTake(sheetId) {
             const aaronTakeEl = document.querySelector(`.aaron-take[data-sheet="${sheetId}"]`);
             const popTakeEl = document.querySelector(`.pop-take[data-sheet="${sheetId}"]`);
-            
+
             if (!aaronTakeEl || !popTakeEl) return;
 
             let totalUnits = 0;
@@ -737,7 +738,7 @@
 
         function updateAaronInventory() {
             const activeSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
-            
+
             for (let i = 0; i < 8; i++) {
                 let sold = 0;
                 let brought = 0;
@@ -844,7 +845,9 @@
             const data = {
                 popInventory: {},
                 aaronInventory: {},
-                salesSheets: {}
+                salesSheets: {},
+                activePopSheet: document.querySelector('input[name="pop-active-sheet"]:checked')?.value || null,
+                activeAaronSheet: document.querySelector('input[name="aaron-active-sheet"]:checked')?.value || null
             };
 
             for (let i = 0; i < 8; i++) {
@@ -877,6 +880,8 @@
             if (!saved) return;
 
             const data = JSON.parse(saved);
+
+            // Load inventory prices and storage
             Object.keys(data.popInventory || {}).forEach(i => {
                 const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
                 const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
@@ -891,6 +896,7 @@
                 if (storageEl) storageEl.value = data.aaronInventory[i].storage;
             });
 
+            // Load sales sheets data
             Object.keys(data.salesSheets || {}).forEach(sheet => {
                 Object.keys(data.salesSheets[sheet] || {}).forEach(row => {
                     const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${row}"]`);
@@ -900,9 +906,19 @@
                 });
             });
 
+            // Restore active sheet selections
+            if (data.activePopSheet) {
+                const popRadio = document.querySelector(`input[name="pop-active-sheet"][value="${data.activePopSheet}"]`);
+                if (popRadio) popRadio.checked = true;
+            }
+
+            if (data.activeAaronSheet) {
+                const aaronRadio = document.querySelector(`input[name="aaron-active-sheet"][value="${data.activeAaronSheet}"]`);
+                if (aaronRadio) aaronRadio.checked = true;
+            }
+
             updateAllInventories();
         }
     </script>
 </body>
 </html>
-'''
