@@ -19,6 +19,8 @@
         .tab-content.active { display: block; }
         .tab-section h2 { color: #333; margin-bottom: 20px; font-size: 1.8em; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
         .tab-section p { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .inventory-controls h3 { color: #2e7d32; margin-bottom: 15px; }
         .tax-controls { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
         .tax-control-group { display: flex; align-items: center; gap: 10px; }
         .tax-control-group label { font-weight: 500; color: #333; }
@@ -45,7 +47,7 @@
         .nav-link:hover { background: #667eea; color: white; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
         .modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 400px; width: 90%; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
         .modal-content h3 { margin-top: 0; color: #333; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
@@ -57,6 +59,12 @@
         .modal-buttons .btn-cancel:hover { background: #d0d0d0; }
         .modal-buttons .btn-create { background: #667eea; color: white; }
         .modal-buttons .btn-create:hover { background: #5568d3; }
+        .modal-buttons .btn-add-inventory { background: #4caf50; color: white; }
+        .modal-buttons .btn-add-inventory:hover { background: #45a049; }
+        .inventory-table { width: 100%; border-collapse: collapse; }
+        .inventory-table thead { background: #4caf50; }
+        .inventory-table th, .inventory-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .inventory-table input { margin: 0; padding: 5px; }
         .charts-container { display: flex; flex-wrap: wrap; gap: 20px; }
         .chart-box { flex: 1 1 300px; min-width: 260px; }
         @media (max-width: 768px) {
@@ -167,6 +175,10 @@
         <div id="aaron-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Aaron's Current Inventory</h2>
+                <div class="inventory-controls">
+                    <h3>Inventory Received</h3>
+                    <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Received Inventory</button>
+                </div>
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage</th><th>Show</th><th>Post Show</th><th>Total Sold (All Shows)</th><th>Current Stock</th></tr></thead>
                     <tbody>
@@ -188,6 +200,10 @@
         <div id="pop-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Pop's Current Inventory</h2>
+                <div class="inventory-controls">
+                    <h3>Inventory Received</h3>
+                    <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Received Inventory</button>
+                </div>
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Initial Storage</th><th>Show</th><th>Post Show</th><th>Total Sold (All Shows)</th><th>Current Stock</th></tr></thead>
                     <tbody>
@@ -399,6 +415,66 @@
             </div>
         </div>
 
+        <!-- Modal for Inventory Received - Pop -->
+        <div id="popInventoryReceivedModal" class="modal">
+            <div class="modal-content">
+                <h3>Add Inventory Received - Pop</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities received for each product:</p>
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="pop-received-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="pop-received-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="pop-received-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="pop-received-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="pop-received-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="pop-received-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="pop-received-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="pop-received-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closePopInventoryReceivedModal()">Cancel</button>
+                    <button type="button" class="btn-add-inventory" onclick="addPopInventoryReceived()">Add Inventory</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Inventory Received - Aaron -->
+        <div id="aaronInventoryReceivedModal" class="modal">
+            <div class="modal-content">
+                <h3>Add Inventory Received - Aaron</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities received for each product:</p>
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="aaron-received-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="aaron-received-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="aaron-received-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="aaron-received-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="aaron-received-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="aaron-received-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="aaron-received-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="aaron-received-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeAaronInventoryReceivedModal()">Cancel</button>
+                    <button type="button" class="btn-add-inventory" onclick="addAaronInventoryReceived()">Add Inventory</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal for New Pop Sales Sheet -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
@@ -462,6 +538,44 @@
         function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
         function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.add('active'); }
         function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
+        function openPopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.add('active'); }
+        function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); clearReceivedFields('pop'); }
+        function openAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.add('active'); }
+        function closeAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.remove('active'); clearReceivedFields('aaron'); }
+
+        function clearReceivedFields(type) {
+            for (let i = 0; i < 8; i++) {
+                document.getElementById(`${type}-received-${i}`).value = '';
+            }
+        }
+
+        function addPopInventoryReceived() {
+            for (let i = 0; i < 8; i++) {
+                const received = parseFloat(document.getElementById(`pop-received-${i}`).value || 0);
+                if (received > 0) {
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+                    storageEl.value = currentStorage + received;
+                }
+            }
+            updateAllInventories();
+            closePopInventoryReceivedModal();
+            alert('Inventory added successfully!');
+        }
+
+        function addAaronInventoryReceived() {
+            for (let i = 0; i < 8; i++) {
+                const received = parseFloat(document.getElementById(`aaron-received-${i}`).value || 0);
+                if (received > 0) {
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+                    storageEl.value = currentStorage + received;
+                }
+            }
+            updateAllInventories();
+            closeAaronInventoryReceivedModal();
+            alert('Inventory added successfully!');
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.tax-checkbox').forEach(checkbox => {
@@ -721,7 +835,6 @@
             const activePopSheet = document.querySelector('input[name="pop-active-sheet"]:checked')?.value;
             const activeAaronSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
 
-            // Update Pop Inventory Show/Post Show columns
             for (let i = 0; i < 8; i++) {
                 let show = 0;
                 let postShow = 0;
@@ -739,7 +852,6 @@
                 if (postShowEl) postShowEl.value = postShow;
             }
 
-            // Update Aaron Inventory Show/Post Show columns
             for (let i = 0; i < 8; i++) {
                 let show = 0;
                 let postShow = 0;
