@@ -157,7 +157,6 @@
                 <div class="nav-links">
                     <button class="nav-link" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
                     <button class="nav-link" onclick="openTab(event, 'wetumpka')">Wetumpka</button>
-                    <button class="nav-link" onclick="openTab(event, 'mesquite')">Mesquite</button>
                     <button class="nav-link" onclick="openTab(event, 'trussville')">Trussville</button>
                     <button class="nav-link" onclick="openTab(event, 'columbia')">Columbia</button>
                     <button class="nav-link" onclick="openTab(event, 'hattiesburg')">Hattiesburg</button>
@@ -168,7 +167,6 @@
                     <tbody>
                         <tr><td><strong>Pop Inventory</strong></td><td>Current inventory levels and selling prices for all 8 knife products - auto-updates from all sales</td></tr>
                         <tr><td><strong>Wetumpka, Alabama 12/12-13</strong></td><td>Sales tracking for Wetumpka gun show December 12-13</td></tr>
-                        <tr><td><strong>Mesquite, Texas 12/20-21</strong></td><td>Sales tracking for Mesquite gun show December 20-21</td></tr>
                         <tr><td><strong>Trussville, Alabama 1/3-4</strong></td><td>Sales tracking for Trussville gun show January 3-4</td></tr>
                         <tr><td><strong>Columbia, Tennessee 1/10-11</strong></td><td>Sales tracking for Columbia gun show January 10-11</td></tr>
                         <tr><td><strong>Hattiesburg, Mississippi 1/17</strong></td><td>Sales tracking for Hattiesburg gun show January 17</td></tr>
@@ -257,41 +255,6 @@
                         <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7"></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td></tr>
                         <tr class="revenue-row"><td><strong>TOTAL REVENUE</strong></td><td colspan="2"><input type="number" class="revenue-total" data-sheet="wetumpka" readonly></td><td></td></tr>
                         <tr class="tax-summary-row" id="tax-row-wetumpka" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="2"><input type="text" class="tax-summary" data-sheet="wetumpka" readonly style="font-weight: bold;"></td><td></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Mesquite Sales Sheet -->
-        <div id="mesquite" class="tab-content">
-            <div class="tab-section">
-                <h2>Mesquite, Texas - December 20-21</h2>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-mesquite" class="tax-checkbox" data-sheet="mesquite">
-                        <label for="tax-required-mesquite">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group" id="tax-input-group-mesquite" style="display: none;">
-                        <label for="tax-rate-mesquite">Tax Rate (%):</label>
-                        <input type="number" id="tax-rate-mesquite" class="tax-rate-input" data-sheet="mesquite" step="0.01" min="0" max="20" placeholder="8.25">
-                    </div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="mesquite"> Use this sheet as Pop's active show
-                    </label>
-                </div>
-                <table>
-                    <thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left</th></tr></thead>
-                    <tbody>
-                        <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="0"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="0"></td></tr>
-                        <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="1"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="1"></td></tr>
-                        <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="2"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="2"></td></tr>
-                        <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="3"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="3"></td></tr>
-                        <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="4"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="4"></td></tr>
-                        <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="5"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="5"></td></tr>
-                        <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="6"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="6"></td></tr>
-                        <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="mesquite" data-row="7"></td><td><input type="number" class="units-sold" data-sheet="mesquite" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="mesquite" data-row="7"></td></tr>
-                        <tr class="revenue-row"><td><strong>TOTAL REVENUE</strong></td><td colspan="2"><input type="number" class="revenue-total" data-sheet="mesquite" readonly></td><td></td></tr>
-                        <tr class="tax-summary-row" id="tax-row-mesquite" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="2"><input type="text" class="tax-summary" data-sheet="mesquite" readonly style="font-weight: bold;"></td><td></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -560,8 +523,7 @@
 
     <script>
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
-        const sheets = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
-        const defaultSheetIds = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
+        const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         let salesSheetCount = 0;
         let aaronSalesSheetCount = 0;
 
@@ -623,46 +585,31 @@
             const dropdown = document.getElementById('popSheetToDelete');
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
-            // Get all tab IDs (both default and custom)
-            const allSheetIds = [];
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            tabBtns.forEach(btn => {
-                const tabId = null;
-                // Search for matching tab content
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    if (tab.querySelector('h2')?.textContent.trim().startsWith(btn.textContent.trim())) {
-                        if (defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) {
-                            allSheetIds.push(tab.id);
-                        }
-                    }
-                });
-            });
+            // Populate dropdown with remaining sheets
+            const defaultSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
             
-            // Add all Pop sheets (both default and custom)
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(tab => {
-                if (defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) {
+            defaultSheets.forEach(sheetId => {
+                const tab = document.getElementById(sheetId);
+                if (tab) {
                     const h2 = tab.querySelector('h2');
-                    if (h2 && !allSheetIds.includes(tab.id)) {
-                        const sheetName = h2.textContent.split(' - ')[0];
-                        allSheetIds.push(tab.id);
+                    if (h2) {
+                        const displayName = h2.textContent.split(' - ')[0];
+                        const option = document.createElement('option');
+                        option.value = sheetId;
+                        option.textContent = displayName;
+                        dropdown.appendChild(option);
                     }
                 }
             });
             
-            // Create dropdown options
-            const seenIds = new Set();
-            tabContents.forEach(tab => {
-                if ((defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) && !seenIds.has(tab.id)) {
-                    seenIds.add(tab.id);
-                    const h2 = tab.querySelector('h2');
-                    if (h2) {
-                        const sheetName = h2.textContent.split(' - ')[0];
-                        const option = document.createElement('option');
-                        option.value = tab.id;
-                        option.textContent = sheetName;
-                        dropdown.appendChild(option);
-                    }
+            document.querySelectorAll('[id^="custom-pop-sheet-"]').forEach(tab => {
+                const h2 = tab.querySelector('h2');
+                if (h2) {
+                    const displayName = h2.textContent.split(' - ')[0];
+                    const option = document.createElement('option');
+                    option.value = tab.id;
+                    option.textContent = displayName;
+                    dropdown.appendChild(option);
                 }
             });
             
@@ -679,32 +626,32 @@
             }
             
             const tabContent = document.getElementById(sheetId);
-            const sheetName = tabContent?.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
+            if (!tabContent) {
+                alert('Sheet not found');
+                return;
+            }
+            
+            const sheetName = tabContent.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
             
             if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
                 return;
             }
             
-            // Remove the tab button
             const tabBtns = document.querySelectorAll('.tab-btn');
             tabBtns.forEach(btn => {
-                if (btn.textContent === sheetName) {
+                if (btn.textContent.trim() === sheetName.trim()) {
                     btn.remove();
                 }
             });
             
-            // Remove the nav link
             const navLinks = document.querySelectorAll('#dynamic-sales-links .nav-link');
             navLinks.forEach(link => {
-                if (link.textContent === sheetName) {
+                if (link.textContent.trim() === sheetName.trim()) {
                     link.remove();
                 }
             });
             
-            // Remove the tab content
-            if (tabContent) {
-                tabContent.remove();
-            }
+            tabContent.remove();
             
             closeDeletePopSalesSheetModal();
             openTab(null, 'pop-inv');
@@ -715,19 +662,14 @@
             const dropdown = document.getElementById('aaronSheetToDelete');
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
-            const tabContents = document.querySelectorAll('.tab-content');
-            const seenIds = new Set();
-            tabContents.forEach(tab => {
-                if (tab.id.includes('custom-aaron-sheet') && !seenIds.has(tab.id)) {
-                    seenIds.add(tab.id);
-                    const h2 = tab.querySelector('h2');
-                    if (h2) {
-                        const sheetName = h2.textContent.split(' - ')[0];
-                        const option = document.createElement('option');
-                        option.value = tab.id;
-                        option.textContent = sheetName;
-                        dropdown.appendChild(option);
-                    }
+            document.querySelectorAll('[id^="custom-aaron-sheet-"]').forEach(tab => {
+                const h2 = tab.querySelector('h2');
+                if (h2) {
+                    const displayName = h2.textContent.split(' - ')[0];
+                    const option = document.createElement('option');
+                    option.value = tab.id;
+                    option.textContent = displayName;
+                    dropdown.appendChild(option);
                 }
             });
             
@@ -744,32 +686,32 @@
             }
             
             const tabContent = document.getElementById(sheetId);
-            const sheetName = tabContent?.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
+            if (!tabContent) {
+                alert('Sheet not found');
+                return;
+            }
+            
+            const sheetName = tabContent.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
             
             if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
                 return;
             }
             
-            // Remove the tab button
             const tabBtns = document.querySelectorAll('.tab-btn');
             tabBtns.forEach(btn => {
-                if (btn.textContent === sheetName) {
+                if (btn.textContent.trim() === sheetName.trim()) {
                     btn.remove();
                 }
             });
             
-            // Remove the nav link
             const navLinks = document.querySelectorAll('#dynamic-aaron-sales-links .nav-link');
             navLinks.forEach(link => {
-                if (link.textContent === sheetName) {
+                if (link.textContent.trim() === sheetName.trim()) {
                     link.remove();
                 }
             });
             
-            // Remove the tab content
-            if (tabContent) {
-                tabContent.remove();
-            }
+            tabContent.remove();
             
             closeDeleteAaronSalesSheetModal();
             openTab(null, 'aaron-inv');
@@ -1038,40 +980,27 @@
             const activePopSheet = document.querySelector('input[name="pop-active-sheet"]:checked')?.value;
             const activeAaronSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
 
-            // Pop show/post show
             for (let i = 0; i < 8; i++) {
-                let show = 0;
-                let postShow = 0;
+                let popShow = 0, popPostShow = 0, aaronShow = 0, aaronPostShow = 0;
 
                 if (activePopSheet) {
                     const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activePopSheet}"][data-row="${i}"]`)?.value || 0);
                     const left = parseFloat(document.querySelector(`.units-left[data-sheet="${activePopSheet}"][data-row="${i}"]`)?.value || 0);
-                    show = brought;
-                    postShow = left;
+                    popShow = brought;
+                    popPostShow = left;
                 }
-
-                const showEl = document.querySelector(`.pop-show[data-product="${i}"]`);
-                const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
-                if (showEl) showEl.value = show;
-                if (postShowEl) postShowEl.value = postShow;
-            }
-
-            // Aaron show/post show
-            for (let i = 0; i < 8; i++) {
-                let show = 0;
-                let postShow = 0;
 
                 if (activeAaronSheet) {
                     const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${activeAaronSheet}"][data-row="${i}"]`)?.value || 0);
                     const left = parseFloat(document.querySelector(`.units-left[data-sheet="${activeAaronSheet}"][data-row="${i}"]`)?.value || 0);
-                    show = brought;
-                    postShow = left;
+                    aaronShow = brought;
+                    aaronPostShow = left;
                 }
 
-                const showEl = document.querySelector(`.aaron-show[data-product="${i}"]`);
-                const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-                if (showEl) showEl.value = show;
-                if (postShowEl) postShowEl.value = postShow;
+                document.querySelector(`.pop-show[data-product="${i}"]`).value = popShow;
+                document.querySelector(`.pop-post-show[data-product="${i}"]`).value = popPostShow;
+                document.querySelector(`.aaron-show[data-product="${i}"]`).value = aaronShow;
+                document.querySelector(`.aaron-post-show[data-product="${i}"]`).value = aaronPostShow;
             }
         }
 
@@ -1089,7 +1018,7 @@
                 
                 document.querySelectorAll(`.units-sold[data-row="${i}"]`).forEach(el => {
                     const sheet = el.getAttribute('data-sheet');
-                    if (sheet && (sheet.includes('pop') || sheet === 'wetumpka' || sheet === 'mesquite' || sheet === 'trussville' || sheet === 'columbia' || sheet === 'hattiesburg')) {
+                    if (sheet && (sheets.includes(sheet) || sheet.includes('custom-pop-sheet'))) {
                         totalSold += parseFloat(el.value || 0);
                     }
                 });
@@ -1113,7 +1042,7 @@
                 
                 document.querySelectorAll(`.units-sold[data-row="${i}"]`).forEach(el => {
                     const sheet = el.getAttribute('data-sheet');
-                    if (sheet && sheet.includes('aaron')) {
+                    if (sheet && sheet.includes('custom-aaron-sheet')) {
                         totalSold += parseFloat(el.value || 0);
                     }
                 });
@@ -1282,7 +1211,6 @@
                 if (aaronRadio) aaronRadio.checked = true;
             }
 
-            // After loading stored "brought" and "left", recalc units sold for all sheets/rows
             sheets.forEach(sheetId => {
                 for (let i = 0; i < 8; i++) {
                     updateSalesCalculations(sheetId, i);
