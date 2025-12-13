@@ -126,9 +126,12 @@
         <!-- Aaron Navigation -->
         <div id="aaron-nav" class="tab-content">
             <div class="tab-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                     <h2 style="margin: 0;">Aaron's Inventory Management</h2>
-                    <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete Sales Sheet</button>
+                    </div>
                 </div>
                 <div class="nav-links">
                     <button class="nav-link" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
@@ -144,9 +147,12 @@
         <!-- Pop Navigation -->
         <div id="pop-nav" class="tab-content">
             <div class="tab-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                     <h2 style="margin: 0;">Pop's Inventory Management</h2>
-                    <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete Sales Sheet</button>
+                    </div>
                 </div>
                 <div class="nav-links">
                     <button class="nav-link" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
@@ -475,6 +481,40 @@
             </div>
         </div>
 
+        <!-- Modal for Delete Pop Sales Sheet -->
+        <div id="deletePopSalesSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>Delete Pop Sales Sheet</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete:</p>
+                <div class="form-group">
+                    <select id="popSheetToDelete" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                        <option value="">-- Select a sheet to delete --</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button>
+                    <button type="button" class="btn-cancel" onclick="deletePopSalesSheet()" style="background: #ff6b6b; color: white;">Delete Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Delete Aaron Sales Sheet -->
+        <div id="deleteAaronSalesSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>Delete Aaron Sales Sheet</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete:</p>
+                <div class="form-group">
+                    <select id="aaronSheetToDelete" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;">
+                        <option value="">-- Select a sheet to delete --</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button>
+                    <button type="button" class="btn-cancel" onclick="deleteAaronSalesSheet()" style="background: #ff6b6b; color: white;">Delete Sheet</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal for New Pop Sales Sheet -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
@@ -576,6 +616,126 @@
             updateAllInventories();
             closeAaronInventoryReceivedModal();
             alert('Inventory added successfully!');
+        }
+
+        function openDeletePopSalesSheetModal() {
+            const dropdown = document.getElementById('popSheetToDelete');
+            dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
+            
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                const text = btn.textContent;
+                if (!['Master Inventory', 'Aaron Navigation', 'Pop Navigation', 'Aaron Inventory', 'Pop Inventory', 'Sales Charts', 'Wetumpka', 'Mesquite', 'Trussville', 'Columbia', 'Hattiesburg'].includes(text)) {
+                    const option = document.createElement('option');
+                    option.value = text;
+                    option.textContent = text;
+                    dropdown.appendChild(option);
+                }
+            });
+            
+            document.getElementById('deletePopSalesSheetModal').classList.add('active');
+        }
+        
+        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
+        
+        function deletePopSalesSheet() {
+            const sheetName = document.getElementById('popSheetToDelete').value;
+            if (!sheetName) {
+                alert('Please select a sheet to delete');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            // Find and remove the tab button
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                if (btn.textContent === sheetName) {
+                    btn.remove();
+                }
+            });
+            
+            // Find and remove the nav link
+            const navLinks = document.querySelectorAll('#dynamic-sales-links .nav-link');
+            navLinks.forEach(link => {
+                if (link.textContent === sheetName) {
+                    link.remove();
+                }
+            });
+            
+            // Find sheet ID and remove the tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                if (tab.textContent.includes(sheetName) && tab.id.includes('custom-pop-sheet')) {
+                    tab.remove();
+                }
+            });
+            
+            closeDeletePopSalesSheetModal();
+            openTab(null, 'pop-inv');
+            alert(`"${sheetName}" has been deleted successfully!`);
+        }
+        
+        function openDeleteAaronSalesSheetModal() {
+            const dropdown = document.getElementById('aaronSheetToDelete');
+            dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
+            
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                const text = btn.textContent;
+                if (!['Master Inventory', 'Aaron Navigation', 'Pop Navigation', 'Aaron Inventory', 'Pop Inventory', 'Sales Charts', 'Wetumpka', 'Mesquite', 'Trussville', 'Columbia', 'Hattiesburg'].includes(text)) {
+                    const option = document.createElement('option');
+                    option.value = text;
+                    option.textContent = text;
+                    dropdown.appendChild(option);
+                }
+            });
+            
+            document.getElementById('deleteAaronSalesSheetModal').classList.add('active');
+        }
+        
+        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
+        
+        function deleteAaronSalesSheet() {
+            const sheetName = document.getElementById('aaronSheetToDelete').value;
+            if (!sheetName) {
+                alert('Please select a sheet to delete');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            // Find and remove the tab button
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                if (btn.textContent === sheetName) {
+                    btn.remove();
+                }
+            });
+            
+            // Find and remove the nav link
+            const navLinks = document.querySelectorAll('#dynamic-aaron-sales-links .nav-link');
+            navLinks.forEach(link => {
+                if (link.textContent === sheetName) {
+                    link.remove();
+                }
+            });
+            
+            // Find sheet ID and remove the tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                if (tab.textContent.includes(sheetName) && tab.id.includes('custom-aaron-sheet')) {
+                    tab.remove();
+                }
+            });
+            
+            closeDeleteAaronSalesSheetModal();
+            openTab(null, 'aaron-inv');
+            alert(`"${sheetName}" has been deleted successfully!`);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
