@@ -622,14 +622,17 @@
             const dropdown = document.getElementById('popSheetToDelete');
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            tabBtns.forEach(btn => {
-                const text = btn.textContent;
-                if (!['Master Inventory', 'Aaron Navigation', 'Pop Navigation', 'Aaron Inventory', 'Pop Inventory', 'Sales Charts', 'Wetumpka', 'Mesquite', 'Trussville', 'Columbia', 'Hattiesburg'].includes(text)) {
-                    const option = document.createElement('option');
-                    option.value = text;
-                    option.textContent = text;
-                    dropdown.appendChild(option);
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                if (tab.id.includes('custom-pop-sheet')) {
+                    const h2 = tab.querySelector('h2');
+                    if (h2) {
+                        const sheetName = h2.textContent.split(' - ')[0];
+                        const option = document.createElement('option');
+                        option.value = tab.id;
+                        option.textContent = sheetName;
+                        dropdown.appendChild(option);
+                    }
                 }
             });
             
@@ -639,17 +642,20 @@
         function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
         
         function deletePopSalesSheet() {
-            const sheetName = document.getElementById('popSheetToDelete').value;
-            if (!sheetName) {
+            const sheetId = document.getElementById('popSheetToDelete').value;
+            if (!sheetId) {
                 alert('Please select a sheet to delete');
                 return;
             }
+            
+            const tabContent = document.getElementById(sheetId);
+            const sheetName = tabContent?.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
             
             if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
                 return;
             }
             
-            // Find and remove the tab button
+            // Remove the tab button
             const tabBtns = document.querySelectorAll('.tab-btn');
             tabBtns.forEach(btn => {
                 if (btn.textContent === sheetName) {
@@ -657,7 +663,7 @@
                 }
             });
             
-            // Find and remove the nav link
+            // Remove the nav link
             const navLinks = document.querySelectorAll('#dynamic-sales-links .nav-link');
             navLinks.forEach(link => {
                 if (link.textContent === sheetName) {
@@ -665,13 +671,10 @@
                 }
             });
             
-            // Find sheet ID and remove the tab content
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(tab => {
-                if (tab.textContent.includes(sheetName) && tab.id.includes('custom-pop-sheet')) {
-                    tab.remove();
-                }
-            });
+            // Remove the tab content
+            if (tabContent) {
+                tabContent.remove();
+            }
             
             closeDeletePopSalesSheetModal();
             openTab(null, 'pop-inv');
@@ -682,14 +685,17 @@
             const dropdown = document.getElementById('aaronSheetToDelete');
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            tabBtns.forEach(btn => {
-                const text = btn.textContent;
-                if (!['Master Inventory', 'Aaron Navigation', 'Pop Navigation', 'Aaron Inventory', 'Pop Inventory', 'Sales Charts', 'Wetumpka', 'Mesquite', 'Trussville', 'Columbia', 'Hattiesburg'].includes(text)) {
-                    const option = document.createElement('option');
-                    option.value = text;
-                    option.textContent = text;
-                    dropdown.appendChild(option);
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                if (tab.id.includes('custom-aaron-sheet')) {
+                    const h2 = tab.querySelector('h2');
+                    if (h2) {
+                        const sheetName = h2.textContent.split(' - ')[0];
+                        const option = document.createElement('option');
+                        option.value = tab.id;
+                        option.textContent = sheetName;
+                        dropdown.appendChild(option);
+                    }
                 }
             });
             
@@ -699,17 +705,20 @@
         function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
         
         function deleteAaronSalesSheet() {
-            const sheetName = document.getElementById('aaronSheetToDelete').value;
-            if (!sheetName) {
+            const sheetId = document.getElementById('aaronSheetToDelete').value;
+            if (!sheetId) {
                 alert('Please select a sheet to delete');
                 return;
             }
+            
+            const tabContent = document.getElementById(sheetId);
+            const sheetName = tabContent?.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
             
             if (!confirm(`Are you sure you want to delete "${sheetName}"? This cannot be undone.`)) {
                 return;
             }
             
-            // Find and remove the tab button
+            // Remove the tab button
             const tabBtns = document.querySelectorAll('.tab-btn');
             tabBtns.forEach(btn => {
                 if (btn.textContent === sheetName) {
@@ -717,7 +726,7 @@
                 }
             });
             
-            // Find and remove the nav link
+            // Remove the nav link
             const navLinks = document.querySelectorAll('#dynamic-aaron-sales-links .nav-link');
             navLinks.forEach(link => {
                 if (link.textContent === sheetName) {
@@ -725,13 +734,10 @@
                 }
             });
             
-            // Find sheet ID and remove the tab content
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(tab => {
-                if (tab.textContent.includes(sheetName) && tab.id.includes('custom-aaron-sheet')) {
-                    tab.remove();
-                }
-            });
+            // Remove the tab content
+            if (tabContent) {
+                tabContent.remove();
+            }
             
             closeDeleteAaronSalesSheetModal();
             openTab(null, 'aaron-inv');
