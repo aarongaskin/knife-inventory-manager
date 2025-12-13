@@ -561,6 +561,7 @@
     <script>
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
+        const defaultSheetIds = ['wetumpka', 'mesquite', 'trussville', 'columbia', 'hattiesburg'];
         let salesSheetCount = 0;
         let aaronSalesSheetCount = 0;
 
@@ -622,9 +623,38 @@
             const dropdown = document.getElementById('popSheetToDelete');
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
+            // Get all tab IDs (both default and custom)
+            const allSheetIds = [];
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                const tabId = null;
+                // Search for matching tab content
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    if (tab.querySelector('h2')?.textContent.trim().startsWith(btn.textContent.trim())) {
+                        if (defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) {
+                            allSheetIds.push(tab.id);
+                        }
+                    }
+                });
+            });
+            
+            // Add all Pop sheets (both default and custom)
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(tab => {
-                if (tab.id.includes('custom-pop-sheet')) {
+                if (defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) {
+                    const h2 = tab.querySelector('h2');
+                    if (h2 && !allSheetIds.includes(tab.id)) {
+                        const sheetName = h2.textContent.split(' - ')[0];
+                        allSheetIds.push(tab.id);
+                    }
+                }
+            });
+            
+            // Create dropdown options
+            const seenIds = new Set();
+            tabContents.forEach(tab => {
+                if ((defaultSheetIds.includes(tab.id) || tab.id.includes('custom-pop-sheet')) && !seenIds.has(tab.id)) {
+                    seenIds.add(tab.id);
                     const h2 = tab.querySelector('h2');
                     if (h2) {
                         const sheetName = h2.textContent.split(' - ')[0];
@@ -686,8 +716,10 @@
             dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
             
             const tabContents = document.querySelectorAll('.tab-content');
+            const seenIds = new Set();
             tabContents.forEach(tab => {
-                if (tab.id.includes('custom-aaron-sheet')) {
+                if (tab.id.includes('custom-aaron-sheet') && !seenIds.has(tab.id)) {
+                    seenIds.add(tab.id);
                     const h2 = tab.querySelector('h2');
                     if (h2) {
                         const sheetName = h2.textContent.split(' - ')[0];
