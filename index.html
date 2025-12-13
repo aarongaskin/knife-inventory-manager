@@ -545,7 +545,8 @@
 
         function clearReceivedFields(type) {
             for (let i = 0; i < 8; i++) {
-                document.getElementById(`${type}-received-${i}`).value = '';
+                const el = document.getElementById(`${type}-received-${i}`);
+                if (el) el.value = '';
             }
         }
 
@@ -793,8 +794,12 @@
             const left = parseFloat(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`)?.value || 0);
             const sold = brought - left;
 
-            document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`).value = sold >= 0 ? sold : 0;
+            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
+            if (soldEl) {
+                soldEl.value = sold >= 0 ? sold : 0;
+            }
             updateRevenueTotal(sheetId);
+            updateAllInventories();
         }
 
         function updateRevenueTotal(sheetId) {
@@ -835,6 +840,7 @@
             const activePopSheet = document.querySelector('input[name="pop-active-sheet"]:checked')?.value;
             const activeAaronSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
 
+            // Pop show/post show
             for (let i = 0; i < 8; i++) {
                 let show = 0;
                 let postShow = 0;
@@ -852,6 +858,7 @@
                 if (postShowEl) postShowEl.value = postShow;
             }
 
+            // Aaron show/post show
             for (let i = 0; i < 8; i++) {
                 let show = 0;
                 let postShow = 0;
@@ -893,7 +900,8 @@
                 if (soldSpan) soldSpan.textContent = totalSold >= 0 ? totalSold : 0;
 
                 const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                const currentVal = storage - totalSold;
+                const postShow = parseFloat(document.querySelector(`.pop-post-show[data-product="${i}"]`)?.value || 0);
+                const currentVal = storage + postShow - totalSold;
                 document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
             }
 
@@ -916,7 +924,8 @@
                 if (soldSpan) soldSpan.textContent = totalSold >= 0 ? totalSold : 0;
 
                 const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                const currentVal = storage - totalSold;
+                const postShow = parseFloat(document.querySelector(`.aaron-post-show[data-product="${i}"]`)?.value || 0);
+                const currentVal = storage + postShow - totalSold;
                 document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
             }
 
@@ -1074,6 +1083,13 @@
                 const aaronRadio = document.querySelector(`input[name="aaron-active-sheet"][value="${data.activeAaronSheet}"]`);
                 if (aaronRadio) aaronRadio.checked = true;
             }
+
+            // After loading stored "brought" and "left", recalc units sold for all sheets/rows
+            sheets.forEach(sheetId => {
+                for (let i = 0; i < 8; i++) {
+                    updateSalesCalculations(sheetId, i);
+                }
+            });
 
             updateAllInventories();
         }
