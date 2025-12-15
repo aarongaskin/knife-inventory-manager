@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v20h - Auto Next Sheet</title>
+    <title>Knife Inventory Manager v20j - Inventory Refresh</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,7 +19,7 @@
         .tab-content.active { display: block; }
         .tab-section h2 { color: #333; margin-bottom: 20px; font-size: 1.8em; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
         .tab-section p { color: #666; margin-bottom: 20px; font-size: 14px; }
-        .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .inventory-controls h3 { width: 100%; color: #2e7d32; margin-bottom: 15px; }
         .sheet-controls { background: #f0f4ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
         .sheet-status { display: inline-flex; align-items: center; gap: 8px; padding: 12px 15px; border-radius: 6px; font-weight: 500; }
@@ -52,6 +52,9 @@
         .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
         .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
         .nav-link:hover { background: #667eea; color: white; }
+        .refresh-btn, .refresh-inv-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .refresh-btn:hover, .refresh-inv-btn:hover { background: #1976d2; }
+        .refresh-btn::before, .refresh-inv-btn::before { content: '⟳'; font-size: 16px; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
         .modal.active { display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
@@ -89,8 +92,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v20h</h1>
-            <p>Storage → Show Tub → Activate → Fill Units Left → Lock with Event Completed ✓ → Pick Next Sheet</p>
+            <h1>Knife Inventory Manager v20j</h1>
+            <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed ✓ → Pick Next Sheet</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
         </div>
 
@@ -189,12 +192,13 @@
             <div class="tab-section">
                 <h2>Aaron's Current Inventory</h2>
                 <div class="flow-info">
-                    <strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet & Fill Units Left → Check "Event Completed" → Pick Next Sheet → Lock & Repeat
+                    <strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet & Refresh → Fill Units Left → Check "Event Completed" → Pick Next Sheet → Lock & Repeat
                 </div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('aaron')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr></thead>
@@ -218,12 +222,13 @@
             <div class="tab-section">
                 <h2>Pop's Current Inventory</h2>
                 <div class="flow-info">
-                    <strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet & Fill Units Left → Check "Event Completed" → Pick Next Sheet → Lock & Repeat
+                    <strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet & Refresh → Fill Units Left → Check "Event Completed" → Pick Next Sheet → Lock & Repeat
                 </div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('pop')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr></thead>
@@ -246,6 +251,7 @@
         <div id="wetumpka" class="tab-content">
             <div class="tab-section">
                 <h2>Wetumpka, Alabama - December 12-13</h2>
+                <button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="wetumpka-status">● Inactive</div>
                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -288,6 +294,7 @@
         <div id="trussville" class="tab-content">
             <div class="tab-section">
                 <h2>Trussville, Alabama - January 3-4</h2>
+                <button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="trussville-status">● Inactive</div>
                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -330,6 +337,7 @@
         <div id="columbia" class="tab-content">
             <div class="tab-section">
                 <h2>Columbia, Tennessee - January 10-11</h2>
+                <button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="columbia-status">● Inactive</div>
                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -372,6 +380,7 @@
         <div id="hattiesburg" class="tab-content">
             <div class="tab-section">
                 <h2>Hattiesburg, Mississippi - January 17</h2>
+                <button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="hattiesburg-status">● Inactive</div>
                     <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -429,7 +438,8 @@
             </div>
         </div>
 
-        <!-- Modal for Pop Inventory Received -->
+        <!-- Modals (same as previous version, unchanged except for JS hooks) -->
+        <!-- Pop Inventory Received -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Pop (Storage Tub)</h3>
@@ -459,7 +469,7 @@
             </div>
         </div>
 
-        <!-- Modal for Aaron Inventory Received -->
+        <!-- Aaron Inventory Received -->
         <div id="aaronInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Aaron (Storage Tub)</h3>
@@ -489,7 +499,7 @@
             </div>
         </div>
 
-        <!-- Modal for Pop Move Inventory -->
+        <!-- Pop Move Inventory -->
         <div id="popMoveInventoryModal" class="modal">
             <div class="modal-content">
                 <h3>Move Inventory to Show Tub - Pop</h3>
@@ -520,7 +530,7 @@
             </div>
         </div>
 
-        <!-- Modal for Aaron Move Inventory -->
+        <!-- Aaron Move Inventory -->
         <div id="aaronMoveInventoryModal" class="modal">
             <div class="modal-content">
                 <h3>Move Inventory to Show Tub - Aaron</h3>
@@ -551,7 +561,7 @@
             </div>
         </div>
 
-        <!-- Modal for Delete Pop Sales Sheet -->
+        <!-- Delete Pop Sales Sheet -->
         <div id="deletePopSalesSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Delete Pop Sales Sheet</h3>
@@ -568,7 +578,7 @@
             </div>
         </div>
 
-        <!-- Modal for Delete Aaron Sales Sheet -->
+        <!-- Delete Aaron Sales Sheet -->
         <div id="deleteAaronSalesSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Delete Aaron Sales Sheet</h3>
@@ -585,7 +595,7 @@
             </div>
         </div>
 
-        <!-- Modal for New Pop Sales Sheet -->
+        <!-- New Pop Sales Sheet -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Pop Sales Sheet</h3>
@@ -606,7 +616,7 @@
             </div>
         </div>
 
-        <!-- Modal for New Aaron Sales Sheet -->
+        <!-- New Aaron Sales Sheet -->
         <div id="newAaronSalesModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Aaron Sales Sheet</h3>
@@ -627,7 +637,7 @@
             </div>
         </div>
 
-        <!-- NEW Modal: Choose Next Sheet -->
+        <!-- Next Sheet Modal -->
         <div id="nextSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Select Next Sheet to Activate</h3>
@@ -706,6 +716,78 @@
                     }
                 }
             }
+        }
+
+        // Refresh button on sales sheet
+        function refreshSheetData(person, sheetId) {
+            const showTubClass = person === 'pop' ? 'pop-show-tub' : 'aaron-show-tub';
+            for (let i = 0; i < 8; i++) {
+                const showTubEl = document.querySelector(`.${showTubClass}[data-product="${i}"]`);
+                if (showTubEl) {
+                    const showTubValue = parseFloat(showTubEl.value || 0);
+                    const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    if (broughtInput) {
+                        broughtInput.value = showTubValue;
+                    }
+                }
+            }
+            updateRevenueTotal(sheetId);
+            alert('✓ Sheet data refreshed! Units Brought updated from current Show Tub.');
+        }
+
+        // NEW: Refresh inventory page from active sheet (before locking)
+        function refreshInventoryFromActiveSheet(person) {
+            const activeSheet = document.querySelector(`input[name="${person}-active-sheet"]:checked`)?.value;
+            if (!activeSheet) {
+                alert(`Please activate a ${person === 'pop' ? 'Pop' : 'Aaron'} sales sheet first.`);
+                return;
+            }
+
+            for (let i = 0; i < 8; i++) {
+                const broughtInput = document.querySelector(`.units-brought[data-sheet="${activeSheet}"][data-row="${i}"]`);
+                const leftInput = document.querySelector(`.units-left[data-sheet="${activeSheet}"][data-row="${i}"]`);
+                const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${i}"]`);
+                const unitsBroughtEl = document.querySelector(`.${person}-units-brought[data-product="${i}"]`);
+                const postShowEl = document.querySelector(`.${person}-post-show[data-product="${i}"]`);
+                const unitsSoldSpan = document.querySelector(`.${person}-units-sold[data-product="${i}"]`);
+                const storageEl = document.querySelector(`.${person}-storage[data-product="${i}"]`);
+                const currentStockEl = document.querySelector(`.${person}-current-stock[data-product="${i}"]`);
+
+                const brought = parseFloat(broughtInput?.value || 0);
+                const left = parseFloat(leftInput?.value || 0);
+                const storage = parseFloat(storageEl?.value || 0);
+
+                const sold = Math.max(0, brought - left);
+                const postShow = left;
+
+                if (unitsBroughtEl) unitsBroughtEl.value = brought;
+                if (postShowEl) postShowEl.value = postShow;
+                if (unitsSoldSpan) unitsSoldSpan.textContent = sold;
+
+                // If sheet completed, show tub = post show; else leave show tub as-is
+                let showTubVal = parseFloat(showTubEl?.value || 0);
+                if (sheetStates[activeSheet]?.completed && showTubEl) {
+                    showTubVal = postShow;
+                    showTubEl.value = showTubVal;
+                }
+
+                const currentVal = storage + showTubVal;
+                if (currentStockEl) currentStockEl.value = Math.max(0, currentVal);
+            }
+
+            if (person === 'pop') {
+                const total = Array.from(document.querySelectorAll('.pop-current-stock'))
+                    .reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
+                document.getElementById('pop-total-on-hand').value = total;
+            } else {
+                const total = Array.from(document.querySelectorAll('.aaron-current-stock'))
+                    .reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
+                document.getElementById('aaron-total-on-hand').value = total;
+            }
+
+            updateMasterInventory();
+            updateChartsData();
+            alert(`✓ ${person === 'pop' ? 'Pop' : 'Aaron'} inventory refreshed from active sheet "${activeSheet}".`);
         }
 
         function toggleEventCompleted(sheetId) {
@@ -997,6 +1079,7 @@
             newTab.innerHTML = `
                 <div class="tab-section">
                     <h2>${name} - ${date}</h2>
+                    <button class="refresh-btn" onclick="refreshSheetData('pop', '${sheetId}')">Refresh Units Brought</button>
                     <div class="sheet-controls">
                         <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
                         <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -1062,6 +1145,7 @@
             newTab.innerHTML = `
                 <div class="tab-section">
                     <h2>${name} - ${date}</h2>
+                    <button class="refresh-btn" onclick="refreshSheetData('aaron', '${sheetId}')">Refresh Units Brought</button>
                     <div class="sheet-controls">
                         <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
                         <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -1479,6 +1563,7 @@
                 newTab.innerHTML = `
                     <div class="tab-section">
                         <h2>${name} - ${date}</h2>
+                        <button class="refresh-btn" onclick="refreshSheetData('pop', '${sheetId}')">Refresh Units Brought</button>
                         <div class="sheet-controls">
                             <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
                             <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -1543,6 +1628,7 @@
                 newTab.innerHTML = `
                     <div class="tab-section">
                         <h2>${name} - ${date}</h2>
+                        <button class="refresh-btn" onclick="refreshSheetData('aaron', '${sheetId}')">Refresh Units Brought</button>
                         <div class="sheet-controls">
                             <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
                             <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
@@ -1607,7 +1693,6 @@
             });
         }
 
-        // NEW: Next Sheet Modal logic
         function openNextSheetModal(person, currentSheetId) {
             const modal = document.getElementById('nextSheetModal');
             const select = document.getElementById('nextSheetSelect');
