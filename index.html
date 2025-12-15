@@ -1,4 +1,4 @@
-```html
+<html>
 
             <div id="sync-status" style="margin-top: 10px; font-size: 14px; color: #fff; font-weight: 500;">
                 🔄 Syncing...
@@ -1607,6 +1607,316 @@
     </div>
 
     <script>
+
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project.firebaseio.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let db = null;
+        let firebaseInitialized = false;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            firebaseInitialized = true;
+            console.log('✓ Firebase ready');
+        } catch(e) {
+            console.warn('Firebase unavailable');
+        }
+
+        function updateSyncStatus(msg, color = '#fff') {
+            const el = document.getElementById('sync-status');
+            if (el) {
+                el.textContent = msg;
+                el.style.color = color;
+            }
+        }
+
+        // ===== COMPLETE DATA SAVE - REPLACE ORIGINAL =====
+        async function saveAppData() {
+            console.log('Saving all data...');
+            updateSyncStatus('💾 Saving...', '#fff');
+
+            // Collect ALL data
+            const data = {
+                popInventory: {},
+                aaronInventory: {},
+                popSalesSheets: {},
+                aaronSalesSheets: {},
+                sheetStates: sheetStates || {},
+                lastUpdated: new Date().toISOString()
+            };
+
+            // Pop Inventory
+            for (let i = 0; i < 8; i++) {
+                data.popInventory[i] = {
+                    price: parseFloat(document.querySelector(\`.pop-price[data-product="\${i}"]\`)?.value || 0),
+                    storage: parseFloat(document.querySelector(\`.pop-storage[data-product="\${i}"]\`)?.value || 0),
+                    showTub: parseFloat(document.querySelector(\`.pop-show-tub[data-product="\${i}"]\`)?.value || 0),
+                    postShow: parseFloat(document.querySelector(\`.pop-post-show[data-product="\${i}"]\`)?.value || 0)
+                };
+            }
+
+            // Aaron Inventory
+            for (let i = 0; i < 8; i++) {
+                data.aaronInventory[i] = {
+                    price: parseFloat(document.querySelector(\`.aaron-price[data-product="\${i}"]\`)?.value || 0),
+                    storage: parseFloat(document.querySelector(\`.aaron-storage[data-product="\${i}"]\`)?.value || 0),
+                    showTub: parseFloat(document.querySelector(\`.aaron-show-tub[data-product="\${i}"]\`)?.value || 0),
+                    postShow: parseFloat(document.querySelector(\`.aaron-post-show[data-product="\${i}"]\`)?.value || 0)
+                };
+            }
+
+            // ALL Pop Sales Sheets (Wetumpka, Trussville, Columbia, Hattiesburg)
+            const popSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
+            popSheets.forEach(sheetId => {
+                data.popSalesSheets[sheetId] = {};
+                for (let row = 0; row < 8; row++) {
+                    const brought = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const sold = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const left = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                    data.popSalesSheets[sheetId][row] = {
+                        brought: parseFloat(brought?.value || 0),
+                        sold: parseInt(sold?.textContent || 0),
+                        left: parseFloat(left?.value || 0)
+                    };
+                }
+
+                // Tax info
+                const taxCheck = document.querySelector(\`#tax-required-\${sheetId}\`);
+                const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                if (taxCheck) {
+                    data.popSalesSheets[sheetId]._tax = {
+                        required: taxCheck.checked,
+                        rate: parseFloat(taxRate?.value || 0)
+                    };
+                }
+            });
+
+            // Custom Pop Sales Sheets
+            document.querySelectorAll('[id^="custom-pop-sheet-"]').forEach(tab => {
+                const sheetId = tab.id;
+                data.popSalesSheets[sheetId] = {};
+                for (let row = 0; row < 8; row++) {
+                    const brought = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const sold = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const left = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                    if (brought || sold || left) {
+                        data.popSalesSheets[sheetId][row] = {
+                            brought: parseFloat(brought?.value || 0),
+                            sold: parseInt(sold?.textContent || 0),
+                            left: parseFloat(left?.value || 0)
+                        };
+                    }
+                }
+
+                const taxCheck = document.querySelector(\`#tax-required-\${sheetId}\`);
+                const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                if (taxCheck) {
+                    data.popSalesSheets[sheetId]._tax = {
+                        required: taxCheck.checked,
+                        rate: parseFloat(taxRate?.value || 0)
+                    };
+                }
+            });
+
+            // Aaron Sales Sheets
+            document.querySelectorAll('[id^="custom-aaron-sheet-"]').forEach(tab => {
+                const sheetId = tab.id;
+                data.aaronSalesSheets[sheetId] = {};
+                for (let row = 0; row < 8; row++) {
+                    const brought = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const sold = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const left = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                    if (brought || sold || left) {
+                        data.aaronSalesSheets[sheetId][row] = {
+                            brought: parseFloat(brought?.value || 0),
+                            sold: parseInt(sold?.textContent || 0),
+                            left: parseFloat(left?.value || 0)
+                        };
+                    }
+                }
+            });
+
+            // Save to localStorage
+            localStorage.setItem('knifeInventoryData', JSON.stringify(data));
+            console.log('✓ Saved to localStorage');
+
+            // Save to Firebase if available
+            if (firebaseInitialized && db) {
+                try {
+                    await db.ref('inventoryData').set(data);
+                    console.log('✓ Saved to Firebase');
+                    updateSyncStatus('✅ All data saved', '#4caf50');
+                } catch (err) {
+                    console.error('Firebase error:', err);
+                    updateSyncStatus('⚠️ Saved locally only', '#ff9800');
+                }
+            } else {
+                updateSyncStatus('✅ Saved locally', '#4caf50');
+            }
+
+            alert('✅ All data saved to cloud and backup!');
+        }
+
+        // ===== LOAD DATA FROM CLOUD ON START =====
+        async function loadFromCloud() {
+            if (!firebaseInitialized || !db) {
+                console.log('Loading from localStorage only');
+                loadFromLocalStorage();
+                return;
+            }
+
+            updateSyncStatus('🔄 Loading from cloud...', '#fff');
+            try {
+                const snapshot = await db.ref('inventoryData').once('value');
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    applyAllData(data);
+                    updateSyncStatus('✅ Cloud data loaded', '#4caf50');
+                    console.log('✓ Loaded from Firebase');
+                } else {
+                    console.log('No cloud data, trying localStorage');
+                    loadFromLocalStorage();
+                }
+            } catch (err) {
+                console.error('Cloud load error:', err);
+                loadFromLocalStorage();
+            }
+        }
+
+        function loadFromLocalStorage() {
+            updateSyncStatus('📦 Loading from backup...', '#fff');
+            try {
+                const data = JSON.parse(localStorage.getItem('knifeInventoryData') || '{}');
+                if (Object.keys(data).length > 0) {
+                    applyAllData(data);
+                    updateSyncStatus('✅ Backup data loaded', '#ff9800');
+                    console.log('✓ Loaded from localStorage');
+                } else {
+                    updateSyncStatus('⚠️ No data found', '#ff6b6b');
+                }
+            } catch (e) {
+                console.error('Error loading:', e);
+                updateSyncStatus('❌ Load error', '#ff6b6b');
+            }
+        }
+
+        function applyAllData(data) {
+            // Apply Pop Inventory
+            Object.entries(data.popInventory || {}).forEach(([i, inv]) => {
+                const priceEl = document.querySelector(\`.pop-price[data-product="\${i}"]\`);
+                const storageEl = document.querySelector(\`.pop-storage[data-product="\${i}"]\`);
+                const showEl = document.querySelector(\`.pop-show-tub[data-product="\${i}"]\`);
+                const postEl = document.querySelector(\`.pop-post-show[data-product="\${i}"]\`);
+                if (priceEl) priceEl.value = inv.price || 0;
+                if (storageEl) storageEl.value = inv.storage || 0;
+                if (showEl) showEl.value = inv.showTub || 0;
+                if (postEl) postEl.value = inv.postShow || 0;
+            });
+
+            // Apply Aaron Inventory
+            Object.entries(data.aaronInventory || {}).forEach(([i, inv]) => {
+                const priceEl = document.querySelector(\`.aaron-price[data-product="\${i}"]\`);
+                const storageEl = document.querySelector(\`.aaron-storage[data-product="\${i}"]\`);
+                const showEl = document.querySelector(\`.aaron-show-tub[data-product="\${i}"]\`);
+                const postEl = document.querySelector(\`.aaron-post-show[data-product="\${i}"]\`);
+                if (priceEl) priceEl.value = inv.price || 0;
+                if (storageEl) storageEl.value = inv.storage || 0;
+                if (showEl) showEl.value = inv.showTub || 0;
+                if (postEl) postEl.value = inv.postShow || 0;
+            });
+
+            // Apply Pop Sales Sheets
+            Object.entries(data.popSalesSheets || {}).forEach(([sheetId, sheetData]) => {
+                Object.entries(sheetData).forEach(([row, rowData]) => {
+                    if (row === '_tax') return;
+                    const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    if (broughtEl) broughtEl.value = rowData.brought || 0;
+                    if (leftEl) leftEl.value = rowData.left || 0;
+                    if (soldEl) soldEl.textContent = rowData.sold || 0;
+                });
+                if (sheetData._tax) {
+                    const taxCheck = document.querySelector(\`#tax-required-\${sheetId}\`);
+                    const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                    if (taxCheck) taxCheck.checked = sheetData._tax.required;
+                    if (taxRate) taxRate.value = sheetData._tax.rate || 0;
+                }
+            });
+
+            // Apply Aaron Sales Sheets
+            Object.entries(data.aaronSalesSheets || {}).forEach(([sheetId, sheetData]) => {
+                Object.entries(sheetData).forEach(([row, rowData]) => {
+                    if (row === '_tax') return;
+                    const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    if (broughtEl) broughtEl.value = rowData.brought || 0;
+                    if (leftEl) leftEl.value = rowData.left || 0;
+                    if (soldEl) soldEl.textContent = rowData.sold || 0;
+                });
+            });
+
+            // Apply sheet states
+            if (data.sheetStates) sheetStates = data.sheetStates;
+
+            // Refresh all calculations
+            setTimeout(() => {
+                updateAllInventories();
+                if (typeof updateChartsData === 'function') updateChartsData();
+            }, 100);
+        }
+
+        // ===== PERIODIC REFRESH (iPhone Safari fix) =====
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('Page visible, syncing...');
+                loadFromCloud();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            console.log('Window focused, syncing...');
+            loadFromCloud();
+        });
+
+        // Auto-save every 10 seconds of inactivity
+        let autoSaveTimer = null;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveAppData();
+            }, 10000);
+        }
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Loading initial data...');
+            loadFromCloud();
+
+            // Add auto-save listeners
+            document.addEventListener('change', scheduleAutoSave);
+            document.addEventListener('input', scheduleAutoSave);
+        });
+
+        // Periodic refresh every 25 seconds
+        setInterval(() => {
+            loadFromCloud();
+        }, 25000);
+
+
         // Product names and state for sheets
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
@@ -2373,227 +2683,6 @@
             }
         });
     
-        // ===== FIREBASE CONFIGURATION =====
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "https://your-project.firebaseio.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        let db = null;
-        let firebaseInitialized = false;
-
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            firebaseInitialized = true;
-            console.log('✓ Firebase initialized');
-        } catch(e) {
-            console.warn('Firebase init warning:', e.message);
-        }
-
-        // ===== SYNC STATUS UPDATE =====
-        function updateSyncStatus(status) {
-            const el = document.getElementById('sync-status');
-            if (!el) return;
-            if (status === 'synced') {
-                el.textContent = '✅ Synced';
-                el.style.color = '#4caf50';
-            } else if (status === 'error') {
-                el.textContent = '⚠️ Error';
-                el.style.color = '#ff6b6b';
-            } else {
-                el.textContent = '🔄 Syncing...';
-                el.style.color = '#fff';
-            }
-        }
-
-        // ===== ENHANCED SAVE TO INCLUDE CLOUD =====
-        const originalSaveAppData = saveAppData;
-        function saveAppData() {
-            // Call original save first
-            originalSaveAppData();
-
-            // Then save to cloud
-            saveToCloudAsync();
-        }
-
-        async function saveToCloudAsync() {
-            if (!firebaseInitialized || !db) return;
-
-            updateSyncStatus('syncing');
-            try {
-                const data = {
-                    popInventory: {},
-                    aaronInventory: {},
-                    popSalesSheets: {},
-                    aaronSalesSheets: {},
-                    lastUpdated: new Date().toISOString()
-                };
-
-                // Collect Pop Inventory
-                for (let i = 0; i < 8; i++) {
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
-
-                    data.popInventory[i] = {
-                        price: parseFloat(priceEl?.value || 0),
-                        storage: parseFloat(storageEl?.value || 0),
-                        showTub: parseFloat(showTubEl?.value || 0),
-                        postShow: parseFloat(postShowEl?.value || 0)
-                    };
-                }
-
-                // Collect Aaron Inventory
-                for (let i = 0; i < 8; i++) {
-                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-
-                    data.aaronInventory[i] = {
-                        price: parseFloat(priceEl?.value || 0),
-                        storage: parseFloat(storageEl?.value || 0),
-                        showTub: parseFloat(showTubEl?.value || 0),
-                        postShow: parseFloat(postShowEl?.value || 0)
-                    };
-                }
-
-                // Collect Pop Sales Sheets
-                const popSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
-                popSheets.forEach(sheetId => {
-                    data.popSalesSheets[sheetId] = {};
-                    for (let row = 0; row < 8; row++) {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-
-                        data.popSalesSheets[sheetId][row] = {
-                            brought: parseFloat(broughtEl?.value || 0),
-                            sold: parseInt(soldEl?.textContent || 0),
-                            left: parseFloat(leftEl?.value || 0)
-                        };
-                    }
-                });
-
-                await db.ref('inventoryData').set(data);
-                updateSyncStatus('synced');
-                console.log('✓ Data synced to cloud');
-            } catch (error) {
-                console.error('Cloud save failed:', error);
-                updateSyncStatus('error');
-            }
-        }
-
-        // ===== LOAD FROM CLOUD ON PAGE START =====
-        async function loadFromCloudOnStart() {
-            if (!firebaseInitialized || !db) {
-                console.log('Firebase unavailable, skipping cloud load');
-                return;
-            }
-
-            updateSyncStatus('syncing');
-            try {
-                const snapshot = await db.ref('inventoryData').once('value');
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-
-                    // Apply Pop Inventory
-                    for (let i = 0; i < 8; i++) {
-                        const inv = data.popInventory?.[i];
-                        if (inv) {
-                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                            const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                            const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
-
-                            if (priceEl) priceEl.value = inv.price || 0;
-                            if (storageEl) storageEl.value = inv.storage || 0;
-                            if (showTubEl) showTubEl.value = inv.showTub || 0;
-                            if (postShowEl) postShowEl.value = inv.postShow || 0;
-                        }
-                    }
-
-                    // Apply Aaron Inventory
-                    for (let i = 0; i < 8; i++) {
-                        const inv = data.aaronInventory?.[i];
-                        if (inv) {
-                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                            const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                            const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-
-                            if (priceEl) priceEl.value = inv.price || 0;
-                            if (storageEl) storageEl.value = inv.storage || 0;
-                            if (showTubEl) showTubEl.value = inv.showTub || 0;
-                            if (postShowEl) postShowEl.value = inv.postShow || 0;
-                        }
-                    }
-
-                    // Apply Pop Sales Sheets
-                    Object.keys(data.popSalesSheets || {}).forEach(sheetId => {
-                        const sheetData = data.popSalesSheets[sheetId];
-                        for (let row = 0; row < 8; row++) {
-                            const rowData = sheetData[row];
-                            if (rowData) {
-                                const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                                const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-
-                                if (broughtEl) broughtEl.value = rowData.brought || 0;
-                                if (leftEl) leftEl.value = rowData.left || 0;
-                            }
-                        }
-                    });
-
-                    updateSyncStatus('synced');
-                    console.log('✓ Cloud data loaded');
-                } else {
-                    console.log('No cloud data found');
-                    updateSyncStatus('synced');
-                }
-            } catch (error) {
-                console.error('Cloud load error:', error);
-                updateSyncStatus('error');
-            }
-        }
-
-        // ===== AUTO-SAVE ON CHANGES =====
-        let autoSaveTimer = null;
-        function scheduleAutoSave() {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(() => {
-                saveToCloudAsync();
-            }, 5000);
-        }
-
-        // ===== PERIODIC REFRESH (every 20 seconds) =====
-        setInterval(() => {
-            loadFromCloudOnStart();
-        }, 20000);
-
-        // ===== REFRESH WHEN PAGE VISIBLE (iPhone Safari fix) =====
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                console.log('Page visible, refreshing...');
-                loadFromCloudOnStart();
-            }
-        });
-
-        // ===== LOAD ON PAGE READY =====
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, loading cloud data...');
-            loadFromCloudOnStart();
-
-            // Auto-save on any change
-            document.addEventListener('change', scheduleAutoSave);
-            document.addEventListener('input', scheduleAutoSave);
-        });
 </script>
 </body>
 </html>
