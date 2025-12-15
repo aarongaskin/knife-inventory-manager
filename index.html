@@ -1,5 +1,8 @@
 ```html
-<!DOCTYPE html>
+
+            <div id="sync-status" style="margin-top: 10px; font-size: 14px; color: #fff; font-weight: 500;">
+                🔄 Syncing with cloud...
+            </div><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -526,9 +529,6 @@
             <h1>Knife Inventory Manager v21</h1>
             <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed → Pick Next Sheet</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
-            <div id="sync-status" style="margin-top: 10px; font-size: 14px; color: #fff; font-weight: 500;">
-                🔄 Syncing with cloud...
-            </div>
         </div>
 
         <div class="nav-tabs">
@@ -2386,16 +2386,21 @@
 
         // Initialize Firebase
         let db = null;
+        let firebaseInitialized = false;
+
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
+            firebaseInitialized = true;
+            console.log('Firebase initialized successfully');
         } catch(e) {
-            console.warn('Firebase not initialized - using localStorage only');
+            console.warn('Firebase initialization warning:', e.message);
+            firebaseInitialized = false;
         }
 
         // ===== SYNC STATUS MANAGEMENT =====
         let isSyncing = false;
-        let syncTimeout = null;
+        let lastSyncTime = null;
 
         function updateSyncStatus(status) {
             const statusEl = document.getElementById('sync-status');
@@ -2409,160 +2414,193 @@
                 statusEl.textContent = '✅ Data synced';
                 statusEl.style.color = '#4caf50';
                 isSyncing = false;
-                clearTimeout(syncTimeout);
-                syncTimeout = setTimeout(() => {
-                    statusEl.style.opacity = '0.6';
+                lastSyncTime = new Date().toLocaleTimeString();
+                setTimeout(() => {
+                    if (statusEl.textContent === '✅ Data synced') {
+                        statusEl.style.opacity = '0.6';
+                    }
                 }, 3000);
             } else if (status === 'error') {
-                statusEl.textContent = '⚠️ Sync failed - check connection';
+                statusEl.textContent = '⚠️ Sync failed - using local data';
                 statusEl.style.color = '#ff6b6b';
                 isSyncing = false;
             }
         }
 
+        // ===== COMPREHENSIVE DATA COLLECTION =====
+        function collectAllAppData() {
+            const data = {
+                popInventory: {},
+                aaronInventory: {},
+                popSalesSheets: {},
+                aaronSalesSheets: {},
+                sheetStates: sheetStates || {},
+                lastUpdated: new Date().toISOString(),
+                lastUpdatedBy: 'web-app'
+            };
+
+            // Collect Pop Inventory
+            for (let i = 0; i < 8; i++) {
+                const priceEl = document.querySelector(\`.pop-price[data-product="\${i}"]\`);
+                const storageEl = document.querySelector(\`.pop-storage[data-product="\${i}"]\`);
+                const showTubEl = document.querySelector(\`.pop-show-tub[data-product="\${i}"]\`);
+                const postShowEl = document.querySelector(\`.pop-post-show[data-product="\${i}"]\`);
+
+                data.popInventory[i] = {
+                    price: parseFloat(priceEl?.value || 0),
+                    storage: parseFloat(storageEl?.value || 0),
+                    showTub: parseFloat(showTubEl?.value || 0),
+                    postShow: parseFloat(postShowEl?.value || 0)
+                };
+            }
+
+            // Collect Aaron Inventory
+            for (let i = 0; i < 8; i++) {
+                const priceEl = document.querySelector(\`.aaron-price[data-product="\${i}"]\`);
+                const storageEl = document.querySelector(\`.aaron-storage[data-product="\${i}"]\`);
+                const showTubEl = document.querySelector(\`.aaron-show-tub[data-product="\${i}"]\`);
+                const postShowEl = document.querySelector(\`.aaron-post-show[data-product="\${i}"]\`);
+
+                data.aaronInventory[i] = {
+                    price: parseFloat(priceEl?.value || 0),
+                    storage: parseFloat(storageEl?.value || 0),
+                    showTub: parseFloat(showTubEl?.value || 0),
+                    postShow: parseFloat(postShowEl?.value || 0)
+                };
+            }
+
+            // Collect ALL Pop Sales Sheets (both predefined and custom)
+            const popSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
+            popSheets.forEach(sheetId => {
+                data.popSalesSheets[sheetId] = {};
+                for (let row = 0; row < 8; row++) {
+                    const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                    if (broughtEl || soldEl || leftEl) {
+                        data.popSalesSheets[sheetId][row] = {
+                            brought: parseFloat(broughtEl?.value || 0),
+                            sold: parseInt(soldEl?.textContent || 0),
+                            left: parseFloat(leftEl?.value || 0)
+                        };
+                    }
+                }
+
+                // Also save tax info
+                const taxCheckbox = document.querySelector(\`#tax-required-\${sheetId}\`);
+                const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                if (taxCheckbox) {
+                    data.popSalesSheets[sheetId]._taxInfo = {
+                        required: taxCheckbox.checked,
+                        rate: parseFloat(taxRate?.value || 0)
+                    };
+                }
+            });
+
+            // Collect ALL Aaron Sales Sheets
+            // Find all custom Aaron sheets in the DOM
+            document.querySelectorAll('[id^="custom-aaron-sheet"]').forEach(tab => {
+                const sheetId = tab.id;
+                data.aaronSalesSheets[sheetId] = {};
+                for (let row = 0; row < 8; row++) {
+                    const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                    const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                    if (broughtEl || soldEl || leftEl) {
+                        data.aaronSalesSheets[sheetId][row] = {
+                            brought: parseFloat(broughtEl?.value || 0),
+                            sold: parseInt(soldEl?.textContent || 0),
+                            left: parseFloat(leftEl?.value || 0)
+                        };
+                    }
+                }
+
+                const taxCheckbox = document.querySelector(\`#tax-required-\${sheetId}\`);
+                const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                if (taxCheckbox) {
+                    data.aaronSalesSheets[sheetId]._taxInfo = {
+                        required: taxCheckbox.checked,
+                        rate: parseFloat(taxRate?.value || 0)
+                    };
+                }
+            });
+
+            return data;
+        }
+
         // ===== CLOUD SAVE FUNCTION =====
         async function saveAppDataToCloud() {
-            if (!db || isSyncing) return;
+            if (!firebaseInitialized || !db) {
+                console.log('Firebase not available, saving to localStorage only');
+                saveToLocalStorage();
+                return;
+            }
+
+            if (isSyncing) return;
             updateSyncStatus('syncing');
 
             try {
-                const data = {
-                    popInventory: {},
-                    aaronInventory: {},
-                    popSalesSheets: {},
-                    aaronSalesSheets: {},
-                    lastUpdated: new Date().toISOString(),
-                    lastUpdatedBy: 'web'
-                };
+                const data = collectAllAppData();
 
-                // Collect Pop Inventory
-                for (let i = 0; i < 8; i++) {
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
+                // Save to Firebase with a timeout
+                const savePromise = db.ref('inventoryData').set(data);
 
-                    data.popInventory[i] = {
-                        price: parseFloat(priceEl?.value || 0),
-                        storage: parseFloat(storageEl?.value || 0),
-                        showTub: parseFloat(showTubEl?.value || 0),
-                        postShow: parseFloat(postShowEl?.value || 0)
-                    };
-                }
+                // Use Promise with timeout to prevent hanging
+                await Promise.race([
+                    savePromise,
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Save timeout')), 8000)
+                    )
+                ]);
 
-                // Collect Aaron Inventory
-                for (let i = 0; i < 8; i++) {
-                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-
-                    data.aaronInventory[i] = {
-                        price: parseFloat(priceEl?.value || 0),
-                        storage: parseFloat(storageEl?.value || 0),
-                        showTub: parseFloat(showTubEl?.value || 0),
-                        postShow: parseFloat(postShowEl?.value || 0)
-                    };
-                }
-
-                // Collect Pop Sales Sheets
-                const popSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
-                popSheets.forEach(sheetId => {
-                    data.popSalesSheets[sheetId] = {};
-                    for (let row = 0; row < 8; row++) {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        if (broughtEl || leftEl) {
-                            data.popSalesSheets[sheetId][row] = {
-                                brought: parseFloat(broughtEl?.value || 0),
-                                left: parseFloat(leftEl?.value || 0)
-                            };
-                        }
-                    }
-                });
-
-                // Save to Firebase
-                await db.ref('inventoryData').set(data);
-
-                // Also keep localStorage as backup
-                localStorage.setItem('knifeInventoryData', JSON.stringify(data));
+                // Also save to localStorage as backup
+                saveToLocalStorage();
 
                 updateSyncStatus('synced');
-                console.log('Data successfully synced to cloud');
+                console.log('Data successfully saved to cloud');
             } catch (error) {
                 console.error('Cloud save error:', error);
                 updateSyncStatus('error');
-                // Fall back to localStorage on error
-                try {
-                    const backupData = {
-                        popInventory: {},
-                        aaronInventory: {}
-                    };
-                    for (let i = 0; i < 8; i++) {
-                        const popPriceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                        backupData.popInventory[i] = { price: parseFloat(popPriceEl?.value || 0) };
-                        const aaronPriceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                        backupData.aaronInventory[i] = { price: parseFloat(aaronPriceEl?.value || 0) };
-                    }
-                    localStorage.setItem('knifeInventoryData', JSON.stringify(backupData));
-                } catch (e) {
-                    console.error('localStorage backup failed:', e);
-                }
+                // Fall back to localStorage
+                saveToLocalStorage();
             }
         }
 
-        // ===== CLOUD LOAD FUNCTION =====
+        // ===== LOCALSTORAGE BACKUP =====
+        function saveToLocalStorage() {
+            try {
+                const data = collectAllAppData();
+                localStorage.setItem('knifeInventoryData', JSON.stringify(data));
+                console.log('Data saved to localStorage backup');
+            } catch (e) {
+                console.error('localStorage save failed:', e);
+            }
+        }
+
+        // ===== CLOUD LOAD FUNCTION - CRITICAL FOR IPHONE SAFARI =====
         async function loadAppDataFromCloud() {
-            if (!db) {
+            // ALWAYS try cloud first, regardless of what's in cache
+            if (!firebaseInitialized || !db) {
+                console.log('Firebase not available, loading from localStorage');
                 loadAppDataFromLocalStorage();
                 return;
             }
 
             updateSyncStatus('syncing');
+
             try {
-                const snapshot = await db.ref('inventoryData').once('value');
-                const data = snapshot.val();
+                // Force fresh read from server (not cache)
+                const snapshot = await db.ref('inventoryData').get();
 
-                if (data) {
-                    // Load Pop Inventory
-                    Object.keys(data.popInventory || {}).forEach(i => {
-                        const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                        const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                        const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                        const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
-
-                        if (priceEl) priceEl.value = data.popInventory[i].price || 0;
-                        if (storageEl) storageEl.value = data.popInventory[i].storage || 0;
-                        if (showTubEl) showTubEl.value = data.popInventory[i].showTub || 0;
-                        if (postShowEl) postShowEl.value = data.popInventory[i].postShow || 0;
-                    });
-
-                    // Load Aaron Inventory
-                    Object.keys(data.aaronInventory || {}).forEach(i => {
-                        const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                        const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                        const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                        const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-
-                        if (priceEl) priceEl.value = data.aaronInventory[i].price || 0;
-                        if (storageEl) storageEl.value = data.aaronInventory[i].storage || 0;
-                        if (showTubEl) showTubEl.value = data.aaronInventory[i].showTub || 0;
-                        if (postShowEl) postShowEl.value = data.aaronInventory[i].postShow || 0;
-                    });
-
-                    // Load Pop Sales Sheets
-                    Object.keys(data.popSalesSheets || {}).forEach(sheetId => {
-                        Object.keys(data.popSalesSheets[sheetId]).forEach(row => {
-                            const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                            const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-                            if (broughtEl) broughtEl.value = data.popSalesSheets[sheetId][row].brought || 0;
-                            if (leftEl) leftEl.value = data.popSalesSheets[sheetId][row].left || 0;
-                        });
-                    });
-
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    console.log('Cloud data loaded, now applying to UI...');
+                    applyDataToUI(data);
                     updateSyncStatus('synced');
-                    console.log('Data loaded from cloud');
                 } else {
+                    console.log('No cloud data found, using localStorage');
                     loadAppDataFromLocalStorage();
                 }
             } catch (error) {
@@ -2572,35 +2610,116 @@
             }
         }
 
-        // ===== BACKUP: LOAD FROM LOCALSTORAGE =====
+        // ===== APPLY DATA TO UI =====
+        function applyDataToUI(data) {
+            // Apply Pop Inventory
+            for (let i = 0; i < 8; i++) {
+                const inv = data.popInventory?.[i];
+                if (inv) {
+                    const priceEl = document.querySelector(\`.pop-price[data-product="\${i}"]\`);
+                    const storageEl = document.querySelector(\`.pop-storage[data-product="\${i}"]\`);
+                    const showTubEl = document.querySelector(\`.pop-show-tub[data-product="\${i}"]\`);
+                    const postShowEl = document.querySelector(\`.pop-post-show[data-product="\${i}"]\`);
+
+                    if (priceEl) priceEl.value = inv.price || 0;
+                    if (storageEl) storageEl.value = inv.storage || 0;
+                    if (showTubEl) showTubEl.value = inv.showTub || 0;
+                    if (postShowEl) postShowEl.value = inv.postShow || 0;
+                }
+            }
+
+            // Apply Aaron Inventory
+            for (let i = 0; i < 8; i++) {
+                const inv = data.aaronInventory?.[i];
+                if (inv) {
+                    const priceEl = document.querySelector(\`.aaron-price[data-product="\${i}"]\`);
+                    const storageEl = document.querySelector(\`.aaron-storage[data-product="\${i}"]\`);
+                    const showTubEl = document.querySelector(\`.aaron-show-tub[data-product="\${i}"]\`);
+                    const postShowEl = document.querySelector(\`.aaron-post-show[data-product="\${i}"]\`);
+
+                    if (priceEl) priceEl.value = inv.price || 0;
+                    if (storageEl) storageEl.value = inv.storage || 0;
+                    if (showTubEl) showTubEl.value = inv.showTub || 0;
+                    if (postShowEl) postShowEl.value = inv.postShow || 0;
+                }
+            }
+
+            // Apply Pop Sales Sheets data
+            Object.keys(data.popSalesSheets || {}).forEach(sheetId => {
+                const sheetData = data.popSalesSheets[sheetId];
+                for (let row = 0; row < 8; row++) {
+                    const rowData = sheetData[row];
+                    if (rowData) {
+                        const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                        const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                        const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                        if (broughtEl) broughtEl.value = rowData.brought || 0;
+                        if (leftEl) leftEl.value = rowData.left || 0;
+                        if (soldEl) soldEl.textContent = rowData.sold || 0;
+                    }
+                }
+
+                // Restore tax settings
+                if (sheetData._taxInfo) {
+                    const taxCheckbox = document.querySelector(\`#tax-required-\${sheetId}\`);
+                    const taxRate = document.querySelector(\`#tax-rate-\${sheetId}\`);
+                    if (taxCheckbox) {
+                        taxCheckbox.checked = sheetData._taxInfo.required;
+                        const taxInputGroup = document.querySelector(\`#tax-input-group-\${sheetId}\`);
+                        if (taxInputGroup) {
+                            taxInputGroup.style.display = sheetData._taxInfo.required ? 'flex' : 'none';
+                        }
+                    }
+                    if (taxRate) taxRate.value = sheetData._taxInfo.rate || 0;
+                }
+            });
+
+            // Apply Aaron Sales Sheets data
+            Object.keys(data.aaronSalesSheets || {}).forEach(sheetId => {
+                const sheetData = data.aaronSalesSheets[sheetId];
+                for (let row = 0; row < 8; row++) {
+                    const rowData = sheetData[row];
+                    if (rowData) {
+                        const broughtEl = document.querySelector(\`.units-brought[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                        const leftEl = document.querySelector(\`.units-left[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+                        const soldEl = document.querySelector(\`.units-sold[data-sheet="\${sheetId}"][data-row="\${row}"]\`);
+
+                        if (broughtEl) broughtEl.value = rowData.brought || 0;
+                        if (leftEl) leftEl.value = rowData.left || 0;
+                        if (soldEl) soldEl.textContent = rowData.sold || 0;
+                    }
+                }
+            });
+
+            // Restore sheet states
+            if (data.sheetStates) {
+                sheetStates = data.sheetStates;
+            }
+
+            // Refresh all calculations
+            updateAllInventories();
+            if (typeof refreshSalesCharts === 'function') {
+                refreshSalesCharts();
+            }
+        }
+
+        // ===== LOAD FROM LOCALSTORAGE BACKUP =====
         function loadAppDataFromLocalStorage() {
-            const data = JSON.parse(localStorage.getItem('knifeInventoryData') || '{}');
-
-            if (data.popInventory) {
-                Object.keys(data.popInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-
-                    if (priceEl) priceEl.value = data.popInventory[i].price || 0;
-                    if (storageEl) storageEl.value = data.popInventory[i].storage || 0;
-                    if (showTubEl) showTubEl.value = data.popInventory[i].showTub || 0;
-                });
+            try {
+                const data = JSON.parse(localStorage.getItem('knifeInventoryData') || '{}');
+                if (Object.keys(data).length > 0) {
+                    console.log('Loading from localStorage backup');
+                    applyDataToUI(data);
+                    updateSyncStatus('synced');
+                } else {
+                    console.log('No localStorage data found');
+                    updateSyncStatus('error');
+                }
+            } catch (e) {
+                console.error('localStorage load failed:', e);
+                updateSyncStatus('error');
             }
-
-            if (data.aaronInventory) {
-                Object.keys(data.aaronInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-
-                    if (priceEl) priceEl.value = data.aaronInventory[i].price || 0;
-                    if (storageEl) storageEl.value = data.aaronInventory[i].storage || 0;
-                    if (showTubEl) showTubEl.value = data.aaronInventory[i].showTub || 0;
-                });
-            }
-
-            updateSyncStatus('synced');
         }
 
         // ===== AUTO-SAVE SCHEDULING =====
@@ -2609,37 +2728,42 @@
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
                 saveAppDataToCloud();
-            }, 10000); // Auto-save every 10 seconds after changes
+            }, 5000); // Save 5 seconds after last change
         }
 
         // ===== MODIFIED SAVE FUNCTION =====
         function saveAppData() {
+            console.log('Manual save triggered');
             saveAppDataToCloud().then(() => {
-                alert('Data saved to cloud!');
-            }).catch(() => {
-                alert('Error saving data. Check your Firebase configuration and internet connection.');
+                alert('✅ Data saved to cloud and local backup!');
+            }).catch((error) => {
+                alert('⚠️ Data saved to local backup. Cloud error: ' + error.message);
             });
         }
 
         // ===== REAL-TIME LISTENER FOR MULTI-DEVICE SYNC =====
         function initializeRealtimeSync() {
-            if (!db) return;
+            if (!firebaseInitialized || !db) return;
 
             db.ref('inventoryData').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data && data.lastUpdatedBy !== 'web') {
-                    console.log('Data updated from another device, reloading...');
-                    loadAppDataFromCloud();
+                if (data && data.lastUpdatedBy !== 'web-app') {
+                    console.log('Remote data update detected, reloading...');
+                    applyDataToUI(data);
                 }
+            }, (error) => {
+                console.warn('Real-time sync listener error:', error);
             });
         }
 
-        // ===== PERIODIC CLOUD REFRESH (every 30 seconds) =====
+        // ===== PERIODIC CLOUD REFRESH (every 20 seconds) =====
         let refreshInterval = null;
         function startPeriodicRefresh() {
+            // Don't refresh too aggressively, but frequently enough for iPhone
             refreshInterval = setInterval(() => {
+                console.log('Periodic refresh triggered');
                 loadAppDataFromCloud();
-            }, 30000); // Refresh every 30 seconds
+            }, 20000); // Every 20 seconds
         }
 
         function stopPeriodicRefresh() {
@@ -2649,29 +2773,41 @@
             }
         }
 
+        // ===== VISIBILITY CHANGE HANDLER - CRITICAL FOR IPHONE =====
+        // When user comes back to tab, force refresh
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                console.log('Page became visible, forcing cloud refresh');
+                loadAppDataFromCloud();
+            }
+        });
+
         // ===== INITIALIZE ON PAGE LOAD =====
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing app...');
+            console.log('=== Knife Inventory Manager Initialization ===');
+            console.log('Loading data from cloud...');
 
-            // Load data from cloud
-            loadAppDataFromCloud().catch(err => {
-                console.error('Initial load failed:', err);
+            // CRITICAL: Load from cloud first before anything else
+            loadAppDataFromCloud().then(() => {
+                console.log('Initial cloud load complete');
+
+                // Initialize existing functionality
+                if (typeof initCharts === 'function') {
+                    initCharts();
+                }
+                if (typeof sheets !== 'undefined') {
+                    sheets.forEach(sheet => {
+                        if (typeof updateSheetStatus === 'function') {
+                            updateSheetStatus(sheet);
+                        }
+                    });
+                }
+            }).catch(err => {
+                console.error('Initial load error:', err);
                 loadAppDataFromLocalStorage();
             });
 
-            // Initialize existing functionality
-            if (typeof initCharts === 'function') {
-                initCharts();
-            }
-            if (typeof sheets !== 'undefined') {
-                sheets.forEach(sheet => {
-                    if (typeof updateSheetStatus === 'function') {
-                        updateSheetStatus(sheet);
-                    }
-                });
-            }
-
-            // Add auto-save listeners
+            // Add auto-save listeners to all inputs
             document.addEventListener('change', scheduleAutoSave);
             document.addEventListener('input', scheduleAutoSave);
 
@@ -2679,13 +2815,20 @@
             initializeRealtimeSync();
             startPeriodicRefresh();
 
-            console.log('App initialization complete');
+            console.log('=== Initialization Complete ===');
         });
 
-        // Cleanup on page unload
+        // ===== CLEANUP ON PAGE UNLOAD =====
         window.addEventListener('beforeunload', function() {
             stopPeriodicRefresh();
+            // Don't wait for async save here, just trigger it
             saveAppDataToCloud();
+        });
+
+        // ===== HANDLE FOCUS CHANGES =====
+        window.addEventListener('focus', function() {
+            console.log('Window focused, refreshing data');
+            loadAppDataFromCloud();
         });
 
     </script>
