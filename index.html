@@ -199,6 +199,7 @@
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="nav-link" onclick="openAaronRemoveInventoryModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Remove from Storage</button>
                     <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('aaron')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
@@ -229,6 +230,7 @@
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="nav-link" onclick="openPopRemoveInventoryModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Remove from Storage</button>
                     <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('pop')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
@@ -540,6 +542,54 @@
             </div>
         </div>
 
+        <div id="popRemoveInventoryModal" class="modal">
+            <div class="modal-content">
+                <h3>Remove Inventory from Storage - Pop</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub (for error correction):</p>
+                <table class="inventory-table">
+                    <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="pop-storage-remove-view-0" readonly></td><td><input type="number" id="pop-remove-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="pop-storage-remove-view-1" readonly></td><td><input type="number" id="pop-remove-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="pop-storage-remove-view-2" readonly></td><td><input type="number" id="pop-remove-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="pop-storage-remove-view-3" readonly></td><td><input type="number" id="pop-remove-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="pop-storage-remove-view-4" readonly></td><td><input type="number" id="pop-remove-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="pop-storage-remove-view-5" readonly></td><td><input type="number" id="pop-remove-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="pop-storage-remove-view-6" readonly></td><td><input type="number" id="pop-remove-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="pop-storage-remove-view-7" readonly></td><td><input type="number" id="pop-remove-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closePopRemoveInventoryModal()">Cancel</button>
+                    <button type="button" class="btn-cancel" onclick="removePopInventory()" style="background: #ff6b6b; color: white;">Remove from Storage</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="aaronRemoveInventoryModal" class="modal">
+            <div class="modal-content">
+                <h3>Remove Inventory from Storage - Aaron</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub (for error correction):</p>
+                <table class="inventory-table">
+                    <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="aaron-storage-remove-view-0" readonly></td><td><input type="number" id="aaron-remove-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="aaron-storage-remove-view-1" readonly></td><td><input type="number" id="aaron-remove-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="aaron-storage-remove-view-2" readonly></td><td><input type="number" id="aaron-remove-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="aaron-storage-remove-view-3" readonly></td><td><input type="number" id="aaron-remove-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="aaron-storage-remove-view-4" readonly></td><td><input type="number" id="aaron-remove-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="aaron-storage-remove-view-5" readonly></td><td><input type="number" id="aaron-remove-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="aaron-storage-remove-view-6" readonly></td><td><input type="number" id="aaron-remove-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="aaron-storage-remove-view-7" readonly></td><td><input type="number" id="aaron-remove-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button>
+                    <button type="button" class="btn-cancel" onclick="removeAaronInventory()" style="background: #ff6b6b; color: white;">Remove from Storage</button>
+                </div>
+            </div>
+        </div>
+
         <div id="deletePopSalesSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Delete Pop Sales Sheet</h3>
@@ -830,6 +880,26 @@
         }
         function closeAaronMoveInventoryModal() { document.getElementById('aaronMoveInventoryModal').classList.remove('active'); }
 
+        function openPopRemoveInventoryModal() {
+            document.getElementById('popRemoveInventoryModal').classList.add('active');
+            for (let i = 0; i < 8; i++) {
+                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                document.getElementById(`pop-storage-remove-view-${i}`).value = storage;
+                document.getElementById(`pop-remove-${i}`).value = '';
+            }
+        }
+        function closePopRemoveInventoryModal() { document.getElementById('popRemoveInventoryModal').classList.remove('active'); }
+
+        function openAaronRemoveInventoryModal() {
+            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
+            for (let i = 0; i < 8; i++) {
+                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                document.getElementById(`aaron-storage-remove-view-${i}`).value = storage;
+                document.getElementById(`aaron-remove-${i}`).value = '';
+            }
+        }
+        function closeAaronRemoveInventoryModal() { document.getElementById('aaronRemoveInventoryModal').classList.remove('active'); }
+
         function clearReceivedFields(type) {
             for (let i = 0; i < 8; i++) {
                 const el = document.getElementById(`${type}-received-${i}`);
@@ -909,6 +979,46 @@
             updateAllInventories();
             closeAaronMoveInventoryModal();
             alert('Inventory moved to Aaron show tub!');
+        }
+
+        function removePopInventory() {
+            for (let i = 0; i < 8; i++) {
+                const remove = parseFloat(document.getElementById(`pop-remove-${i}`).value || 0);
+                if (remove > 0) {
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+
+                    if (remove > currentStorage) {
+                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
+                        return;
+                    }
+
+                    storageEl.value = currentStorage - remove;
+                }
+            }
+            updateAllInventories();
+            closePopRemoveInventoryModal();
+            alert('Inventory removed from Pop storage tub!');
+        }
+
+        function removeAaronInventory() {
+            for (let i = 0; i < 8; i++) {
+                const remove = parseFloat(document.getElementById(`aaron-remove-${i}`).value || 0);
+                if (remove > 0) {
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+
+                    if (remove > currentStorage) {
+                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
+                        return;
+                    }
+
+                    storageEl.value = currentStorage - remove;
+                }
+            }
+            updateAllInventories();
+            closeAaronRemoveInventoryModal();
+            alert('Inventory removed from Aaron storage tub!');
         }
 
         function openDeletePopSalesSheetModal() {
