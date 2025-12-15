@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v14 - Fixed Calculations</title>
+    <title>Knife Inventory Manager v15 - Double Subtraction Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +80,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v14</h1>
+            <h1>Knife Inventory Manager v15</h1>
             <p>Manage Aaron and Pops inventory, sales tracking, and taxes</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
         </div>
@@ -940,7 +940,10 @@
                 soldEl.value = sold >= 0 ? sold : 0;
             }
             updateRevenueTotal(sheetId);
-            updateAllInventories();
+            updatePopInventory();
+            updateAaronInventory();
+            updateMasterInventory();
+            updateChartsData();
         }
 
         function updateRevenueTotal(sheetId) {
@@ -1006,11 +1009,11 @@
         }
 
         function updateAllInventories() {
+            updateInventoryShowAndPostShow();
             updatePopInventory();
             updateAaronInventory();
             updateMasterInventory();
             updateChartsData();
-            updateInventoryShowAndPostShow();
         }
 
         function updatePopInventory() {
