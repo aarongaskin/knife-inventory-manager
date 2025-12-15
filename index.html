@@ -60,6 +60,8 @@
         .refresh-btn, .refresh-inv-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
         .refresh-btn:hover, .refresh-inv-btn:hover { background: #1976d2; }
         .refresh-btn::before, .refresh-inv-btn::before { content: '⟳'; font-size: 16px; }
+        .remove-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .remove-btn:hover { background: #ff5252; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
         .modal.active { display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
@@ -76,6 +78,8 @@
         .modal-buttons .btn-create:hover { background: #5568d3; }
         .modal-buttons .btn-add-inventory { background: #4caf50; color: white; }
         .modal-buttons .btn-add-inventory:hover { background: #45a049; }
+        .modal-buttons .btn-remove { background: #ff6b6b; color: white; }
+        .modal-buttons .btn-remove:hover { background: #ff5252; }
         .inventory-table { width: 100%; border-collapse: collapse; }
         .inventory-table thead { background: #4caf50; }
         .inventory-table th, .inventory-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
@@ -203,6 +207,7 @@
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="remove-btn" onclick="openAaronRemoveInventoryModal()">Remove from Storage</button>
                     <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('aaron')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
@@ -233,6 +238,7 @@
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="remove-btn" onclick="openPopRemoveInventoryModal()">Remove from Storage</button>
                     <button class="refresh-inv-btn" onclick="refreshInventoryFromActiveSheet('pop')">Refresh Inventory from Active Sheet</button>
                 </div>
                 <table>
@@ -447,7 +453,56 @@
             </div>
         </div>
 
-        <!-- All Modals (unchanged from v20j) -->
+        <!-- Remove from Storage Modals -->
+        <div id="popRemoveInventoryModal" class="modal">
+            <div class="modal-content">
+                <h3>Remove Inventory from Storage - Pop (Damaged/Lost)</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities to remove from storage (damaged, lost, or defective items):</p>
+                <table class="inventory-table">
+                    <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="pop-remove-storage-0" readonly></td><td><input type="number" id="pop-remove-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="pop-remove-storage-1" readonly></td><td><input type="number" id="pop-remove-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="pop-remove-storage-2" readonly></td><td><input type="number" id="pop-remove-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="pop-remove-storage-3" readonly></td><td><input type="number" id="pop-remove-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="pop-remove-storage-4" readonly></td><td><input type="number" id="pop-remove-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="pop-remove-storage-5" readonly></td><td><input type="number" id="pop-remove-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="pop-remove-storage-6" readonly></td><td><input type="number" id="pop-remove-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="pop-remove-storage-7" readonly></td><td><input type="number" id="pop-remove-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closePopRemoveInventoryModal()">Cancel</button>
+                    <button type="button" class="btn-remove" onclick="removePopInventory()">Remove from Storage</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="aaronRemoveInventoryModal" class="modal">
+            <div class="modal-content">
+                <h3>Remove Inventory from Storage - Aaron (Damaged/Lost)</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities to remove from storage (damaged, lost, or defective items):</p>
+                <table class="inventory-table">
+                    <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" id="aaron-remove-storage-0" readonly></td><td><input type="number" id="aaron-remove-0" placeholder="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" id="aaron-remove-storage-1" readonly></td><td><input type="number" id="aaron-remove-1" placeholder="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" id="aaron-remove-storage-2" readonly></td><td><input type="number" id="aaron-remove-2" placeholder="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" id="aaron-remove-storage-3" readonly></td><td><input type="number" id="aaron-remove-3" placeholder="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" id="aaron-remove-storage-4" readonly></td><td><input type="number" id="aaron-remove-4" placeholder="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" id="aaron-remove-storage-5" readonly></td><td><input type="number" id="aaron-remove-5" placeholder="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" id="aaron-remove-storage-6" readonly></td><td><input type="number" id="aaron-remove-6" placeholder="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" id="aaron-remove-storage-7" readonly></td><td><input type="number" id="aaron-remove-7" placeholder="0"></td></tr>
+                    </tbody>
+                </table>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button>
+                    <button type="button" class="btn-remove" onclick="removeAaronInventory()">Remove from Storage</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Inventory Received Modals -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Pop (Storage Tub)</h3>
@@ -496,6 +551,7 @@
             </div>
         </div>
 
+        <!-- Move to Show Tub Modals -->
         <div id="popMoveInventoryModal" class="modal">
             <div class="modal-content">
                 <h3>Move Inventory to Show Tub - Pop</h3>
@@ -544,6 +600,7 @@
             </div>
         </div>
 
+        <!-- Delete Sales Sheet Modals -->
         <div id="deletePopSalesSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Delete Pop Sales Sheet</h3>
@@ -576,6 +633,7 @@
             </div>
         </div>
 
+        <!-- New Sales Sheet Modals -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Pop Sales Sheet</h3>
@@ -616,6 +674,7 @@
             </div>
         </div>
 
+        <!-- Next Sheet Modal -->
         <div id="nextSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Select Next Sheet to Activate</h3>
@@ -804,6 +863,69 @@
             }
         }
 
+        // Remove Inventory Functions
+        function openPopRemoveInventoryModal() {
+            document.getElementById('popRemoveInventoryModal').classList.add('active');
+            for (let i = 0; i < 8; i++) {
+                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                document.getElementById(`pop-remove-storage-${i}`).value = storage;
+                document.getElementById(`pop-remove-${i}`).value = '';
+            }
+        }
+
+        function closePopRemoveInventoryModal() {
+            document.getElementById('popRemoveInventoryModal').classList.remove('active');
+        }
+
+        function openAaronRemoveInventoryModal() {
+            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
+            for (let i = 0; i < 8; i++) {
+                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                document.getElementById(`aaron-remove-storage-${i}`).value = storage;
+                document.getElementById(`aaron-remove-${i}`).value = '';
+            }
+        }
+
+        function closeAaronRemoveInventoryModal() {
+            document.getElementById('aaronRemoveInventoryModal').classList.remove('active');
+        }
+
+        function removePopInventory() {
+            for (let i = 0; i < 8; i++) {
+                const remove = parseFloat(document.getElementById(`pop-remove-${i}`).value || 0);
+                if (remove > 0) {
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+                    if (remove > currentStorage) {
+                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
+                        return;
+                    }
+                    storageEl.value = currentStorage - remove;
+                }
+            }
+            updateAllInventories();
+            closePopRemoveInventoryModal();
+            alert('✓ Inventory removed from Pop storage!');
+        }
+
+        function removeAaronInventory() {
+            for (let i = 0; i < 8; i++) {
+                const remove = parseFloat(document.getElementById(`aaron-remove-${i}`).value || 0);
+                if (remove > 0) {
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const currentStorage = parseFloat(storageEl.value || 0);
+                    if (remove > currentStorage) {
+                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
+                        return;
+                    }
+                    storageEl.value = currentStorage - remove;
+                }
+            }
+            updateAllInventories();
+            closeAaronRemoveInventoryModal();
+            alert('✓ Inventory removed from Aaron storage!');
+        }
+
         function openNewSalesSheetModal() { document.getElementById('newSalesModal').classList.add('active'); }
         function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
         function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.add('active'); }
@@ -852,7 +974,7 @@
             }
             updateAllInventories();
             closePopInventoryReceivedModal();
-            alert('Inventory added to Pop storage tub!');
+            alert('✓ Inventory added to Pop storage tub!');
         }
 
         function addAaronInventoryReceived() {
@@ -866,7 +988,7 @@
             }
             updateAllInventories();
             closeAaronInventoryReceivedModal();
-            alert('Inventory added to Aaron storage tub!');
+            alert('✓ Inventory added to Aaron storage tub!');
         }
 
         function movePopInventory() {
@@ -889,7 +1011,7 @@
             }
             updateAllInventories();
             closePopMoveInventoryModal();
-            alert('Inventory moved to Pop show tub!');
+            alert('✓ Inventory moved to Pop show tub!');
         }
 
         function moveAaronInventory() {
@@ -912,7 +1034,7 @@
             }
             updateAllInventories();
             closeAaronMoveInventoryModal();
-            alert('Inventory moved to Aaron show tub!');
+            alert('✓ Inventory moved to Aaron show tub!');
         }
 
         function openDeletePopSalesSheetModal() {
@@ -1022,16 +1144,17 @@
             attachEventListeners();
             initCharts();
 
-            // Cross-tab/localStorage sync: if data changes in another tab, reload it
+            // SAFARI/GITHUB PAGES FIX: Cross-tab localStorage sync
             window.addEventListener('storage', function(e) {
                 if (e.key === 'knifeInventoryData') {
+                    console.log('Data updated in another tab, reloading...');
                     loadAppData();
                     updateAllInventories();
                     updateChartsData();
                 }
             });
 
-            // Auto-refresh inventories and charts every 5 seconds (helps Safari stay in sync)
+            // SAFARI/GITHUB PAGES FIX: Auto-refresh every 5 seconds to keep data in sync
             setInterval(() => {
                 updateAllInventories();
                 updateChartsData();
@@ -1513,7 +1636,7 @@
             });
 
             localStorage.setItem('knifeInventoryData', JSON.stringify(data));
-            alert('All data saved successfully!');
+            alert('✓ All data saved successfully!');
         }
 
         function loadAppData() {
