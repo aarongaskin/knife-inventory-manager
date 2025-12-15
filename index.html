@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v13 - Manual Tax %</title>
+    <title>Knife Inventory Manager v14 - Fixed Calculations</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +80,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v13</h1>
+            <h1>Knife Inventory Manager v14</h1>
             <p>Manage Aaron and Pops inventory, sales tracking, and taxes</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
         </div>
@@ -799,6 +799,7 @@
             newBtn.className = 'tab-btn';
             newBtn.textContent = name;
             newBtn.onclick = (e) => openTab(e, sheetId);
+            newBtn.style.display = 'none';
             document.querySelector('.nav-tabs').appendChild(newBtn);
 
             const link = document.createElement('button');
@@ -856,6 +857,7 @@
             newBtn.className = 'tab-btn';
             newBtn.textContent = name;
             newBtn.onclick = (e) => openTab(e, sheetId);
+            newBtn.style.display = 'none';
             document.querySelector('.nav-tabs').appendChild(newBtn);
 
             const link = document.createElement('button');
@@ -1281,6 +1283,7 @@
                 newBtn.className = 'tab-btn';
                 newBtn.textContent = name;
                 newBtn.onclick = (e) => openTab(e, sheetId);
+                newBtn.style.display = 'none';
                 document.querySelector('.nav-tabs').appendChild(newBtn);
 
                 const link = document.createElement('button');
@@ -1347,6 +1350,7 @@
                 newBtn.className = 'tab-btn';
                 newBtn.textContent = name;
                 newBtn.onclick = (e) => openTab(e, sheetId);
+                newBtn.style.display = 'none';
                 document.querySelector('.nav-tabs').appendChild(newBtn);
 
                 const link = document.createElement('button');
