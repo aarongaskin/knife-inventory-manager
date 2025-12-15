@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v15 - Double Subtraction Fixed</title>
+    <title>Knife Inventory Manager v16 - Calculation Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +80,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v15</h1>
+            <h1>Knife Inventory Manager v16</h1>
             <p>Manage Aaron and Pops inventory, sales tracking, and taxes</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
         </div>
@@ -905,14 +905,12 @@
             const sheetId = this.dataset.sheet;
             const row = this.dataset.row;
             updateSalesCalculations(sheetId, row);
-            updateInventoryShowAndPostShow();
         }
 
         function handleUnitsLeftChange(e) {
             const sheetId = this.dataset.sheet;
             const row = this.dataset.row;
             updateSalesCalculations(sheetId, row);
-            updateInventoryShowAndPostShow();
         }
 
         function handleTaxCheckboxChange(e) {
@@ -940,10 +938,7 @@
                 soldEl.value = sold >= 0 ? sold : 0;
             }
             updateRevenueTotal(sheetId);
-            updatePopInventory();
-            updateAaronInventory();
-            updateMasterInventory();
-            updateChartsData();
+            updateAllInventories();
         }
 
         function updateRevenueTotal(sheetId) {
@@ -1032,7 +1027,7 @@
 
                 const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
                 const postShow = parseFloat(document.querySelector(`.pop-post-show[data-product="${i}"]`)?.value || 0);
-                const currentVal = storage + postShow - totalSold;
+                const currentVal = (storage + postShow) - totalSold;
                 document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
             }
 
@@ -1056,7 +1051,7 @@
 
                 const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
                 const postShow = parseFloat(document.querySelector(`.aaron-post-show[data-product="${i}"]`)?.value || 0);
-                const currentVal = storage + postShow - totalSold;
+                const currentVal = (storage + postShow) - totalSold;
                 document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
             }
 
