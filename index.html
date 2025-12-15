@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v16 - Calculation Fixed</title>
+    <title>Knife Inventory Manager v17 - Logic Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +80,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v16</h1>
+            <h1>Knife Inventory Manager v17</h1>
             <p>Manage Aaron and Pops inventory, sales tracking, and taxes</p>
             <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
         </div>
@@ -931,12 +931,13 @@
         function updateSalesCalculations(sheetId, row) {
             const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`)?.value || 0);
             const left = parseFloat(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`)?.value || 0);
-            const sold = brought - left;
+            const sold = Math.max(0, brought - left);
 
             const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
             if (soldEl) {
-                soldEl.value = sold >= 0 ? sold : 0;
+                soldEl.value = sold;
             }
+            
             updateRevenueTotal(sheetId);
             updateAllInventories();
         }
@@ -1023,12 +1024,14 @@
                 });
 
                 const soldSpan = document.querySelector(`.total-sold-pop[data-product="${i}"]`);
-                if (soldSpan) soldSpan.textContent = totalSold >= 0 ? totalSold : 0;
+                if (soldSpan) soldSpan.textContent = totalSold;
 
                 const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
                 const postShow = parseFloat(document.querySelector(`.pop-post-show[data-product="${i}"]`)?.value || 0);
-                const currentVal = (storage + postShow) - totalSold;
-                document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
+                
+                // SIMPLIFIED: Just storage + postShow - totalSold
+                const currentVal = storage + postShow - totalSold;
+                document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = Math.max(0, currentVal);
             }
 
             const total = Array.from(document.querySelectorAll('.pop-current-stock')).reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
@@ -1047,12 +1050,14 @@
                 });
 
                 const soldSpan = document.querySelector(`.total-sold[data-product="${i}"]`);
-                if (soldSpan) soldSpan.textContent = totalSold >= 0 ? totalSold : 0;
+                if (soldSpan) soldSpan.textContent = totalSold;
 
                 const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
                 const postShow = parseFloat(document.querySelector(`.aaron-post-show[data-product="${i}"]`)?.value || 0);
-                const currentVal = (storage + postShow) - totalSold;
-                document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = currentVal >= 0 ? currentVal : 0;
+                
+                // SIMPLIFIED: Just storage + postShow - totalSold
+                const currentVal = storage + postShow - totalSold;
+                document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = Math.max(0, currentVal);
             }
 
             const total = Array.from(document.querySelectorAll('.aaron-current-stock')).reduce((sum, el) => sum + (parseFloat(el.value) || 0), 0);
