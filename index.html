@@ -54,6 +54,12 @@
         .units-sold-row { font-weight: 700; background: #e8f5e9; }
         .tax-summary-row { font-weight: 700; background: #e0e7ff; }
         .total-row { font-weight: 700; background: #eef2ff; }
+        .subtotal-row {
+            font-weight: 700;
+            background: #fff59d;
+            border-top: 2px solid #667eea;
+        }
+        
         .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
         .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
         .nav-link:hover { background: #667eea; color: white; }
@@ -241,14 +247,15 @@
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr></thead>
                     <tbody>
-                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="0" readonly></td><td><span class="aaron-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
-                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="1" readonly></td><td><span class="aaron-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
-                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="2" readonly></td><td><span class="aaron-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="2" readonly></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td></tr>
-                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="3" readonly></td><td><span class="aaron-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="3" readonly></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td></tr>
-                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="4" readonly></td><td><span class="aaron-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="4" readonly></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td></tr>
-                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td><td><span class="aaron-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td></tr>
-                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td><td><span class="aaron-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td></tr>
-                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td><td><span class="aaron-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td></tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="0" readonly></td><td><span class="aaron-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="0" readonly></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="1" readonly></td><td><span class="aaron-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="1" readonly></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="2" readonly></td><td><span class="aaron-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="2" readonly></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="2" readonly></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="3" readonly></td><td><span class="aaron-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="3" readonly></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="3" readonly></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="4" readonly></td><td><span class="aaron-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="4" readonly></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="4" readonly></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td><td><span class="aaron-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="5" readonly></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td><td><span class="aaron-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="6" readonly></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td><td><span class="aaron-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="7" readonly></td></tr>
+                        <tr class="subtotal-row"><td><strong>Show Tub + Storage Total</strong></td><td colspan="6"></td><td><input type="number" id="aaron-show-storage-total" readonly></td></tr>
                         <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -272,14 +279,15 @@
                 <table>
                     <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr></thead>
                     <tbody>
-                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="0" readonly></td><td><span class="pop-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
-                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="1" readonly></td><td><span class="pop-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
-                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="2" readonly></td><td><span class="pop-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="2" readonly></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td></tr>
-                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="3" readonly></td><td><span class="pop-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="3" readonly></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td></tr>
-                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="4" readonly></td><td><span class="pop-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="4" readonly></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td></tr>
-                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td><td><span class="pop-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td></tr>
-                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td><td><span class="pop-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td></tr>
-                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td><td><span class="pop-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td></tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="0" readonly></td><td><span class="pop-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td><td><input type="number" class="pop-lifetime-units" data-product="0" readonly></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="1" readonly></td><td><span class="pop-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td><td><input type="number" class="pop-lifetime-units" data-product="1" readonly></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="2" readonly></td><td><span class="pop-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="2" readonly></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td><td><input type="number" class="pop-lifetime-units" data-product="2" readonly></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="3" readonly></td><td><span class="pop-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="3" readonly></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td><td><input type="number" class="pop-lifetime-units" data-product="3" readonly></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="4" readonly></td><td><span class="pop-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="4" readonly></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td><td><input type="number" class="pop-lifetime-units" data-product="4" readonly></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td><td><span class="pop-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td><td><input type="number" class="pop-lifetime-units" data-product="5" readonly></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td><td><span class="pop-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td><td><input type="number" class="pop-lifetime-units" data-product="6" readonly></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td><td><span class="pop-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td><td><input type="number" class="pop-lifetime-units" data-product="7" readonly></td></tr>
+                        <tr class="subtotal-row"><td><strong>Show Tub + Storage Total</strong></td><td colspan="6"></td><td><input type="number" id="pop-show-storage-total" readonly></td></tr>
                         <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -728,6 +736,85 @@
         let aaronSalesSheetCount = 0;
         let sheetStates = {};
 
+        // ==================== NEW FUNCTIONS FOR MODIFICATIONS ====================
+
+        // MODIFICATION 1: Lifetime totals tracking
+        let lifetimeTotals = {
+            popSalesPerProduct: [0,0,0,0,0,0,0,0],
+            aaronSalesPerProduct: [0,0,0,0,0,0,0,0]
+        };
+
+        function loadLifetimeTotals() {
+            if (!window.firebaseDB) { setTimeout(loadLifetimeTotals, 500); return; }
+            const lifetimeRef = window.firebaseRef(window.firebaseDB, 'lifetimeSales');
+            window.firebaseOnValue(lifetimeRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    lifetimeTotals = data;
+                    displayLifetimeTotals();
+                }
+            });
+        }
+
+        function displayLifetimeTotals() {
+            // Pop lifetime totals
+            for (let i = 0; i < 8; i++) {
+                const el = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
+                if (el) el.value = lifetimeTotals.popSalesPerProduct[i] || 0;
+            }
+            // Aaron lifetime totals
+            for (let i = 0; i < 8; i++) {
+                const el = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
+                if (el) el.value = lifetimeTotals.aaronSalesPerProduct[i] || 0;
+            }
+        }
+
+        function addToLifetimeTotals(person, sheetId) {
+            for (let i = 0; i < 8; i++) {
+                const unitsSold = parseFloat(
+                    document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0
+                );
+                if (person === 'pop') {
+                    lifetimeTotals.popSalesPerProduct[i] = (lifetimeTotals.popSalesPerProduct[i] || 0) + unitsSold;
+                } else {
+                    lifetimeTotals.aaronSalesPerProduct[i] = (lifetimeTotals.aaronSalesPerProduct[i] || 0) + unitsSold;
+                }
+            }
+            const lifetimeRef = window.firebaseRef(window.firebaseDB, 'lifetimeSales');
+            window.firebaseSet(lifetimeRef, lifetimeTotals).catch(e => console.error('Lifetime save error:', e));
+            displayLifetimeTotals();
+        }
+
+        // MODIFICATION 2: Show Tub + Storage Totals
+        function updatePopShowStorageTotal() {
+            let showTotal = 0;
+            let storageTotal = 0;
+            for (let i = 0; i < 8; i++) {
+                const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                showTotal += parseFloat(showEl?.value || 0);
+                storageTotal += parseFloat(storageEl?.value || 0);
+            }
+            const totalEl = document.getElementById('pop-show-storage-total');
+            if (totalEl) totalEl.value = showTotal + storageTotal;
+        }
+
+        function updateAaronShowStorageTotal() {
+            let showTotal = 0;
+            let storageTotal = 0;
+            for (let i = 0; i < 8; i++) {
+                const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                showTotal += parseFloat(showEl?.value || 0);
+                storageTotal += parseFloat(storageEl?.value || 0);
+            }
+            const totalEl = document.getElementById('aaron-show-storage-total');
+            if (totalEl) totalEl.value = showTotal + storageTotal;
+        }
+
+        // ==================== END NEW FUNCTIONS ====================
+
+
         // CRITICAL SAFARI FIX: Force reload fresh data every time page loads
         // Delete old cached data to prevent stale data from appearing
         function forceFreshDataOnLoad() {
@@ -916,6 +1003,7 @@
             });
 
             if (checkbox.checked) {
+            addToLifetimeTotals("pop", sheetId);
                 alert(`✓ Event Completed! Data for ${sheetId} is now locked.`);
 
                 let person = 'pop';
@@ -1480,7 +1568,9 @@
             updateManualTax(sheetId);
         }
 
-        function updateAllInventories() {
+        function updateAllInventories() {updatePopShowStorageTotal();
+        updateAaronShowStorageTotal();
+        
             updatePopInventory();
             updateAaronInventory();
             updateMasterInventory();
