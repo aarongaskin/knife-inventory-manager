@@ -1803,16 +1803,20 @@
                 popInventory: {}, 
                 aaronInventory: {},
                 salesSheets: {},
-                sheetTotals: {}  // NEW: Store final totals
+                sheetTotals: {}
             };
 
-            // Save inventory data
+            // Save Pop Inventory
             for (let i = 0; i < 8; i++) {
                 data.popInventory[i] = {
                     price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
                     storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
                     showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
                 };
+            }
+
+            // Save Aaron Inventory
+            for (let i = 0; i < 8; i++) {
                 data.aaronInventory[i] = {
                     price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
                     storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
@@ -1820,44 +1824,47 @@
                 };
             }
 
-            // Save sales sheet data AND capture totals
-            sheets.forEach(sheet => {
+            // Save all 4 sales sheets
+            const allSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
+
+            for (let s = 0; s < allSheets.length; s++) {
+                const sheet = allSheets[s];
                 data.salesSheets[sheet] = {};
                 data.sheetTotals[sheet] = {};
 
+                // Save each product row for this sheet
                 for (let i = 0; i < 8; i++) {
+                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${i}"]`);
+                    const leftEl = document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${i}"]`);
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheet}"][data-row="${i}"]`);
+
                     data.salesSheets[sheet][i] = {
-                        brought: parseFloat(document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0),
-                        left: parseFloat(document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0),
-                        sold: parseFloat(document.querySelector(`.units-sold[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0)
+                        brought: broughtEl ? parseFloat(broughtEl.value || 0) : 0,
+                        left: leftEl ? parseFloat(leftEl.value || 0) : 0,
+                        sold: soldEl ? parseFloat(soldEl.value || 0) : 0
                     };
                 }
 
-                // CRITICAL: Capture the total units sold and revenue
+                // Save totals for this sheet
                 const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheet}"]`);
                 const totalRevenueEl = document.querySelector(`.revenue-total[data-sheet="${sheet}"]`);
-
-                if (totalUnitsEl) {
-                    data.sheetTotals[sheet].totalUnitsSold = parseFloat(totalUnitsEl.value || 0);
-                }
-                if (totalRevenueEl) {
-                    data.sheetTotals[sheet].totalRevenue = parseFloat(totalRevenueEl.value || 0);
-                }
-
-                // Also capture if the sheet is completed/locked
                 const completedCheckbox = document.getElementById(`event-completed-${sheet}`);
-                if (completedCheckbox) {
-                    data.sheetTotals[sheet].completed = completedCheckbox.checked;
-                }
-            });
 
+                if (totalUnitsEl) data.sheetTotals[sheet].totalUnitsSold = parseFloat(totalUnitsEl.value || 0);
+                if (totalRevenueEl) data.sheetTotals[sheet].totalRevenue = parseFloat(totalRevenueEl.value || 0);
+                if (completedCheckbox) data.sheetTotals[sheet].completed = completedCheckbox.checked;
+            }
+
+            // Save to Firebase
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
             window.firebaseSet(inventoryRef, data).then(() => {
-                console.log('✅ Data saved to Firebase including sheet totals');
+                alert('✅ All data saved to cloud!');
             }).catch(error => {
-                alert('❌ Sync Error: ' + error.message);
+                alert('❌ Error saving: ' + error.message);
             });
         }
+
+
         function loadAppData() {
             const saved = localStorage.getItem('knifeInventoryData');
             if (!saved) {
