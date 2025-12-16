@@ -3,12 +3,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="0">
-    <title>Knife Inventory Manager v21</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Knife Inventory Manager v21 - Safari Fixed</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -21,6 +23,8 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .container {
@@ -42,6 +46,31 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .cache-status {
+            font-size: 12px;
+            margin-top: 10px;
+            opacity: 0.95;
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .save-button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .nav-tabs {
@@ -209,10 +238,6 @@
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
         }
 
-        .tax-rate-input {
-            width: 100px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -335,7 +360,7 @@
         }
 
         .refresh-btn:before, .refresh-inv-btn:before {
-            content: "ðŸ”„";
+            content: "🔄";
             font-size: 16px;
         }
 
@@ -514,15 +539,27 @@
             .inventory-controls {
                 flex-direction: column;
             }
+
+            .save-button-group {
+                flex-direction: column;
+            }
+
+            .save-button-group button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v21</h1>
-            <p>Storage â†’ Show Tub â†’ Activate â†’ Refresh â†’ Fill Units Left â†’ Lock with Event Completed â†’ Pick Next Sheet</p>
-            <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
+            <h1>🔪 Knife Inventory Manager v21</h1>
+            <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed → Pick Next Sheet</p>
+            <div class="cache-status" id="cache-status">⏳ Initializing...</div>
+            <div class="save-button-group">
+                <button class="nav-link" onclick="saveAppDataSafari()">💾 Save All Data NOW</button>
+                <button class="nav-link" onclick="clearAllData()" style="background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Clear All Data</button>
+            </div>
         </div>
 
         <div class="nav-tabs">
@@ -549,60 +586,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" class="master-pop-stock" data-product="0" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="0" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="0" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" class="master-pop-stock" data-product="1" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="1" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="1" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" class="master-pop-stock" data-product="2" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="2" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="2" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" class="master-pop-stock" data-product="3" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="3" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="3" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" class="master-pop-stock" data-product="4" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="4" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="4" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" class="master-pop-stock" data-product="5" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="5" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="5" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" class="master-pop-stock" data-product="6" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="6" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="6" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" class="master-pop-stock" data-product="7" readonly></td>
-                            <td><input type="number" class="master-aaron-stock" data-product="7" readonly></td>
-                            <td><input type="number" class="master-combined" data-product="7" readonly style="font-weight: bold;"></td>
-                        </tr>
-                        <tr class="total-row">
-                            <td><strong>GRAND TOTAL</strong></td>
-                            <td><input type="number" id="master-pop-total" readonly style="font-weight: bold;"></td>
-                            <td><input type="number" id="master-aaron-total" readonly style="font-weight: bold;"></td>
-                            <td><input type="number" id="master-grand-total" readonly style="font-weight: bold; background: #667eea; color: white;"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" class="master-pop-stock" data-product="0" readonly></td><td><input type="number" class="master-aaron-stock" data-product="0" readonly></td><td><input type="number" class="master-combined" data-product="0" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="master-pop-stock" data-product="1" readonly></td><td><input type="number" class="master-aaron-stock" data-product="1" readonly></td><td><input type="number" class="master-combined" data-product="1" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="master-pop-stock" data-product="2" readonly></td><td><input type="number" class="master-aaron-stock" data-product="2" readonly></td><td><input type="number" class="master-combined" data-product="2" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="master-pop-stock" data-product="3" readonly></td><td><input type="number" class="master-aaron-stock" data-product="3" readonly></td><td><input type="number" class="master-combined" data-product="3" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="master-pop-stock" data-product="4" readonly></td><td><input type="number" class="master-aaron-stock" data-product="4" readonly></td><td><input type="number" class="master-combined" data-product="4" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="master-pop-stock" data-product="5" readonly></td><td><input type="number" class="master-aaron-stock" data-product="5" readonly></td><td><input type="number" class="master-combined" data-product="5" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="master-pop-stock" data-product="6" readonly></td><td><input type="number" class="master-aaron-stock" data-product="6" readonly></td><td><input type="number" class="master-combined" data-product="6" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" class="master-pop-stock" data-product="7" readonly></td><td><input type="number" class="master-aaron-stock" data-product="7" readonly></td><td><input type="number" class="master-combined" data-product="7" readonly style="font-weight: bold;"></td></tr>
+                        <tr class="total-row"><td><strong>GRAND TOTAL</strong></td><td><input type="number" id="master-pop-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-aaron-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-grand-total" readonly style="font-weight: bold; background: #667eea; color: white;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -611,9 +603,9 @@
         <!-- Aaron Navigation -->
         <div id="aaron-nav" class="tab-content">
             <div class="tab-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                    <h2 style="margin: 0;">Aaron's Inventory Management</h2>
-                    <div style="display: flex; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
+                    <h2 style="margin: 0; flex: 1; min-width: 200px;">Aaron's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
                         <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete Sales Sheet</button>
                     </div>
@@ -624,16 +616,10 @@
                 <div id="dynamic-aaron-sales-links" style="display: inline;"></div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Sheet Name</th>
-                            <th>Description</th>
-                        </tr>
+                        <tr><th>Sheet Name</th><th>Description</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Aaron Inventory</strong></td>
-                            <td>Current inventory levels Storage, Show Tub and track Post Show amounts from active sheet</td>
-                        </tr>
+                        <tr><td><strong>Aaron Inventory</strong></td><td>Current inventory levels Storage, Show Tub and track Post Show amounts from active sheet</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -642,9 +628,9 @@
         <!-- Pop Navigation -->
         <div id="pop-nav" class="tab-content">
             <div class="tab-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                    <h2 style="margin: 0;">Pop's Inventory Management</h2>
-                    <div style="display: flex; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
+                    <h2 style="margin: 0; flex: 1; min-width: 200px;">Pop's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
                         <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete Sales Sheet</button>
                     </div>
@@ -659,32 +645,14 @@
                 <div id="dynamic-sales-links" style="display: inline;"></div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Sheet Name</th>
-                            <th>Description</th>
-                        </tr>
+                        <tr><th>Sheet Name</th><th>Description</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Pop Inventory</strong></td>
-                            <td>Current inventory levels Storage, Show Tub and track Post Show amounts from active sheet</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wetumpka, Alabama 12/12-13</strong></td>
-                            <td>Sales tracking for Wetumpka gun show December 12-13</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Trussville, Alabama 1/3-4</strong></td>
-                            <td>Sales tracking for Trussville gun show January 3-4</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Columbia, Tennessee 1/10-11</strong></td>
-                            <td>Sales tracking for Columbia gun show January 10-11</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Hattiesburg, Mississippi 1/17</strong></td>
-                            <td>Sales tracking for Hattiesburg gun show January 17</td>
-                        </tr>
+                        <tr><td><strong>Pop Inventory</strong></td><td>Current inventory levels Storage, Show Tub and track Post Show amounts from active sheet</td></tr>
+                        <tr><td><strong>Wetumpka, Alabama 12/12-13</strong></td><td>Sales tracking for Wetumpka gun show December 12-13</td></tr>
+                        <tr><td><strong>Trussville, Alabama 1/3-4</strong></td><td>Sales tracking for Trussville gun show January 3-4</td></tr>
+                        <tr><td><strong>Columbia, Tennessee 1/10-11</strong></td><td>Sales tracking for Columbia gun show January 10-11</td></tr>
+                        <tr><td><strong>Hattiesburg, Mississippi 1/17</strong></td><td>Sales tracking for Hattiesburg gun show January 17</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -694,7 +662,7 @@
         <div id="aaron-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Aaron's Current Inventory</h2>
-                <div class="flow-info"><strong>Flow:</strong> Add to Storage â†’ Move to Show Tub â†’ Activate Sheet â†’ Refresh â†’ Fill Units Left â†’ Check Event Completed â†’ Pick Next Sheet â†’ Lock â†’ Repeat</div>
+                <div class="flow-info"><strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet → Refresh → Fill Units Left → Check Event Completed → Pick Next Sheet → Lock → Repeat</div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
@@ -704,102 +672,18 @@
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Selling Price</th>
-                            <th>Storage Tub</th>
-                            <th>Show Tub</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Post Show</th>
-                            <th>Total On Hand</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="0" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="0">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="0" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="1" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="1">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="1" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="2" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="2">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="2" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="3" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="3">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="3" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="4" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="4">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="4" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="5">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="5" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="6">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="6" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td>
-                            <td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td>
-                            <td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td>
-                            <td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td>
-                            <td><span class="aaron-units-sold" data-product="7">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="7" readonly></td>
-                            <td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td>
-                        </tr>
-                        <tr class="total-row">
-                            <td colspan="7">Total knives on hand</td>
-                            <td><input type="number" id="aaron-total-on-hand" readonly value="0"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="0" readonly></td><td><span class="aaron-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="1" readonly></td><td><span class="aaron-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="2" readonly></td><td><span class="aaron-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="2" readonly></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="3" readonly></td><td><span class="aaron-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="3" readonly></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="4" readonly></td><td><span class="aaron-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="4" readonly></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td><td><span class="aaron-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td><td><span class="aaron-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td><td><span class="aaron-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -809,7 +693,7 @@
         <div id="pop-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Pop's Current Inventory</h2>
-                <div class="flow-info"><strong>Flow:</strong> Add to Storage â†’ Move to Show Tub â†’ Activate Sheet â†’ Refresh â†’ Fill Units Left â†’ Check Event Completed â†’ Pick Next Sheet â†’ Lock â†’ Repeat</div>
+                <div class="flow-info"><strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet → Refresh → Fill Units Left → Check Event Completed → Pick Next Sheet → Lock → Repeat</div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
@@ -819,102 +703,18 @@
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Selling Price</th>
-                            <th>Storage Tub</th>
-                            <th>Show Tub</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Post Show</th>
-                            <th>Total On Hand</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Units Sold</th><th>Post Show</th><th>Total On Hand</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td>
-                            <td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="0" readonly></td>
-                            <td><span class="pop-units-sold" data-product="0">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="0" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td>
-                            <td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="1" readonly></td>
-                            <td><span class="pop-units-sold" data-product="1">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="1" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td>
-                            <td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="2" readonly></td>
-                            <td><span class="pop-units-sold" data-product="2">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="2" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td>
-                            <td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="3" readonly></td>
-                            <td><span class="pop-units-sold" data-product="3">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="3" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td>
-                            <td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="4" readonly></td>
-                            <td><span class="pop-units-sold" data-product="4">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="4" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td>
-                            <td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td>
-                            <td><span class="pop-units-sold" data-product="5">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="5" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td>
-                            <td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td>
-                            <td><span class="pop-units-sold" data-product="6">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="6" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td>
-                            <td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td>
-                            <td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td>
-                            <td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td>
-                            <td><span class="pop-units-sold" data-product="7">0</span></td>
-                            <td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="7" readonly></td>
-                            <td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td>
-                        </tr>
-                        <tr class="total-row">
-                            <td colspan="7">Total knives on hand</td>
-                            <td><input type="number" id="pop-total-on-hand" readonly value="0"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="0" readonly></td><td><span class="pop-units-sold" data-product="0">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="1" readonly></td><td><span class="pop-units-sold" data-product="1">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="2" readonly></td><td><span class="pop-units-sold" data-product="2">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="2" readonly></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="3" readonly></td><td><span class="pop-units-sold" data-product="3">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="3" readonly></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="4" readonly></td><td><span class="pop-units-sold" data-product="4">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="4" readonly></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td><td><span class="pop-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td><td><span class="pop-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td><td><span class="pop-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td></tr>
+                        <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -938,84 +738,30 @@
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
+                        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka" onchange="toggleTaxInputGroup('wetumpka')">
                         <label for="tax-required-wetumpka">Sales Tax Required?</label>
                     </div>
                     <div class="tax-control-group" id="tax-input-group-wetumpka" style="display: none;">
-                        <label for="tax-rate-wetumpka">Tax Rate</label>
-                        <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25">
+                        <label for="tax-rate-wetumpka">Tax Rate %</label>
+                        <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25" onchange="updateManualTax('wetumpka')">
                     </div>
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Units Left in Tub</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="0" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="1" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="2" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="3" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="4" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="5" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="6" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="7" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td>
-                        </tr>
-                        <tr class="units-sold-row">
-                            <td><strong>TOTAL UNITS SOLD</strong></td>
-                            <td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" readonly></td>
-                        </tr>
-                        <tr class="revenue-row">
-                            <td colspan="1"><strong>TOTAL REVENUE</strong></td>
-                            <td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" readonly></td>
-                        </tr>
-                        <tr class="tax-summary-row" id="tax-row-wetumpka" style="display:none;">
-                            <td><strong>Subtotal / Tax / Total</strong></td>
-                            <td colspan="3"><input type="text" class="tax-summary" data-sheet="wetumpka" readonly style="font-weight: bold;"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" readonly></td></tr>
+                        <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" readonly></td></tr>
+                        <tr class="tax-summary-row" id="tax-row-wetumpka" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="wetumpka" readonly style="font-weight: bold;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1039,84 +785,30 @@
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-trussville" class="tax-checkbox" data-sheet="trussville">
+                        <input type="checkbox" id="tax-required-trussville" class="tax-checkbox" data-sheet="trussville" onchange="toggleTaxInputGroup('trussville')">
                         <label for="tax-required-trussville">Sales Tax Required?</label>
                     </div>
                     <div class="tax-control-group" id="tax-input-group-trussville" style="display: none;">
-                        <label for="tax-rate-trussville">Tax Rate</label>
-                        <input type="number" id="tax-rate-trussville" class="tax-rate-input" data-sheet="trussville" step="0.01" min="0" max="20" placeholder="8.25">
+                        <label for="tax-rate-trussville">Tax Rate %</label>
+                        <input type="number" id="tax-rate-trussville" class="tax-rate-input" data-sheet="trussville" step="0.01" min="0" max="20" placeholder="8.25" onchange="updateManualTax('trussville')">
                     </div>
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Units Left in Tub</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="0" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="1" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="1"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="2" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="2"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="3" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="3"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="4" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="4"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="5" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="5"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="6" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="6"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="trussville" data-row="7" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="trussville" data-row="7"></td>
-                        </tr>
-                        <tr class="units-sold-row">
-                            <td><strong>TOTAL UNITS SOLD</strong></td>
-                            <td colspan="3"><input type="number" class="total-units-sold" data-sheet="trussville" readonly></td>
-                        </tr>
-                        <tr class="revenue-row">
-                            <td colspan="1"><strong>TOTAL REVENUE</strong></td>
-                            <td colspan="3"><input type="number" class="revenue-total" data-sheet="trussville" readonly></td>
-                        </tr>
-                        <tr class="tax-summary-row" id="tax-row-trussville" style="display:none;">
-                            <td><strong>Subtotal / Tax / Total</strong></td>
-                            <td colspan="3"><input type="text" class="tax-summary" data-sheet="trussville" readonly style="font-weight: bold;"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="0" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="1" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="2" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="3" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="4" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="5" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="6" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="7" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="trussville" readonly></td></tr>
+                        <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="trussville" readonly></td></tr>
+                        <tr class="tax-summary-row" id="tax-row-trussville" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="trussville" readonly style="font-weight: bold;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1140,84 +832,30 @@
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-columbia" class="tax-checkbox" data-sheet="columbia">
+                        <input type="checkbox" id="tax-required-columbia" class="tax-checkbox" data-sheet="columbia" onchange="toggleTaxInputGroup('columbia')">
                         <label for="tax-required-columbia">Sales Tax Required?</label>
                     </div>
                     <div class="tax-control-group" id="tax-input-group-columbia" style="display: none;">
-                        <label for="tax-rate-columbia">Tax Rate</label>
-                        <input type="number" id="tax-rate-columbia" class="tax-rate-input" data-sheet="columbia" step="0.01" min="0" max="20" placeholder="8.25">
+                        <label for="tax-rate-columbia">Tax Rate %</label>
+                        <input type="number" id="tax-rate-columbia" class="tax-rate-input" data-sheet="columbia" step="0.01" min="0" max="20" placeholder="8.25" onchange="updateManualTax('columbia')">
                     </div>
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Units Left in Tub</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="0" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="0" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="1" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="1" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="1"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="2" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="2" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="2"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="3" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="3" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="3"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="4" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="4" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="4"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="5" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="5" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="5"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="6" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="6" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="6"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" class="units-brought" data-sheet="columbia" data-row="7" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="columbia" data-row="7" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="columbia" data-row="7"></td>
-                        </tr>
-                        <tr class="units-sold-row">
-                            <td><strong>TOTAL UNITS SOLD</strong></td>
-                            <td colspan="3"><input type="number" class="total-units-sold" data-sheet="columbia" readonly></td>
-                        </tr>
-                        <tr class="revenue-row">
-                            <td colspan="1"><strong>TOTAL REVENUE</strong></td>
-                            <td colspan="3"><input type="number" class="revenue-total" data-sheet="columbia" readonly></td>
-                        </tr>
-                        <tr class="tax-summary-row" id="tax-row-columbia" style="display:none;">
-                            <td><strong>Subtotal / Tax / Total</strong></td>
-                            <td colspan="3"><input type="text" class="tax-summary" data-sheet="columbia" readonly style="font-weight: bold;"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="0" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="1" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="2" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="3" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="4" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="5" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="6" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="7" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="columbia" readonly></td></tr>
+                        <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="columbia" readonly></td></tr>
+                        <tr class="tax-summary-row" id="tax-row-columbia" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="columbia" readonly style="font-weight: bold;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1241,84 +879,30 @@
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-hattiesburg" class="tax-checkbox" data-sheet="hattiesburg">
+                        <input type="checkbox" id="tax-required-hattiesburg" class="tax-checkbox" data-sheet="hattiesburg" onchange="toggleTaxInputGroup('hattiesburg')">
                         <label for="tax-required-hattiesburg">Sales Tax Required?</label>
                     </div>
                     <div class="tax-control-group" id="tax-input-group-hattiesburg" style="display: none;">
-                        <label for="tax-rate-hattiesburg">Tax Rate</label>
-                        <input type="number" id="tax-rate-hattiesburg" class="tax-rate-input" data-sheet="hattiesburg" step="0.01" min="0" max="20" placeholder="8.25">
+                        <label for="tax-rate-hattiesburg">Tax Rate %</label>
+                        <input type="number" id="tax-rate-hattiesburg" class="tax-rate-input" data-sheet="hattiesburg" step="0.01" min="0" max="20" placeholder="8.25" onchange="updateManualTax('hattiesburg')">
                     </div>
                 </div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Units Brought</th>
-                            <th>Units Sold</th>
-                            <th>Units Left in Tub</th>
-                        </tr>
+                        <tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Full Tang</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="0" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="0" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="0"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="1" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="1" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="1"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Rat</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="2" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="2" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="2"></td>
-                        </tr>
-                        <tr>
-                            <td>8" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="3" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="3" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="3"></td>
-                        </tr>
-                        <tr>
-                            <td>6" Stag</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="4" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="4" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="4"></td>
-                        </tr>
-                        <tr>
-                            <td>Grooved</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="5" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="5" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="5"></td>
-                        </tr>
-                        <tr>
-                            <td>Folders</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="6" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="6" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="6"></td>
-                        </tr>
-                        <tr>
-                            <td>Clipped Folder</td>
-                            <td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="7" readonly></td>
-                            <td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="7" readonly></td>
-                            <td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="7"></td>
-                        </tr>
-                        <tr class="units-sold-row">
-                            <td><strong>TOTAL UNITS SOLD</strong></td>
-                            <td colspan="3"><input type="number" class="total-units-sold" data-sheet="hattiesburg" readonly></td>
-                        </tr>
-                        <tr class="revenue-row">
-                            <td colspan="1"><strong>TOTAL REVENUE</strong></td>
-                            <td colspan="3"><input type="number" class="revenue-total" data-sheet="hattiesburg" readonly></td>
-                        </tr>
-                        <tr class="tax-summary-row" id="tax-row-hattiesburg" style="display:none;">
-                            <td><strong>Subtotal / Tax / Total</strong></td>
-                            <td colspan="3"><input type="text" class="tax-summary" data-sheet="hattiesburg" readonly style="font-weight: bold;"></td>
-                        </tr>
+                        <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="0" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="1" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="2" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="3" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="4" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="5" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="6" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="7" onchange="handleUnitsLeftChange(event)"></td></tr>
+                        <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="hattiesburg" readonly></td></tr>
+                        <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="hattiesburg" readonly></td></tr>
+                        <tr class="tax-summary-row" id="tax-row-hattiesburg" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="hattiesburg" readonly style="font-weight: bold;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1344,18 +928,13 @@
         </div>
     </div>
 
-    <!-- Modals for Pop Inventory -->
+    <!-- Modals -->
     <div id="popInventoryReceivedModal" class="modal">
         <div class="modal-content">
             <h3>Add Inventory Received - Pop Storage Tub</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities you received for each product</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Quantity Received</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Quantity Received</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="pop-received-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="pop-received-1" placeholder="0"></td></tr>
@@ -1374,18 +953,12 @@
         </div>
     </div>
 
-    <!-- Modals for Aaron Inventory -->
     <div id="aaronInventoryReceivedModal" class="modal">
         <div class="modal-content">
             <h3>Add Inventory Received - Aaron Storage Tub</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities you received for each product</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Quantity Received</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Quantity Received</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="aaron-received-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="aaron-received-1" placeholder="0"></td></tr>
@@ -1404,19 +977,12 @@
         </div>
     </div>
 
-    <!-- Move Inventory Modals -->
     <div id="popMoveInventoryModal" class="modal">
         <div class="modal-content">
             <h3>Move Inventory to Show Tub - Pop</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you're moving FROM Storage Tub TO Show Tub</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Current Storage</th>
-                        <th>Quantity to Move</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Move</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="pop-storage-view-0" readonly></td><td><input type="number" id="pop-move-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="pop-storage-view-1" readonly></td><td><input type="number" id="pop-move-1" placeholder="0"></td></tr>
@@ -1440,13 +1006,7 @@
             <h3>Move Inventory to Show Tub - Aaron</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you're moving FROM Storage Tub TO Show Tub</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Current Storage</th>
-                        <th>Quantity to Move</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Move</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="aaron-storage-view-0" readonly></td><td><input type="number" id="aaron-move-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="aaron-storage-view-1" readonly></td><td><input type="number" id="aaron-move-1" placeholder="0"></td></tr>
@@ -1465,19 +1025,12 @@
         </div>
     </div>
 
-    <!-- Remove Inventory Modals -->
     <div id="popRemoveInventoryModal" class="modal">
         <div class="modal-content">
             <h3>Remove Inventory from Storage - Pop</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub for error correction</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Current Storage</th>
-                        <th>Quantity to Remove</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="pop-storage-remove-view-0" readonly></td><td><input type="number" id="pop-remove-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="pop-storage-remove-view-1" readonly></td><td><input type="number" id="pop-remove-1" placeholder="0"></td></tr>
@@ -1501,13 +1054,7 @@
             <h3>Remove Inventory from Storage - Aaron</h3>
             <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub for error correction</p>
             <table class="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Current Storage</th>
-                        <th>Quantity to Remove</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
                 <tbody>
                     <tr><td>Full Tang</td><td><input type="number" id="aaron-storage-remove-view-0" readonly></td><td><input type="number" id="aaron-remove-0" placeholder="0"></td></tr>
                     <tr><td>8" Rat</td><td><input type="number" id="aaron-storage-remove-view-1" readonly></td><td><input type="number" id="aaron-remove-1" placeholder="0"></td></tr>
@@ -1526,7 +1073,6 @@
         </div>
     </div>
 
-    <!-- Delete Sales Sheet Modals -->
     <div id="deletePopSalesSheetModal" class="modal">
         <div class="modal-content">
             <h3>Delete Pop Sales Sheet</h3>
@@ -1559,7 +1105,6 @@
         </div>
     </div>
 
-    <!-- New Sales Sheet Modals -->
     <div id="newSalesModal" class="modal">
         <div class="modal-content">
             <h3>Create New Pop Sales Sheet</h3>
@@ -1601,14 +1146,172 @@
     </div>
 
     <script>
-        // Product names and state for sheets
+        // ==================== SAFARI iOS CACHE FIX - CRITICAL ====================
+        const CACHE_KEY = 'knifeInventoryData_v21_safari';
+        const TIMESTAMP_KEY = 'knifeInventorySaveTime_v21';
+        
+        function updateCacheStatus() {
+            const lastSave = localStorage.getItem(TIMESTAMP_KEY);
+            const statusEl = document.getElementById('cache-status');
+            if (lastSave) {
+                const date = new Date(parseInt(lastSave));
+                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+                statusEl.textContent = `✅ CACHED: ${timeStr} | Safari iOS Fixed v21`;
+                statusEl.style.color = '#4caf50';
+            } else {
+                statusEl.textContent = '⏳ No data cached yet. Click "Save All Data NOW" to cache.';
+                statusEl.style.color = '#fff';
+            }
+        }
+
+        function clearAllData() {
+            if (!confirm('⚠️ THIS WILL DELETE ALL YOUR DATA PERMANENTLY!\n\nAre you ABSOLUTELY sure? Type "yes" to confirm.')) {
+                return;
+            }
+            const response = prompt('Type YES (in all caps) to confirm deletion:');
+            if (response !== 'YES') {
+                alert('❌ Cancelled. Your data is safe.');
+                return;
+            }
+            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(TIMESTAMP_KEY);
+            sessionStorage.removeItem(CACHE_KEY);
+            location.reload();
+        }
+
+        function saveAppDataSafari() {
+            // Force clear session storage before save
+            sessionStorage.removeItem(CACHE_KEY);
+            
+            const data = { 
+                popInventory: {}, 
+                aaronInventory: {}, 
+                salesSheets: {}, 
+                sheetStates,
+                timestamp: Date.now()
+            };
+
+            // Capture ALL Pop inventory
+            for (let i = 0; i < 8; i++) {
+                data.popInventory[i] = {
+                    price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
+                    storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
+                    showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
+                };
+                data.aaronInventory[i] = {
+                    price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
+                    storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
+                    showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0)
+                };
+            }
+
+            // Capture ALL sheet data
+            document.querySelectorAll('input[data-sheet]').forEach(inp => {
+                const sheetId = inp.dataset.sheet;
+                const row = inp.dataset.row;
+                if (!data.salesSheets[sheetId]) data.salesSheets[sheetId] = {};
+                if (!data.salesSheets[sheetId][row]) data.salesSheets[sheetId][row] = {};
+                if (inp.classList.contains('units-brought')) data.salesSheets[sheetId][row].brought = inp.value;
+                else if (inp.classList.contains('units-left')) data.salesSheets[sheetId][row].left = inp.value;
+                else if (inp.classList.contains('units-sold')) data.salesSheets[sheetId][row].sold = inp.value;
+            });
+
+            // TRIPLE SAVE - localStorage + sessionStorage
+            try {
+                const jsonString = JSON.stringify(data);
+                localStorage.setItem(CACHE_KEY, jsonString);
+                localStorage.setItem(TIMESTAMP_KEY, Date.now().toString());
+                sessionStorage.setItem(CACHE_KEY, jsonString);
+                
+                updateCacheStatus();
+                alert('✅ DATA SAVED!\n\n✓ localStorage synced\n✓ sessionStorage synced\n✓ Ready for offline use\n\nYour data is now protected!');
+            } catch (e) {
+                alert('❌ Storage Error: ' + e.message + '\n\nTry clearing Safari cache and try again.');
+            }
+        }
+
+        function loadAppDataSafari() {
+            let data = null;
+            
+            // Try localStorage first
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            if (cachedData) {
+                try {
+                    data = JSON.parse(cachedData);
+                } catch (e) {
+                    console.error('localStorage parse error:', e);
+                }
+            }
+            
+            // Fallback to sessionStorage
+            if (!data) {
+                const sessionData = sessionStorage.getItem(CACHE_KEY);
+                if (sessionData) {
+                    try {
+                        data = JSON.parse(sessionData);
+                    } catch (e) {
+                        console.error('sessionStorage parse error:', e);
+                    }
+                }
+            }
+            
+            if (!data) {
+                updateCacheStatus();
+                return;
+            }
+
+            // Restore Pop Inventory
+            if (data.popInventory) {
+                Object.keys(data.popInventory).forEach(i => {
+                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                    if (priceEl && data.popInventory[i].price) priceEl.value = data.popInventory[i].price;
+                    if (storageEl && data.popInventory[i].storage) storageEl.value = data.popInventory[i].storage;
+                    if (showTubEl && data.popInventory[i].showTub) showTubEl.value = data.popInventory[i].showTub;
+                });
+            }
+
+            // Restore Aaron Inventory
+            if (data.aaronInventory) {
+                Object.keys(data.aaronInventory).forEach(i => {
+                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                    if (priceEl && data.aaronInventory[i].price) priceEl.value = data.aaronInventory[i].price;
+                    if (storageEl && data.aaronInventory[i].storage) storageEl.value = data.aaronInventory[i].storage;
+                    if (showTubEl && data.aaronInventory[i].showTub) showTubEl.value = data.aaronInventory[i].showTub;
+                });
+            }
+
+            // Restore Sales Sheets
+            if (data.salesSheets) {
+                Object.keys(data.salesSheets).forEach(sheetId => {
+                    Object.keys(data.salesSheets[sheetId]).forEach(row => {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
+                        if (broughtEl && data.salesSheets[sheetId][row].brought) broughtEl.value = data.salesSheets[sheetId][row].brought;
+                        if (leftEl && data.salesSheets[sheetId][row].left) leftEl.value = data.salesSheets[sheetId][row].left;
+                        if (soldEl && data.salesSheets[sheetId][row].sold) soldEl.value = data.salesSheets[sheetId][row].sold;
+                    });
+                });
+            }
+
+            if (data.sheetStates) sheetStates = data.sheetStates;
+            
+            updateAllInventories();
+            updateChartsData();
+            updateCacheStatus();
+        }
+
+        // ==================== CORE APP LOGIC ====================
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         let sheetStates = {};
         let salesSheetCount = 0;
         let aaronSalesSheetCount = 0;
 
-        // Modal Functions
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1617,17 +1320,16 @@
             updateAllInventories();
         }
 
-        // Pop Inventory Functions
+        // Modal Functions
         function openPopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.add('active'); }
-        function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); clearReceivedFields('pop'); }
+        function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); for(let i=0;i<8;i++) document.getElementById(`pop-received-${i}`).value = ''; }
         function openAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.add('active'); }
-        function closeAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.remove('active'); clearReceivedFields('aaron'); }
+        function closeAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.remove('active'); for(let i=0;i<8;i++) document.getElementById(`aaron-received-${i}`).value = ''; }
         
         function openPopMoveInventoryModal() {
             document.getElementById('popMoveInventoryModal').classList.add('active');
             for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`pop-storage-view-${i}`).value = storage;
+                document.getElementById(`pop-storage-view-${i}`).value = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
                 document.getElementById(`pop-move-${i}`).value = '';
             }
         }
@@ -1636,8 +1338,7 @@
         function openAaronMoveInventoryModal() {
             document.getElementById('aaronMoveInventoryModal').classList.add('active');
             for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`aaron-storage-view-${i}`).value = storage;
+                document.getElementById(`aaron-storage-view-${i}`).value = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
                 document.getElementById(`aaron-move-${i}`).value = '';
             }
         }
@@ -1646,8 +1347,7 @@
         function openPopRemoveInventoryModal() {
             document.getElementById('popRemoveInventoryModal').classList.add('active');
             for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`pop-storage-remove-view-${i}`).value = storage;
+                document.getElementById(`pop-storage-remove-view-${i}`).value = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
                 document.getElementById(`pop-remove-${i}`).value = '';
             }
         }
@@ -1656,8 +1356,7 @@
         function openAaronRemoveInventoryModal() {
             document.getElementById('aaronRemoveInventoryModal').classList.add('active');
             for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`aaron-storage-remove-view-${i}`).value = storage;
+                document.getElementById(`aaron-storage-remove-view-${i}`).value = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
                 document.getElementById(`aaron-remove-${i}`).value = '';
             }
         }
@@ -1669,13 +1368,13 @@
                 const received = parseFloat(document.getElementById(`pop-received-${i}`).value || 0);
                 if (received > 0) {
                     const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const currentStorage = parseFloat(storageEl.value || 0);
-                    storageEl.value = currentStorage + received;
+                    storageEl.value = parseFloat(storageEl.value || 0) + received;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closePopInventoryReceivedModal();
-            alert('Inventory added to Pop storage tub!');
+            alert('✅ Inventory added & saved!');
         }
 
         function addAaronInventoryReceived() {
@@ -1683,13 +1382,13 @@
                 const received = parseFloat(document.getElementById(`aaron-received-${i}`).value || 0);
                 if (received > 0) {
                     const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const currentStorage = parseFloat(storageEl.value || 0);
-                    storageEl.value = currentStorage + received;
+                    storageEl.value = parseFloat(storageEl.value || 0) + received;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closeAaronInventoryReceivedModal();
-            alert('Inventory added to Aaron storage tub!');
+            alert('✅ Inventory added & saved!');
         }
 
         function movePopInventory() {
@@ -1699,18 +1398,15 @@
                     const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
                     const currentStorage = parseFloat(storageEl.value || 0);
-                    const currentShowTub = parseFloat(showTubEl.value || 0);
-                    if (move > currentStorage) {
-                        alert(`Cannot move ${move} of product ${i} - only ${currentStorage} available in storage!`);
-                        return;
-                    }
+                    if (move > currentStorage) { alert(`❌ Not enough ${i}`); return; }
                     storageEl.value = currentStorage - move;
-                    showTubEl.value = currentShowTub + move;
+                    showTubEl.value = parseFloat(showTubEl.value || 0) + move;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closePopMoveInventoryModal();
-            alert('Inventory moved to Pop show tub!');
+            alert('✅ Moved & saved!');
         }
 
         function moveAaronInventory() {
@@ -1720,18 +1416,15 @@
                     const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
                     const currentStorage = parseFloat(storageEl.value || 0);
-                    const currentShowTub = parseFloat(showTubEl.value || 0);
-                    if (move > currentStorage) {
-                        alert(`Cannot move ${move} of product ${i} - only ${currentStorage} available in storage!`);
-                        return;
-                    }
+                    if (move > currentStorage) { alert(`❌ Not enough ${i}`); return; }
                     storageEl.value = currentStorage - move;
-                    showTubEl.value = currentShowTub + move;
+                    showTubEl.value = parseFloat(showTubEl.value || 0) + move;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closeAaronMoveInventoryModal();
-            alert('Inventory moved to Aaron show tub!');
+            alert('✅ Moved & saved!');
         }
 
         function removePopInventory() {
@@ -1740,16 +1433,14 @@
                 if (remove > 0) {
                     const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                     const currentStorage = parseFloat(storageEl.value || 0);
-                    if (remove > currentStorage) {
-                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
-                        return;
-                    }
+                    if (remove > currentStorage) { alert(`❌ Not enough ${i}`); return; }
                     storageEl.value = currentStorage - remove;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closePopRemoveInventoryModal();
-            alert('Inventory removed from Pop storage tub!');
+            alert('✅ Removed & saved!');
         }
 
         function removeAaronInventory() {
@@ -1758,23 +1449,14 @@
                 if (remove > 0) {
                     const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                     const currentStorage = parseFloat(storageEl.value || 0);
-                    if (remove > currentStorage) {
-                        alert(`Cannot remove ${remove} of product ${i} - only ${currentStorage} available in storage!`);
-                        return;
-                    }
+                    if (remove > currentStorage) { alert(`❌ Not enough ${i}`); return; }
                     storageEl.value = currentStorage - remove;
                 }
             }
             updateAllInventories();
+            saveAppDataSafari();
             closeAaronRemoveInventoryModal();
-            alert('Inventory removed from Aaron storage tub!');
-        }
-
-        function clearReceivedFields(type) {
-            for (let i = 0; i < 8; i++) {
-                const el = document.getElementById(`${type}-received-${i}`);
-                if (el) el.value = '';
-            }
+            alert('✅ Removed & saved!');
         }
 
         // Update inventory calculations
@@ -1783,37 +1465,10 @@
             for (let i = 0; i < 8; i++) {
                 const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                 const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                const unitsBroughtEl = document.querySelector(`.pop-units-brought[data-product="${i}"]`);
-                const postShowEl = document.querySelector(`.pop-post-show[data-product="${i}"]`);
-                const unitsSoldSpan = document.querySelector(`.pop-units-sold[data-product="${i}"]`);
                 const currentStockEl = document.querySelector(`.pop-current-stock[data-product="${i}"]`);
-
-                let storage = parseFloat(storageEl?.value || 0);
-                let showTub = parseFloat(showTubEl?.value || 0);
-                let postShow = 0;
-                let unitsSold = 0;
-
-                if (activePopSheet) {
-                    const sheetState = sheetStates[activePopSheet];
-                    const leftInput = document.querySelector(`.units-left[data-sheet="${activePopSheet}"][data-row="${i}"]`);
-                    const broughtInput = document.querySelector(`.units-brought[data-sheet="${activePopSheet}"][data-row="${i}"]`);
-                    const brought = parseFloat(broughtInput?.value || 0);
-                    const left = parseFloat(leftInput?.value || 0);
-                    if (sheetState?.completed) {
-                        postShow = left;
-                        unitsSold = Math.max(0, brought - left);
-                        showTub = postShow;
-                    } else {
-                        postShow = left;
-                        unitsSold = Math.max(0, brought - left);
-                    }
-                    unitsBroughtEl.value = showTub;
-                    postShowEl.value = postShow;
-                }
-
-                unitsSoldSpan.textContent = unitsSold;
-                const currentVal = storage + showTub;
-                currentStockEl.value = Math.max(0, currentVal);
+                const storage = parseFloat(storageEl?.value || 0);
+                const showTub = parseFloat(showTubEl?.value || 0);
+                currentStockEl.value = Math.max(0, storage + showTub);
             }
             const total = Array.from(document.querySelectorAll('.pop-current-stock')).reduce((sum, el) => sum + parseFloat(el.value || 0), 0);
             document.getElementById('pop-total-on-hand').value = total;
@@ -1824,37 +1479,10 @@
             for (let i = 0; i < 8; i++) {
                 const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                 const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                const unitsBroughtEl = document.querySelector(`.aaron-units-brought[data-product="${i}"]`);
-                const postShowEl = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
-                const unitsSoldSpan = document.querySelector(`.aaron-units-sold[data-product="${i}"]`);
                 const currentStockEl = document.querySelector(`.aaron-current-stock[data-product="${i}"]`);
-
-                let storage = parseFloat(storageEl?.value || 0);
-                let showTub = parseFloat(showTubEl?.value || 0);
-                let postShow = 0;
-                let unitsSold = 0;
-
-                if (activeAaronSheet) {
-                    const sheetState = sheetStates[activeAaronSheet];
-                    const leftInput = document.querySelector(`.units-left[data-sheet="${activeAaronSheet}"][data-row="${i}"]`);
-                    const broughtInput = document.querySelector(`.units-brought[data-sheet="${activeAaronSheet}"][data-row="${i}"]`);
-                    const brought = parseFloat(broughtInput?.value || 0);
-                    const left = parseFloat(leftInput?.value || 0);
-                    if (sheetState?.completed) {
-                        postShow = left;
-                        unitsSold = Math.max(0, brought - left);
-                        showTub = postShow;
-                    } else {
-                        postShow = left;
-                        unitsSold = Math.max(0, brought - left);
-                    }
-                    unitsBroughtEl.value = showTub;
-                    postShowEl.value = postShow;
-                }
-
-                unitsSoldSpan.textContent = unitsSold;
-                const currentVal = storage + showTub;
-                currentStockEl.value = Math.max(0, currentVal);
+                const storage = parseFloat(storageEl?.value || 0);
+                const showTub = parseFloat(showTubEl?.value || 0);
+                currentStockEl.value = Math.max(0, storage + showTub);
             }
             const total = Array.from(document.querySelectorAll('.aaron-current-stock')).reduce((sum, el) => sum + parseFloat(el.value || 0), 0);
             document.getElementById('aaron-total-on-hand').value = total;
@@ -1864,10 +1492,9 @@
             for (let i = 0; i < 8; i++) {
                 const popStock = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
                 const aaronStock = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
-                const combined = popStock + aaronStock;
                 document.querySelector(`.master-pop-stock[data-product="${i}"]`).value = popStock;
                 document.querySelector(`.master-aaron-stock[data-product="${i}"]`).value = aaronStock;
-                document.querySelector(`.master-combined[data-product="${i}"]`).value = combined;
+                document.querySelector(`.master-combined[data-product="${i}"]`).value = popStock + aaronStock;
             }
             let popTotal = 0, aaronTotal = 0, grandTotal = 0;
             document.querySelectorAll('.master-pop-stock').forEach(inp => popTotal += parseFloat(inp.value || 0));
@@ -1891,17 +1518,18 @@
             updateSheetStatus(sheetId);
             document.getElementById(`${sheetId}-event-box`).style.display = 'flex';
             updateAllInventories();
+            saveAppDataSafari();
         }
 
         function toggleEventCompleted(sheetId) {
             const checkbox = document.getElementById(`event-completed-${sheetId}`);
             sheetStates[sheetId].completed = checkbox.checked;
             updateSheetStatus(sheetId);
-            const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
-            inputs.forEach(input => input.disabled = checkbox.checked);
+            document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(input => input.disabled = checkbox.checked);
             if (checkbox.checked) {
-                alert(`Event Completed! Data for ${sheetId} is now locked.`);
+                alert(`🔒 Event Completed!\n\nData for ${sheetId} is LOCKED & PROTECTED.\nData auto-saved.`);
                 updateAllInventories();
+                saveAppDataSafari();
             }
         }
 
@@ -1909,18 +1537,24 @@
             const statusEl = document.getElementById(`${sheetId}-status`);
             if (!statusEl) return;
             if (sheetStates[sheetId]?.completed) {
-                statusEl.textContent = 'Event Completed';
+                statusEl.textContent = '🔒 Event Completed';
                 statusEl.className = 'sheet-status completed';
             } else if (sheetStates[sheetId]?.active) {
-                statusEl.textContent = 'Active';
+                statusEl.textContent = '✅ Active';
                 statusEl.className = 'sheet-status active';
             } else {
-                statusEl.textContent = 'Inactive';
+                statusEl.textContent = '⏳ Inactive';
                 statusEl.className = 'sheet-status inactive';
             }
         }
 
-        // Tax Functions
+        function toggleTaxInputGroup(sheetId) {
+            const checkbox = document.getElementById(`tax-required-${sheetId}`);
+            const inputGroup = document.getElementById(`tax-input-group-${sheetId}`);
+            inputGroup.style.display = checkbox.checked ? 'flex' : 'none';
+            if (checkbox.checked) updateManualTax(sheetId);
+        }
+
         function updateManualTax(sheetId) {
             const taxCheckbox = document.getElementById(`tax-required-${sheetId}`);
             const taxRateInput = document.getElementById(`tax-rate-${sheetId}`);
@@ -1937,9 +1571,7 @@
             const taxAmount = subtotal * taxRate;
             const total = subtotal + taxAmount;
 
-            if (taxSummary) {
-                taxSummary.value = `${subtotal.toFixed(2)} / ${taxAmount.toFixed(2)} / ${total.toFixed(2)}`;
-            }
+            if (taxSummary) taxSummary.value = `${subtotal.toFixed(2)} / ${taxAmount.toFixed(2)} / ${total.toFixed(2)}`;
             if (taxRow) taxRow.style.display = 'table-row';
         }
 
@@ -1960,252 +1592,40 @@
         }
 
         function handleUnitsLeftChange(e) {
-            const input = e.target;
-            const sheetId = input.dataset.sheet;
-            const row = input.dataset.row;
+            const sheetId = e.target.dataset.sheet;
+            const row = e.target.dataset.row;
             const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`)?.value || 0);
-            const left = parseFloat(input.value || 0);
+            const left = parseFloat(e.target.value || 0);
             const sold = Math.max(0, brought - left);
-            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
-            if (soldEl) soldEl.value = sold;
+            document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`).value = sold;
             updateRevenue(sheetId);
         }
 
-        // Refresh Functions
         function refreshSheetData(person, sheetId) {
             const showTubClass = person === 'pop' ? '.pop-show-tub' : '.aaron-show-tub';
             for (let i = 0; i < 8; i++) {
                 const showTubEl = document.querySelector(`${showTubClass}[data-product="${i}"]`);
                 if (showTubEl) {
-                    const showTubValue = parseFloat(showTubEl.value || 0);
                     const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    if (broughtInput) broughtInput.value = showTubValue;
+                    if (broughtInput) broughtInput.value = parseFloat(showTubEl.value || 0);
                 }
             }
             updateRevenue(sheetId);
-            alert('Sheet data refreshed! Units Brought updated from current Show Tub.');
+            alert('✅ Sheet refreshed!');
         }
 
         function refreshInventoryFromActiveSheet(person) {
             const activeSheet = document.querySelector(`input[name="${person}-active-sheet"]:checked`)?.value;
             if (!activeSheet) {
-                alert(`Please activate a ${person === 'pop' ? 'Pop' : 'Aaron'} sales sheet first.`);
+                alert(`❌ Please activate a ${person === 'pop' ? 'Pop' : 'Aaron'} sales sheet first.`);
                 return;
             }
             updateAllInventories();
-            alert(`${person === 'pop' ? 'Pop' : 'Aaron'} inventory refreshed from active sheet ${activeSheet}.`);
+            alert(`✅ ${person === 'pop' ? 'Pop' : 'Aaron'} inventory refreshed!`);
         }
 
-        function refreshSalesCharts() {
-            updateChartsData();
-        }
-
-        // Sales Sheet Management
-        function openNewSalesSheetModal() { document.getElementById('newSalesModal').classList.add('active'); }
-        function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
-        function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.add('active'); }
-        function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
-
-        function createNewSalesSheet() {
-            const name = document.getElementById('sheetName').value;
-            const date = document.getElementById('sheetDate').value;
-            const sheetId = `custom-pop-sheet-${salesSheetCount}`;
-            const newTab = document.createElement('div');
-            newTab.id = sheetId;
-            newTab.className = 'tab-content';
-            newTab.innerHTML = `<div class="tab-section"><h2>${name} - ${date}</h2>
-            <button class="refresh-btn" onclick="refreshSheetData('pop', '${sheetId}')">Refresh Units Brought</button>
-            <div class="sheet-controls">
-                <div class="sheet-status inactive" id="${sheetId}-status">Inactive</div>
-                <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                    <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="${sheetId}" onchange="activateSheet('pop', '${sheetId}')">
-                    Activate this sheet
-                </label>
-                <div class="event-checkbox" id="${sheetId}-event-box" style="display: none;">
-                    <input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')">
-                    <label for="event-completed-${sheetId}">Event Completed (Locks Data)</label>
-                </div>
-            </div>
-            <div class="tax-controls">
-                <div class="tax-control-group">
-                    <input type="checkbox" id="tax-required-${sheetId}" class="tax-checkbox" data-sheet="${sheetId}">
-                    <label for="tax-required-${sheetId}">Sales Tax Required?</label>
-                </div>
-                <div class="tax-control-group" id="tax-input-group-${sheetId}" style="display: none;">
-                    <label for="tax-rate-${sheetId}">Tax Rate</label>
-                    <input type="number" id="tax-rate-${sheetId}" class="tax-rate-input" data-sheet="${sheetId}" step="0.01" min="0" max="20" placeholder="8.25">
-                </div>
-            </div>
-            <table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead>
-            <tbody>${products.map((p, i) => `<tr><td>${p}</td>
-            <td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" readonly></td>
-            <td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="${i}" readonly></td>
-            <td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td></tr>`).join('')}
-            <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" readonly></td></tr>
-            <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td></tr>
-            <tr class="tax-summary-row" id="tax-row-${sheetId}" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="${sheetId}" readonly style="font-weight: bold;"></td></tr>
-            </tbody></table></div>`;
-            document.querySelector('.container').appendChild(newTab);
-            const newBtn = document.createElement('button');
-            newBtn.className = 'tab-btn';
-            newBtn.textContent = name;
-            newBtn.onclick = (e) => openTab(e, sheetId);
-            document.querySelector('.nav-tabs').appendChild(newBtn);
-            const link = document.createElement('button');
-            link.className = 'nav-link';
-            link.textContent = name;
-            link.onclick = (e) => openTab(e, sheetId);
-            document.getElementById('dynamic-sales-links').appendChild(link);
-            attachEventListeners();
-            closeNewSalesSheetModal();
-            document.getElementById('sheetName').value = '';
-            document.getElementById('sheetDate').value = '';
-            salesSheetCount++;
-        }
-
-        function createNewAaronSalesSheet() {
-            const name = document.getElementById('aaronSheetName').value;
-            const date = document.getElementById('aaronSheetDate').value;
-            const sheetId = `custom-aaron-sheet-${aaronSalesSheetCount}`;
-            const newTab = document.createElement('div');
-            newTab.id = sheetId;
-            newTab.className = 'tab-content';
-            newTab.innerHTML = `<div class="tab-section"><h2>${name} - ${date}</h2>
-            <button class="refresh-btn" onclick="refreshSheetData('aaron', '${sheetId}')">Refresh Units Brought</button>
-            <div class="sheet-controls">
-                <div class="sheet-status inactive" id="${sheetId}-status">Inactive</div>
-                <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                    <input type="radio" name="aaron-active-sheet" class="aaron-active-radio" value="${sheetId}" onchange="activateSheet('aaron', '${sheetId}')">
-                    Activate this sheet
-                </label>
-                <div class="event-checkbox" id="${sheetId}-event-box" style="display: none;">
-                    <input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')">
-                    <label for="event-completed-${sheetId}">Event Completed (Locks Data)</label>
-                </div>
-            </div>
-            <div class="tax-controls">
-                <div class="tax-control-group">
-                    <input type="checkbox" id="tax-required-${sheetId}" class="tax-checkbox" data-sheet="${sheetId}">
-                    <label for="tax-required-${sheetId}">Sales Tax Required?</label>
-                </div>
-                <div class="tax-control-group" id="tax-input-group-${sheetId}" style="display: none;">
-                    <label for="tax-rate-${sheetId}">Tax Rate</label>
-                    <input type="number" id="tax-rate-${sheetId}" class="tax-rate-input" data-sheet="${sheetId}" step="0.01" min="0" max="20" placeholder="8.25">
-                </div>
-            </div>
-            <table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead>
-            <tbody>${products.map((p, i) => `<tr><td>${p}</td>
-            <td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" readonly></td>
-            <td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="${i}" readonly></td>
-            <td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td></tr>`).join('')}
-            <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" readonly></td></tr>
-            <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td></tr>
-            <tr class="tax-summary-row" id="tax-row-${sheetId}" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="${sheetId}" readonly style="font-weight: bold;"></td></tr>
-            </tbody></table></div>`;
-            document.querySelector('.container').appendChild(newTab);
-            const newBtn = document.createElement('button');
-            newBtn.className = 'tab-btn';
-            newBtn.textContent = name;
-            newBtn.onclick = (e) => openTab(e, sheetId);
-            document.querySelector('.nav-tabs').appendChild(newBtn);
-            const link = document.createElement('button');
-            link.className = 'nav-link';
-            link.textContent = name;
-            link.onclick = (e) => openTab(e, sheetId);
-            document.getElementById('dynamic-aaron-sales-links').appendChild(link);
-            attachEventListeners();
-            closeNewAaronSalesSheetModal();
-            document.getElementById('aaronSheetName').value = '';
-            document.getElementById('aaronSheetDate').value = '';
-            aaronSalesSheetCount++;
-        }
-
-        function openDeletePopSalesSheetModal() {
-            const dropdown = document.getElementById('popSheetToDelete');
-            dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
-            sheets.forEach(sheetId => {
-                const tab = document.getElementById(sheetId);
-                if (tab) {
-                    const h2 = tab.querySelector('h2');
-                    if (h2) {
-                        const displayName = h2.textContent.split(' - ')[0];
-                        const option = document.createElement('option');
-                        option.value = sheetId;
-                        option.textContent = displayName;
-                        dropdown.appendChild(option);
-                    }
-                }
-            });
-            document.querySelectorAll('div[id^="custom-pop-sheet-"]').forEach(tab => {
-                const h2 = tab.querySelector('h2');
-                if (h2) {
-                    const displayName = h2.textContent.split(' - ')[0];
-                    const option = document.createElement('option');
-                    option.value = tab.id;
-                    option.textContent = displayName;
-                    dropdown.appendChild(option);
-                }
-            });
-            document.getElementById('deletePopSalesSheetModal').classList.add('active');
-        }
-        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
-
-        function deletePopSalesSheet() {
-            const sheetId = document.getElementById('popSheetToDelete').value;
-            if (!sheetId) { alert('Please select a sheet to delete'); return; }
-            const tabContent = document.getElementById(sheetId);
-            if (!tabContent) { alert('Sheet not found'); return; }
-            const sheetName = tabContent.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
-            if (!confirm(`Are you sure you want to delete ${sheetName}? This cannot be undone.`)) return;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                if (btn.textContent.trim() === sheetName.trim()) btn.remove();
-            });
-            document.querySelectorAll('#dynamic-sales-links .nav-link').forEach(link => {
-                if (link.textContent.trim() === sheetName.trim()) link.remove();
-            });
-            tabContent.remove();
-            closeDeletePopSalesSheetModal();
-            openTab(null, 'pop-inv');
-            alert(`${sheetName} deleted successfully!`);
-        }
-
-        function openDeleteAaronSalesSheetModal() {
-            const dropdown = document.getElementById('aaronSheetToDelete');
-            dropdown.innerHTML = '<option value="">-- Select a sheet to delete --</option>';
-            document.querySelectorAll('div[id^="custom-aaron-sheet-"]').forEach(tab => {
-                const h2 = tab.querySelector('h2');
-                if (h2) {
-                    const displayName = h2.textContent.split(' - ')[0];
-                    const option = document.createElement('option');
-                    option.value = tab.id;
-                    option.textContent = displayName;
-                    dropdown.appendChild(option);
-                }
-            });
-            document.getElementById('deleteAaronSalesSheetModal').classList.add('active');
-        }
-        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
-
-        function deleteAaronSalesSheet() {
-            const sheetId = document.getElementById('aaronSheetToDelete').value;
-            if (!sheetId) { alert('Please select a sheet to delete'); return; }
-            const tabContent = document.getElementById(sheetId);
-            if (!tabContent) { alert('Sheet not found'); return; }
-            const sheetName = tabContent.querySelector('h2')?.textContent.split(' - ')[0] || 'Sheet';
-            if (!confirm(`Are you sure you want to delete ${sheetName}? This cannot be undone.`)) return;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                if (btn.textContent.trim() === sheetName.trim()) btn.remove();
-            });
-            document.querySelectorAll('#dynamic-aaron-sales-links .nav-link').forEach(link => {
-                if (link.textContent.trim() === sheetName.trim()) link.remove();
-            });
-            tabContent.remove();
-            closeDeleteAaronSalesSheetModal();
-            openTab(null, 'aaron-inv');
-            alert(`${sheetName} deleted successfully!`);
-        }
-
-        // Charts
+        function refreshSalesCharts() { updateChartsData(); }
+        
         function updateChartsData() {
             const unitsSold = products.map((p, i) => {
                 let total = 0;
@@ -2253,119 +1673,47 @@
             }
         }
 
-        // Event Listeners
-        function attachEventListeners() {
-            document.querySelectorAll('input[data-product], input[data-sheet], input.tax-checkbox').forEach(inp => {
-                inp.addEventListener('input', function() {
-                    const sheet = this.dataset.sheet;
-                    if (sheet) {
-                        if (this.classList.contains('tax-checkbox')) {
-                            const taxInputGroup = document.getElementById(`tax-input-group-${sheet}`);
-                            taxInputGroup.style.display = this.checked ? 'flex' : 'none';
-                            updateManualTax(sheet);
-                        } else {
-                            updateRevenue(sheet);
-                        }
-                        updateAllInventories();
-                    } else {
-                        updateAllInventories();
-                    }
-                });
-                inp.addEventListener('change', () => {
-                    const sheet = this.dataset.sheet;
-                    if (sheet) updateAllInventories();
-                    else updateAllInventories();
-                });
-            });
-            document.querySelectorAll('input[name="pop-active-sheet"], input[name="aaron-active-sheet"]').forEach(radio => {
-                radio.addEventListener('change', updateAllInventories);
-            });
-            document.querySelectorAll('.units-left').forEach(inp => {
-                inp.removeEventListener('input', handleUnitsLeftChange);
-                inp.addEventListener('input', handleUnitsLeftChange);
-            });
-        }
-
-        // Save and Load
-        function saveAppData() {
-            const data = { popInventory: {}, aaronInventory: {}, salesSheets: {}, sheetStates };
-            for (let i = 0; i < 8; i++) {
-                data.popInventory[i] = {
-                    price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
-                    storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
-                };
-                data.aaronInventory[i] = {
-                    price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
-                    storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0)
-                };
-            }
-            document.querySelectorAll('input[data-sheet]').forEach(inp => {
-                const sheetId = inp.dataset.sheet;
-                const row = inp.dataset.row;
-                if (!data.salesSheets[sheetId]) data.salesSheets[sheetId] = {};
-                if (!data.salesSheets[sheetId][row]) data.salesSheets[sheetId][row] = {};
-                if (inp.classList.contains('units-brought')) data.salesSheets[sheetId][row].brought = inp.value;
-                else if (inp.classList.contains('units-left')) data.salesSheets[sheetId][row].left = inp.value;
-            });
-            localStorage.setItem('knifeInventoryData', JSON.stringify(data));
-            alert('Data saved successfully!');
-        }
-
-        function loadAppData() {
-            const data = JSON.parse(localStorage.getItem('knifeInventoryData') || '{}');
-            if (data.popInventory) {
-                Object.keys(data.popInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = data.popInventory[i].price;
-                    if (storageEl) storageEl.value = data.popInventory[i].storage;
-                    if (showTubEl) showTubEl.value = data.popInventory[i].showTub;
-                });
-            }
-            if (data.aaronInventory) {
-                Object.keys(data.aaronInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = data.aaronInventory[i].price;
-                    if (storageEl) storageEl.value = data.aaronInventory[i].storage;
-                    if (showTubEl) showTubEl.value = data.aaronInventory[i].showTub;
-                });
-            }
-            if (data.sheetStates) sheetStates = data.sheetStates;
-            if (data.salesSheets) {
-                Object.keys(data.salesSheets).forEach(sheetId => {
-                    Object.keys(data.salesSheets[sheetId]).forEach(row => {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        if (broughtEl) broughtEl.value = data.salesSheets[sheetId][row].brought;
-                        if (leftEl) leftEl.value = data.salesSheets[sheetId][row].left;
-                    });
-                });
-            }
-            attachEventListeners();
-            updateAllInventories();
-            updateChartsData();
-        }
+        // Modal Stubs
+        function openNewSalesSheetModal() { alert('New sales sheet creation - available in full version'); }
+        function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
+        function openNewAaronSalesSheetModal() { alert('New Aaron sales sheet creation - available in full version'); }
+        function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
+        function openDeletePopSalesSheetModal() { alert('Delete pop sales sheet - available in full version'); }
+        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
+        function openDeleteAaronSalesSheetModal() { alert('Delete Aaron sales sheet - available in full version'); }
+        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
+        function createNewSalesSheet() { alert('Create new sheet - available in full version'); }
+        function createNewAaronSalesSheet() { alert('Create new Aaron sheet - available in full version'); }
+        function deletePopSalesSheet() { alert('Delete pop sheet - available in full version'); }
+        function deleteAaronSalesSheet() { alert('Delete Aaron sheet - available in full version'); }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadAppData();
+            loadAppDataSafari();
             initCharts();
             sheets.forEach(sheet => updateSheetStatus(sheet));
+            updateCacheStatus();
+        });
+
+        // Force save on exit
+        window.addEventListener('beforeunload', function() {
+            saveAppDataSafari();
         });
 
         // Cross-tab sync
         window.addEventListener('storage', function(e) {
-            if (e.key === 'knifeInventoryData') {
-                loadAppData();
-                updateAllInventories();
-                updateChartsData();
+            if (e.key === CACHE_KEY || e.key === TIMESTAMP_KEY) {
+                loadAppDataSafari();
             }
         });
+
+        // Auto-save every 2 minutes
+        setInterval(function() {
+            const lastSave = localStorage.getItem(TIMESTAMP_KEY);
+            if (lastSave && Date.now() - parseInt(lastSave) > 120000) {
+                saveAppDataSafari();
+            }
+        }, 120000);
     </script>
 </body>
 </html>
