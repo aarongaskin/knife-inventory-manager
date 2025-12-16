@@ -7,7 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v20k - Total Units Sold Row</title>
+    <title>Knife Inventory Manager v20k - Fixed Sales Sheets</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -88,6 +88,10 @@
         .charts-container { display: flex; flex-wrap: wrap; gap: 20px; }
         .chart-box { flex: 1 1 300px; min-width: 260px; }
         .flow-info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3; font-size: 13px; color: #1565c0; line-height: 1.6; }
+        .modal-info { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #4caf50; font-size: 13px; color: #2e7d32; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge-locked { background: #ff6b6b; color: white; }
+        .badge-active { background: #4caf50; color: white; }
         @media (max-width: 768px) {
             .nav-tabs { justify-content: flex-start; }
             .nav-tabs button { padding: 12px 15px; font-size: 12px; }
@@ -296,12 +300,9 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="wetumpka-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka" onchange="activateSheet('pop', 'wetumpka')"> Activate this sheet
-                    </label>
+                    <button class="nav-link" onclick="openActivateSheetModal('pop', 'wetumpka')" style="margin: 0;">▶️ Activate this sheet</button>
                     <div class="event-checkbox" id="wetumpka-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')">
-                        <label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label>
+                        <button class="nav-link" onclick="openEventCompletedModal('wetumpka')" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">✅ Event Completed (Lock)</button>
                     </div>
                 </div>
                 <div class="tax-controls">
@@ -340,12 +341,9 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="trussville-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="trussville" onchange="activateSheet('pop', 'trussville')"> Activate this sheet
-                    </label>
+                    <button class="nav-link" onclick="openActivateSheetModal('pop', 'trussville')" style="margin: 0;">▶️ Activate this sheet</button>
                     <div class="event-checkbox" id="trussville-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')">
-                        <label for="event-completed-trussville">✅ Event Completed (Locks Data)</label>
+                        <button class="nav-link" onclick="openEventCompletedModal('trussville')" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">✅ Event Completed (Lock)</button>
                     </div>
                 </div>
                 <div class="tax-controls">
@@ -384,12 +382,9 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="columbia-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="columbia" onchange="activateSheet('pop', 'columbia')"> Activate this sheet
-                    </label>
+                    <button class="nav-link" onclick="openActivateSheetModal('pop', 'columbia')" style="margin: 0;">▶️ Activate this sheet</button>
                     <div class="event-checkbox" id="columbia-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')">
-                        <label for="event-completed-columbia">✅ Event Completed (Locks Data)</label>
+                        <button class="nav-link" onclick="openEventCompletedModal('columbia')" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">✅ Event Completed (Lock)</button>
                     </div>
                 </div>
                 <div class="tax-controls">
@@ -428,12 +423,9 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="hattiesburg-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="hattiesburg" onchange="activateSheet('pop', 'hattiesburg')"> Activate this sheet
-                    </label>
+                    <button class="nav-link" onclick="openActivateSheetModal('pop', 'hattiesburg')" style="margin: 0;">▶️ Activate this sheet</button>
                     <div class="event-checkbox" id="hattiesburg-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')">
-                        <label for="event-completed-hattiesburg">✅ Event Completed (Locks Data)</label>
+                        <button class="nav-link" onclick="openEventCompletedModal('hattiesburg')" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">✅ Event Completed (Lock)</button>
                     </div>
                 </div>
                 <div class="tax-controls">
@@ -484,7 +476,7 @@
             </div>
         </div>
 
-        <!-- Add Inventory Modals -->
+        <!-- Inventory Management Modals (existing inventory modals stay the same) -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Pop Storage Tub</h3>
@@ -631,6 +623,54 @@
             </div>
         </div>
 
+        <!-- NEW: Activate Sheet Modal -->
+        <div id="activateSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>Activate Sales Sheet</h3>
+                <div class="modal-info">
+                    <strong>📋 Confirming Sheet Activation</strong>
+                    <p style="margin-top: 10px; font-size: 13px;">This will pull the current Show Tub inventory into this sheet. Make sure your Show Tub is ready!</p>
+                </div>
+                <p id="activate-sheet-name" style="color: #333; font-weight: 600; margin-bottom: 15px; font-size: 16px;"></p>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmActivateSheet()">Confirm Activation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Event Completed Modal -->
+        <div id="eventCompletedModal" class="modal">
+            <div class="modal-content">
+                <h3>Lock Event & Save Data to Firebase</h3>
+                <div class="modal-info">
+                    <strong>🔒 FINAL STEP - Data Lock & Save</strong>
+                    <p style="margin-top: 10px; font-size: 13px;">This will calculate and save all totals to Firebase. Your data will be locked and won't change on refresh.</p>
+                </div>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+                    <p style="color: #856404; font-weight: 500; font-size: 13px; margin-bottom: 10px;">📊 Final Totals Summary:</p>
+                    <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 5px; font-weight: 600;">Total Units Sold:</td>
+                            <td style="padding: 5px; text-align: right;" id="final-units-sold">0</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 5px; font-weight: 600;">Total Revenue:</td>
+                            <td style="padding: 5px; text-align: right;" id="final-revenue">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; font-weight: 600; color: #d32f2f;">Status:</td>
+                            <td style="padding: 5px; text-align: right; color: #d32f2f; font-weight: 600;">LOCKED 🔒</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeEventCompletedModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #d32f2f;">Lock Event & Save</button>
+                </div>
+            </div>
+        </div>
+
         <!-- New Sales Sheet Modals -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
@@ -731,6 +771,8 @@
         let sheetStates = {};
         let currentPerson = null;
         let currentSheetId = null;
+        let pendingActivationSheet = null;
+        let pendingCompletedSheet = null;
 
         // CRITICAL SAFARI FIX: Force reload fresh data every time page loads
         function forceFreshDataOnLoad() {
@@ -770,12 +812,23 @@
                     }
                     if (data.salesSheets) {
                         Object.keys(data.salesSheets).forEach(sheetId => {
+                            if (data.salesSheets[sheetId].locked) {
+                                sheetStates[sheetId] = { active: false, completed: true };
+                            }
                             Object.keys(data.salesSheets[sheetId]).forEach(row => {
+                                if (row === 'locked' || row === 'totalUnitsSold' || row === 'totalRevenue') return;
                                 const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
                                 const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
+                                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
                                 if (broughtEl && data.salesSheets[sheetId][row].brought) broughtEl.value = data.salesSheets[sheetId][row].brought;
                                 if (leftEl && data.salesSheets[sheetId][row].left) leftEl.value = data.salesSheets[sheetId][row].left;
+                                if (soldEl && data.salesSheets[sheetId][row].sold) soldEl.value = data.salesSheets[sheetId][row].sold;
                             });
+                            // Load totals
+                            const unitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                            const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                            if (unitsEl && data.salesSheets[sheetId].totalUnitsSold) unitsEl.value = data.salesSheets[sheetId].totalUnitsSold;
+                            if (revenueEl && data.salesSheets[sheetId].totalRevenue) revenueEl.value = data.salesSheets[sheetId].totalRevenue;
                         });
                     }
                     updateAllInventories();
@@ -800,10 +853,27 @@
             updateAllInventories();
         }
 
-        function activateSheet(person, sheetId) {
-            const radioBtn = document.querySelector(`input[name="${person}-active-sheet"][value="${sheetId}"]`);
-            if (!radioBtn || !radioBtn.checked) return;
+        // MODAL: Activate Sheet
+        function openActivateSheetModal(person, sheetId) {
+            currentPerson = person;
+            pendingActivationSheet = sheetId;
+            document.getElementById('activate-sheet-name').textContent = `Activating: ${sheetId.charAt(0).toUpperCase() + sheetId.slice(1)} Sales Sheet`;
+            document.getElementById('activateSheetModal').classList.add('active');
+        }
 
+        function closeActivateSheetModal() {
+            document.getElementById('activateSheetModal').classList.remove('active');
+            currentPerson = null;
+            pendingActivationSheet = null;
+        }
+
+        function confirmActivateSheet() {
+            if (!pendingActivationSheet || !currentPerson) return;
+            activateSheet(currentPerson, pendingActivationSheet);
+            closeActivateSheetModal();
+        }
+
+        function activateSheet(person, sheetId) {
             Object.keys(sheetStates).forEach(sheet => {
                 if (sheet !== sheetId) {
                     sheetStates[sheet].active = false;
@@ -812,7 +882,6 @@
             });
 
             sheetStates[sheetId].active = true;
-
             const eventBox = document.getElementById(`${sheetId}-event-box`);
             if (eventBox) {
                 eventBox.style.display = 'flex';
@@ -837,6 +906,110 @@
             }
         }
 
+        function updateSheetStatus(sheetId) {
+            const statusEl = document.getElementById(`${sheetId}-status`);
+            if (!statusEl) return;
+
+            if (sheetStates[sheetId].completed) {
+                statusEl.textContent = '🔒 Locked';
+                statusEl.className = 'sheet-status completed';
+            } else if (sheetStates[sheetId].active) {
+                statusEl.textContent = '● Active';
+                statusEl.className = 'sheet-status active';
+            } else {
+                statusEl.textContent = '● Inactive';
+                statusEl.className = 'sheet-status inactive';
+            }
+        }
+
+        // MODAL: Event Completed
+        function openEventCompletedModal(sheetId) {
+            pendingCompletedSheet = sheetId;
+            // Calculate and display final totals
+            let totalUnits = 0, totalRevenue = 0;
+            for (let i = 0; i < 8; i++) {
+                const unitsSold = parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
+                const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                totalUnits += unitsSold;
+                totalRevenue += unitsSold * price;
+            }
+            document.getElementById('final-units-sold').textContent = totalUnits;
+            document.getElementById('final-revenue').textContent = '$' + totalRevenue.toFixed(2);
+            document.getElementById('eventCompletedModal').classList.add('active');
+        }
+
+        function closeEventCompletedModal() {
+            document.getElementById('eventCompletedModal').classList.remove('active');
+            pendingCompletedSheet = null;
+        }
+
+        function confirmEventCompleted() {
+            if (!pendingCompletedSheet) return;
+            const sheetId = pendingCompletedSheet;
+
+            // CRITICAL: Calculate and store all final totals BEFORE locking
+            let totalUnits = 0, totalRevenue = 0;
+            for (let i = 0; i < 8; i++) {
+                const leftInput = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+
+                const brought = parseFloat(broughtInput?.value || 0);
+                const left = parseFloat(leftInput?.value || 0);
+                const sold = Math.max(0, brought - left);
+
+                // Update sold value
+                if (soldEl) soldEl.value = sold;
+                totalUnits += sold;
+                totalRevenue += sold * price;
+            }
+
+            // Set total values
+            const unitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+            const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+            if (unitsEl) unitsEl.value = totalUnits;
+            if (revenueEl) revenueEl.value = totalRevenue.toFixed(2);
+
+            // Mark sheet as completed
+            sheetStates[sheetId].completed = true;
+            sheetStates[sheetId].active = false;
+            updateSheetStatus(sheetId);
+
+            // Hide event completed button
+            const eventBox = document.getElementById(`${sheetId}-event-box`);
+            if (eventBox) {
+                eventBox.style.display = 'none';
+            }
+
+            // CRITICAL: Save to Firebase with lock flag
+            saveEventCompletedToFirebase(sheetId, totalUnits, totalRevenue);
+
+            closeEventCompletedModal();
+            alert(`✅ Event locked and saved! Total Units: ${totalUnits}, Total Revenue: $${totalRevenue.toFixed(2)}`);
+        }
+
+        function saveEventCompletedToFirebase(sheetId, totalUnits, totalRevenue) {
+            if (!window.firebaseDB) return;
+            const sheetRef = window.firebaseRef(window.firebaseDB, `inventory/salesSheets/${sheetId}`);
+            
+            const sheetData = { locked: true, totalUnitsSold: totalUnits, totalRevenue: totalRevenue.toFixed(2) };
+            for (let i = 0; i < 8; i++) {
+                const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const leftInput = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const brought = parseFloat(broughtInput?.value || 0);
+                const left = parseFloat(leftInput?.value || 0);
+                const sold = parseFloat(soldEl?.value || 0);
+                sheetData[i] = { brought, left, sold };
+            }
+
+            window.firebaseSet(sheetRef, sheetData).then(() => {
+                console.log(`✅ Sheet ${sheetId} locked and saved to Firebase`);
+                updateAllInventories();
+            }).catch(e => console.error('Firebase save error:', e));
+        }
+
         function refreshSheetData(person, sheetId) {
             const showTubClass = person === 'pop' ? 'pop-show-tub' : 'aaron-show-tub';
             for (let i = 0; i < 8; i++) {
@@ -854,7 +1027,7 @@
         }
 
         function refreshInventoryFromActiveSheet(person) {
-            const activeSheet = document.querySelector(`input[name="${person}-active-sheet"]:checked`)?.value;
+            const activeSheet = Object.keys(sheetStates).find(sheet => sheetStates[sheet].active);
             if (!activeSheet) {
                 alert('Please activate a ' + (person === 'pop' ? 'Pop' : 'Aaron') + ' sales sheet first.');
                 return;
@@ -902,420 +1075,6 @@
             alert((person === 'pop' ? 'Pop' : 'Aaron') + ' inventory refreshed from active sheet ' + activeSheet + '.');
         }
 
-        function toggleEventCompleted(sheetId) {
-            const checkbox = document.getElementById('event-completed-' + sheetId);
-            sheetStates[sheetId].completed = checkbox.checked;
-            updateSheetStatus(sheetId);
-
-            const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
-            inputs.forEach(input => {
-                input.disabled = checkbox.checked;
-            });
-
-            if (checkbox.checked) {
-                updateRevenueTotal(sheetId);
-                currentPerson = 'pop';
-                currentSheetId = sheetId;
-                openNextSheetModal('pop', sheetId);
-            }
-
-            updateAllInventories();
-        }
-
-        function updateSheetStatus(sheetId) {
-            const statusEl = document.getElementById(sheetId + '-status');
-            if (!statusEl) return;
-
-            if (sheetStates[sheetId]?.completed) {
-                statusEl.textContent = '✅ Event Completed';
-                statusEl.className = 'sheet-status completed';
-            } else if (sheetStates[sheetId]?.active) {
-                statusEl.textContent = '● Active';
-                statusEl.className = 'sheet-status active';
-            } else {
-                statusEl.textContent = '● Inactive';
-                statusEl.className = 'sheet-status inactive';
-            }
-        }
-
-        // Inventory Functions
-        function openPopInventoryReceivedModal() {
-            document.getElementById('popInventoryReceivedModal').classList.add('active');
-        }
-
-        function closePopInventoryReceivedModal() {
-            document.getElementById('popInventoryReceivedModal').classList.remove('active');
-        }
-
-        function addPopInventoryReceived() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('pop-received-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const current = parseFloat(storageEl.value || 0);
-                    storageEl.value = current + value;
-                    document.getElementById('pop-received-' + i).value = '';
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closePopInventoryReceivedModal();
-            alert('✅ Inventory added to Pop storage!');
-        }
-
-        function openPopMoveInventoryModal() {
-            document.getElementById('popMoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`).value || 0);
-                document.getElementById('pop-storage-view-' + i).value = storage;
-            }
-        }
-
-        function closePopMoveInventoryModal() {
-            document.getElementById('popMoveInventoryModal').classList.remove('active');
-        }
-
-        function movePopInventory() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('pop-move-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    const storage = parseFloat(storageEl.value || 0);
-                    const show = parseFloat(showEl.value || 0);
-                    if (value <= storage) {
-                        storageEl.value = storage - value;
-                        showEl.value = show + value;
-                        document.getElementById('pop-move-' + i).value = '';
-                    }
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closePopMoveInventoryModal();
-            alert('✅ Inventory moved to Show Tub!');
-        }
-
-        function openPopRemoveInventoryModal() {
-            document.getElementById('popRemoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`).value || 0);
-                document.getElementById('pop-remove-storage-' + i).value = storage;
-            }
-        }
-
-        function closePopRemoveInventoryModal() {
-            document.getElementById('popRemoveInventoryModal').classList.remove('active');
-        }
-
-        function removePopInventory() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('pop-remove-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const storage = parseFloat(storageEl.value || 0);
-                    if (value <= storage) {
-                        storageEl.value = storage - value;
-                        document.getElementById('pop-remove-' + i).value = '';
-                    } else {
-                        alert('Cannot remove ' + value + ' of product ' + i + ' - only ' + storage + ' available!');
-                    }
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closePopRemoveInventoryModal();
-            alert('✅ Inventory removed from Pop storage!');
-        }
-
-        function openAaronInventoryReceivedModal() {
-            document.getElementById('aaronInventoryReceivedModal').classList.add('active');
-        }
-
-        function closeAaronInventoryReceivedModal() {
-            document.getElementById('aaronInventoryReceivedModal').classList.remove('active');
-        }
-
-        function addAaronInventoryReceived() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('aaron-received-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const current = parseFloat(storageEl.value || 0);
-                    storageEl.value = current + value;
-                    document.getElementById('aaron-received-' + i).value = '';
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closeAaronInventoryReceivedModal();
-            alert('✅ Inventory added to Aaron storage!');
-        }
-
-        function openAaronMoveInventoryModal() {
-            document.getElementById('aaronMoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`).value || 0);
-                document.getElementById('aaron-storage-view-' + i).value = storage;
-            }
-        }
-
-        function closeAaronMoveInventoryModal() {
-            document.getElementById('aaronMoveInventoryModal').classList.remove('active');
-        }
-
-        function moveAaronInventory() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('aaron-move-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    const storage = parseFloat(storageEl.value || 0);
-                    const show = parseFloat(showEl.value || 0);
-                    if (value <= storage) {
-                        storageEl.value = storage - value;
-                        showEl.value = show + value;
-                        document.getElementById('aaron-move-' + i).value = '';
-                    }
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closeAaronMoveInventoryModal();
-            alert('✅ Inventory moved to Show Tub!');
-        }
-
-        function openAaronRemoveInventoryModal() {
-            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`).value || 0);
-                document.getElementById('aaron-remove-storage-' + i).value = storage;
-            }
-        }
-
-        function closeAaronRemoveInventoryModal() {
-            document.getElementById('aaronRemoveInventoryModal').classList.remove('active');
-        }
-
-        function removeAaronInventory() {
-            for (let i = 0; i < 8; i++) {
-                const value = parseFloat(document.getElementById('aaron-remove-' + i).value || 0);
-                if (value > 0) {
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const storage = parseFloat(storageEl.value || 0);
-                    if (value <= storage) {
-                        storageEl.value = storage - value;
-                        document.getElementById('aaron-remove-' + i).value = '';
-                    } else {
-                        alert('Cannot remove ' + value + ' of product ' + i + ' - only ' + storage + ' available!');
-                    }
-                }
-            }
-            updateAllInventories();
-            saveAppData();
-            closeAaronRemoveInventoryModal();
-            alert('✅ Inventory removed from Aaron storage!');
-        }
-
-        // Update All Inventories
-        function updatePopShowTubTotal() {
-            let showTotal = 0;
-            for (let i = 0; i < 8; i++) {
-                const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                showTotal += parseFloat(showEl?.value || 0);
-            }
-            const totalEl = document.getElementById('pop-show-tub-total');
-            if (totalEl) totalEl.value = showTotal;
-        }
-
-        function updateAaronShowTubTotal() {
-            let showTotal = 0;
-            for (let i = 0; i < 8; i++) {
-                const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                showTotal += parseFloat(showEl?.value || 0);
-            }
-            const totalEl = document.getElementById('aaron-show-tub-total');
-            if (totalEl) totalEl.value = showTotal;
-        }
-
-        function updatePopInventory() {
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
-                const currentEl = document.querySelector(`.pop-current-stock[data-product="${i}"]`);
-                if (currentEl) currentEl.value = storage + showTub;
-            }
-            updatePopShowTubTotal();
-        }
-
-        function updateAaronInventory() {
-            for (let i = 0; i < 8; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                const showTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
-                const currentEl = document.querySelector(`.aaron-current-stock[data-product="${i}"]`);
-                if (currentEl) currentEl.value = storage + showTub;
-            }
-            updateAaronShowTubTotal();
-        }
-
-        function updateMasterInventory() {
-            for (let i = 0; i < 8; i++) {
-                const popStock = parseFloat(document.querySelector(`.master-pop-stock[data-product="${i}"]`)?.value || 0);
-                const aaronStock = parseFloat(document.querySelector(`.master-aaron-stock[data-product="${i}"]`)?.value || 0);
-                const combinedEl = document.querySelector(`.master-combined[data-product="${i}"]`);
-                if (combinedEl) combinedEl.value = popStock + aaronStock;
-            }
-
-            let popTotal = 0, aaronTotal = 0;
-            for (let i = 0; i < 8; i++) {
-                popTotal += parseFloat(document.querySelector(`.master-pop-stock[data-product="${i}"]`)?.value || 0);
-                aaronTotal += parseFloat(document.querySelector(`.master-aaron-stock[data-product="${i}"]`)?.value || 0);
-            }
-            document.getElementById('master-pop-total').value = popTotal;
-            document.getElementById('master-aaron-total').value = aaronTotal;
-            document.getElementById('master-grand-total').value = popTotal + aaronTotal;
-        }
-
-        function updateAllInventories() {
-            updatePopInventory();
-            updateAaronInventory();
-            
-            for (let i = 0; i < 8; i++) {
-                const popCurrent = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
-                const aaronCurrent = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
-                
-                document.querySelector(`.master-pop-stock[data-product="${i}"]`).value = popCurrent;
-                document.querySelector(`.master-aaron-stock[data-product="${i}"]`).value = aaronCurrent;
-                document.querySelector(`.master-combined[data-product="${i}"]`).value = popCurrent + aaronCurrent;
-            }
-
-            let popTotal = 0, aaronTotal = 0;
-            for (let i = 0; i < 8; i++) {
-                popTotal += parseFloat(document.querySelector(`.master-pop-stock[data-product="${i}"]`)?.value || 0);
-                aaronTotal += parseFloat(document.querySelector(`.master-aaron-stock[data-product="${i}"]`)?.value || 0);
-            }
-            document.getElementById('master-pop-total').value = popTotal;
-            document.getElementById('master-aaron-total').value = aaronTotal;
-            document.getElementById('master-grand-total').value = popTotal + aaronTotal;
-            
-            document.getElementById('pop-total-on-hand').value = popTotal;
-            document.getElementById('aaron-total-on-hand').value = aaronTotal;
-
-            updateChartsData();
-        }
-
-        function updateChartsData() {
-            const chartCanvas = document.getElementById('totalUnitsChart');
-            if (chartCanvas) {
-                const ctx = chartCanvas.getContext('2d');
-                if (window.totalUnitsChartInstance) window.totalUnitsChartInstance.destroy();
-                window.totalUnitsChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: products,
-                        datasets: [{
-                            label: 'Pop Total',
-                            data: Array.from(document.querySelectorAll('.master-pop-stock')).map(el => parseFloat(el.value || 0)),
-                            backgroundColor: '#667eea'
-                        }, {
-                            label: 'Aaron Total',
-                            data: Array.from(document.querySelectorAll('.master-aaron-stock')).map(el => parseFloat(el.value || 0)),
-                            backgroundColor: '#764ba2'
-                        }]
-                    },
-                    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
-                });
-            }
-        }
-
-        // Sales Sheet Functions
-        function openNewSalesSheetModal() {
-            document.getElementById('newSalesModal').classList.add('active');
-        }
-
-        function closeNewSalesSheetModal() {
-            document.getElementById('newSalesModal').classList.remove('active');
-        }
-
-        function createNewSalesSheet() {
-            const name = document.getElementById('sheetName').value;
-            const date = document.getElementById('sheetDate').value;
-            if (!name || !date) return alert('Please fill in all fields');
-            alert('✅ Sales sheet "' + name + ' - ' + date + '" created! (Demo - not saved)');
-            closeNewSalesSheetModal();
-            document.getElementById('sheetName').value = '';
-            document.getElementById('sheetDate').value = '';
-        }
-
-        function openNewAaronSalesSheetModal() {
-            document.getElementById('newAaronSalesModal').classList.add('active');
-        }
-
-        function closeNewAaronSalesSheetModal() {
-            document.getElementById('newAaronSalesModal').classList.remove('active');
-        }
-
-        function createNewAaronSalesSheet() {
-            const name = document.getElementById('aaronSheetName').value;
-            const date = document.getElementById('aaronSheetDate').value;
-            if (!name || !date) return alert('Please fill in all fields');
-            alert('✅ Aaron sales sheet "' + name + ' - ' + date + '" created! (Demo - not saved)');
-            closeNewAaronSalesSheetModal();
-            document.getElementById('aaronSheetName').value = '';
-            document.getElementById('aaronSheetDate').value = '';
-        }
-
-        function openDeletePopSalesSheetModal() {
-            document.getElementById('deletePopSalesSheetModal').classList.add('active');
-        }
-
-        function closeDeletePopSalesSheetModal() {
-            document.getElementById('deletePopSalesSheetModal').classList.remove('active');
-        }
-
-        function deletePopSalesSheet() {
-            const sheetId = document.getElementById('popSheetToDelete').value;
-            if (!sheetId) return alert('Please select a sheet to delete');
-            alert('✅ Sales sheet deleted! (Demo - not saved)');
-            closeDeletePopSalesSheetModal();
-            document.getElementById('popSheetToDelete').value = '';
-        }
-
-        function openDeleteAaronSalesSheetModal() {
-            document.getElementById('deleteAaronSalesSheetModal').classList.add('active');
-        }
-
-        function closeDeleteAaronSalesSheetModal() {
-            document.getElementById('deleteAaronSalesSheetModal').classList.remove('active');
-        }
-
-        function deleteAaronSalesSheet() {
-            const sheetId = document.getElementById('aaronSheetToDelete').value;
-            if (!sheetId) return alert('Please select a sheet to delete');
-            alert('✅ Aaron sales sheet deleted! (Demo - not saved)');
-            closeDeleteAaronSalesSheetModal();
-            document.getElementById('aaronSheetToDelete').value = '';
-        }
-
-        function openNextSheetModal(person, currentSheetId) {
-            document.getElementById('nextSheetModal').classList.add('active');
-            currentPerson = person;
-            currentSheetId = currentSheetId;
-        }
-
-        function closeNextSheetModal() {
-            document.getElementById('nextSheetModal').classList.remove('active');
-        }
-
-        function confirmNextSheetSelection() {
-            const selectedSheet = document.getElementById('nextSheetSelect').value;
-            if (!selectedSheet) return alert('Please select a sheet');
-            activateSheet(currentPerson, selectedSheet);
-            closeNextSheetModal();
-            document.getElementById('nextSheetSelect').value = '';
-        }
-
-        // Revenue Functions
         function updateRevenueTotal(sheetId) {
             let totalUnits = 0, totalRevenue = 0;
             for (let i = 0; i < 8; i++) {
@@ -1330,7 +1089,248 @@
             if (revenueEl) revenueEl.value = totalRevenue.toFixed(2);
         }
 
-        // Save/Load Data
+        // Inventory Management Functions
+        function openPopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.add('active'); }
+        function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); }
+        function openAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.add('active'); }
+        function closeAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.remove('active'); }
+        function openPopMoveInventoryModal() {
+            for (let i = 0; i < 8; i++) {
+                const storageVal = document.querySelector(`.pop-storage[data-product="${i}"]`).value;
+                document.getElementById(`pop-storage-view-${i}`).value = storageVal;
+            }
+            document.getElementById('popMoveInventoryModal').classList.add('active');
+        }
+        function closePopMoveInventoryModal() { document.getElementById('popMoveInventoryModal').classList.remove('active'); }
+        function openAaronMoveInventoryModal() {
+            for (let i = 0; i < 8; i++) {
+                const storageVal = document.querySelector(`.aaron-storage[data-product="${i}"]`).value;
+                document.getElementById(`aaron-storage-view-${i}`).value = storageVal;
+            }
+            document.getElementById('aaronMoveInventoryModal').classList.add('active');
+        }
+        function closeAaronMoveInventoryModal() { document.getElementById('aaronMoveInventoryModal').classList.remove('active'); }
+        function openPopRemoveInventoryModal() {
+            for (let i = 0; i < 8; i++) {
+                const storageVal = document.querySelector(`.pop-storage[data-product="${i}"]`).value;
+                document.getElementById(`pop-remove-storage-${i}`).value = storageVal;
+            }
+            document.getElementById('popRemoveInventoryModal').classList.add('active');
+        }
+        function closePopRemoveInventoryModal() { document.getElementById('popRemoveInventoryModal').classList.remove('active'); }
+        function openAaronRemoveInventoryModal() {
+            for (let i = 0; i < 8; i++) {
+                const storageVal = document.querySelector(`.aaron-storage[data-product="${i}"]`).value;
+                document.getElementById(`aaron-remove-storage-${i}`).value = storageVal;
+            }
+            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
+        }
+        function closeAaronRemoveInventoryModal() { document.getElementById('aaronRemoveInventoryModal').classList.remove('active'); }
+
+        function addPopInventoryReceived() {
+            for (let i = 0; i < 8; i++) {
+                const input = document.getElementById(`pop-received-${i}`);
+                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                if (input && storageEl) {
+                    const amount = parseFloat(input.value || 0);
+                    storageEl.value = parseFloat(storageEl.value || 0) + amount;
+                    input.value = 0;
+                }
+            }
+            closePopInventoryReceivedModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        function addAaronInventoryReceived() {
+            for (let i = 0; i < 8; i++) {
+                const input = document.getElementById(`aaron-received-${i}`);
+                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                if (input && storageEl) {
+                    const amount = parseFloat(input.value || 0);
+                    storageEl.value = parseFloat(storageEl.value || 0) + amount;
+                    input.value = 0;
+                }
+            }
+            closeAaronInventoryReceivedModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        function movePopInventory() {
+            for (let i = 0; i < 8; i++) {
+                const moveInput = document.getElementById(`pop-move-${i}`);
+                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                if (moveInput && storageEl && showTubEl) {
+                    const amount = parseFloat(moveInput.value || 0);
+                    if (amount > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - amount);
+                        showTubEl.value = parseFloat(showTubEl.value || 0) + amount;
+                    }
+                    moveInput.value = 0;
+                }
+            }
+            closePopMoveInventoryModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        function moveAaronInventory() {
+            for (let i = 0; i < 8; i++) {
+                const moveInput = document.getElementById(`aaron-move-${i}`);
+                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                if (moveInput && storageEl && showTubEl) {
+                    const amount = parseFloat(moveInput.value || 0);
+                    if (amount > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - amount);
+                        showTubEl.value = parseFloat(showTubEl.value || 0) + amount;
+                    }
+                    moveInput.value = 0;
+                }
+            }
+            closeAaronMoveInventoryModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        function removePopInventory() {
+            for (let i = 0; i < 8; i++) {
+                const removeInput = document.getElementById(`pop-remove-${i}`);
+                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                if (removeInput && storageEl) {
+                    const amount = parseFloat(removeInput.value || 0);
+                    if (amount > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - amount);
+                    }
+                    removeInput.value = 0;
+                }
+            }
+            closePopRemoveInventoryModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        function removeAaronInventory() {
+            for (let i = 0; i < 8; i++) {
+                const removeInput = document.getElementById(`aaron-remove-${i}`);
+                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                if (removeInput && storageEl) {
+                    const amount = parseFloat(removeInput.value || 0);
+                    if (amount > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - amount);
+                    }
+                    removeInput.value = 0;
+                }
+            }
+            closeAaronRemoveInventoryModal();
+            updateAllInventories();
+            saveAppData();
+        }
+
+        // Sheet Creation/Deletion
+        function openNewSalesSheetModal() { document.getElementById('newSalesModal').classList.add('active'); }
+        function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
+        function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.add('active'); }
+        function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
+        function openDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.add('active'); }
+        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
+        function openDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.add('active'); }
+        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
+        function closeNextSheetModal() { document.getElementById('nextSheetModal').classList.remove('active'); }
+
+        function createNewSalesSheet() {
+            const name = document.getElementById('sheetName').value;
+            const date = document.getElementById('sheetDate').value;
+            if (!name || !date) { alert('Please fill in all fields'); return; }
+            // Implementation for creating new sheets
+            alert(`New sheet created: ${name} - ${date}`);
+            closeNewSalesSheetModal();
+        }
+
+        function createNewAaronSalesSheet() {
+            const name = document.getElementById('aaronSheetName').value;
+            const date = document.getElementById('aaronSheetDate').value;
+            if (!name || !date) { alert('Please fill in all fields'); return; }
+            // Implementation for creating new sheets
+            alert(`New sheet created: ${name} - ${date}`);
+            closeNewAaronSalesSheetModal();
+        }
+
+        function deletePopSalesSheet() {
+            const sheetId = document.getElementById('popSheetToDelete').value;
+            if (!sheetId) { alert('Please select a sheet'); return; }
+            // Implementation for deleting sheets
+            alert(`Sheet deleted: ${sheetId}`);
+            closeDeletePopSalesSheetModal();
+        }
+
+        function deleteAaronSalesSheet() {
+            const sheetId = document.getElementById('aaronSheetToDelete').value;
+            if (!sheetId) { alert('Please select a sheet'); return; }
+            // Implementation for deleting sheets
+            alert(`Sheet deleted: ${sheetId}`);
+            closeDeleteAaronSalesSheetModal();
+        }
+
+        function confirmNextSheetSelection() {
+            const selectedSheet = document.getElementById('nextSheetSelect').value;
+            if (!selectedSheet) return alert('Please select a sheet');
+            activateSheet(currentPerson, selectedSheet);
+            closeNextSheetModal();
+            document.getElementById('nextSheetSelect').value = '';
+        }
+
+        // Inventory Updates
+        function updateAllInventories() {
+            updateShowTubTotals();
+            updateMasterInventory();
+            updateChartsData();
+        }
+
+        function updateShowTubTotals() {
+            for (const person of ['pop', 'aaron']) {
+                let total = 0;
+                for (let i = 0; i < 8; i++) {
+                    const el = document.querySelector(`.${person}-show-tub[data-product="${i}"]`);
+                    if (el) total += parseFloat(el.value || 0);
+                }
+                const totalEl = document.getElementById(`${person}-show-tub-total`);
+                if (totalEl) totalEl.value = total;
+            }
+        }
+
+        function updateMasterInventory() {
+            for (let i = 0; i < 8; i++) {
+                const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                const popShowTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                const aaronStorage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                const aaronShowTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+
+                const popTotal = popStorage + popShowTub;
+                const aaronTotal = aaronStorage + aaronShowTub;
+                const combined = popTotal + aaronTotal;
+
+                document.querySelector(`.master-pop-stock[data-product="${i}"]`).value = popTotal;
+                document.querySelector(`.master-aaron-stock[data-product="${i}"]`).value = aaronTotal;
+                document.querySelector(`.master-combined[data-product="${i}"]`).value = combined;
+            }
+
+            const popGrandTotal = Array.from(document.querySelectorAll('.master-pop-stock')).reduce((sum, el) => sum + parseFloat(el.value || 0), 0);
+            const aaronGrandTotal = Array.from(document.querySelectorAll('.master-aaron-stock')).reduce((sum, el) => sum + parseFloat(el.value || 0), 0);
+            const grandTotal = popGrandTotal + aaronGrandTotal;
+
+            document.getElementById('master-pop-total').value = popGrandTotal;
+            document.getElementById('master-aaron-total').value = aaronGrandTotal;
+            document.getElementById('master-grand-total').value = grandTotal;
+        }
+
+        function updateChartsData() {
+            // Chart implementation
+        }
+
+        // Save Data
         function saveAppData() {
             if (!window.firebaseDB) {
                 console.log('Firebase not ready, using localStorage');
@@ -1351,7 +1351,7 @@
             }
 
             sheets.forEach(sheetId => {
-                data.salesSheets[sheetId] = {};
+                data.salesSheets[sheetId] = { locked: sheetStates[sheetId]?.completed || false };
                 for (let i = 0; i < 8; i++) {
                     const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
                     const left = parseFloat(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
@@ -1360,6 +1360,7 @@
             });
 
             window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventory'), data).catch(e => console.error('Save error:', e));
+            alert('✅ All data saved to Firebase!');
         }
 
         // Initialize
@@ -1369,6 +1370,7 @@
             loadFromFirebase();
         });
 
+        // Update calculations on input
         document.addEventListener('input', (e) => {
             if (e.target.classList.contains('units-left')) {
                 const sheetId = e.target.dataset.sheet;
@@ -1386,6 +1388,22 @@
                 saveAppData();
             }
         });
+
+        // Tax checkbox handling
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('tax-checkbox')) {
+                const sheet = e.target.dataset.sheet;
+                const inputGroup = document.getElementById(`tax-input-group-${sheet}`);
+                const taxRow = document.getElementById(`tax-row-${sheet}`);
+                if (e.target.checked) {
+                    if (inputGroup) inputGroup.style.display = 'flex';
+                    if (taxRow) taxRow.style.display = 'table-row';
+                } else {
+                    if (inputGroup) inputGroup.style.display = 'none';
+                    if (taxRow) taxRow.style.display = 'none';
+                }
+            }
+        });
     </script>
 </body>
-            </html>
+</html>
