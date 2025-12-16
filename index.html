@@ -140,7 +140,7 @@
         <div class="header">
             <h1>Knife Inventory Manager v20k</h1>
             <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed ✅ → Pick Next Sheet</p>
-            <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">Save All Data</button>
+            <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">💾 Save All Data</button>
         </div>
 
         <div class="nav-tabs">
@@ -297,7 +297,7 @@
             </div>
         </div>
 
-        <!-- Wetumpka Sales Sheet -->
+        <!-- Sales Sheets go here (all 4 sheets) -->
         <div id="wetumpka" class="tab-content">
             <div class="tab-section">
                 <h2>Wetumpka, Alabama - December 12-13</h2>
@@ -341,7 +341,7 @@
             </div>
         </div>
 
-        <!-- Trussville Sales Sheet -->
+        <!-- Trussville -->
         <div id="trussville" class="tab-content">
             <div class="tab-section">
                 <h2>Trussville, Alabama - January 3-4</h2>
@@ -385,7 +385,7 @@
             </div>
         </div>
 
-        <!-- Columbia Sales Sheet -->
+        <!-- Columbia -->
         <div id="columbia" class="tab-content">
             <div class="tab-section">
                 <h2>Columbia, Tennessee - January 10-11</h2>
@@ -429,7 +429,7 @@
             </div>
         </div>
 
-        <!-- Hattiesburg Sales Sheet -->
+        <!-- Hattiesburg -->
         <div id="hattiesburg" class="tab-content">
             <div class="tab-section">
                 <h2>Hattiesburg, Mississippi - January 17</h2>
@@ -492,9 +492,7 @@
             </div>
         </div>
 
-        <!-- BUTTON MODALS FOR SHEET CONTROLS -->
-        
-        <!-- Activate Sheet Modal -->
+        <!-- MODALS FOR SHEET CONTROLS -->
         <div id="activateSheetModal" class="modal">
             <div class="modal-content">
                 <h3>📋 Activate Sales Sheet</h3>
@@ -510,7 +508,6 @@
             </div>
         </div>
 
-        <!-- Lock Sheet Modal -->
         <div id="lockSheetModal" class="modal">
             <div class="modal-content">
                 <h3>🔒 Lock Sheet Confirmation</h3>
@@ -526,7 +523,6 @@
             </div>
         </div>
 
-        <!-- Unlock Sheet Modal -->
         <div id="unlockSheetModal" class="modal">
             <div class="modal-content">
                 <h3>🔓 Unlock Sheet Confirmation</h3>
@@ -542,7 +538,6 @@
             </div>
         </div>
 
-        <!-- Event Completed Modal -->
         <div id="eventCompletedConfirmModal" class="modal">
             <div class="modal-content">
                 <h3>✅ Confirm Event Completed</h3>
@@ -559,7 +554,7 @@
             </div>
         </div>
 
-        <!-- INVENTORY & SALES MODALS (Keep all existing ones) -->
+        <!-- ALL INVENTORY MODALS -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Pop Storage Tub</h3>
@@ -704,7 +699,6 @@
             </div>
         </div>
 
-        <!-- New & Delete Sales Modals -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Pop Sales Sheet</h3>
@@ -783,7 +777,7 @@
     </div>
 
     <script>
-        // ========== GLOBAL VARS & FIREBASE SETUP ==========
+        // GLOBAL VARS
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         const sheetStates = {};
         let currentPerson = null;
@@ -794,7 +788,6 @@
         let pendingLockSheet = null;
         let pendingUnlockSheet = null;
 
-        // Load sheet locked states from Firebase on page load
         function loadSheetLockedStates() {
             if (!window.firebaseDB) { setTimeout(loadSheetLockedStates, 500); return; }
             
@@ -1358,37 +1351,53 @@
         }
 
         function saveAppData() {
-            const inventoryData = {
-                popInventory: {},
-                aaronInventory: {},
-                salesSheets: {}
-            };
-
-            for (let i = 0; i < 8; i++) {
-                const popPrice = document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0;
-                const popStorage = document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0;
-                const popShowTub = document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0;
-                inventoryData.popInventory[i] = { price: popPrice, storage: popStorage, showTub: popShowTub };
-
-                const aaronPrice = document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0;
-                const aaronStorage = document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0;
-                const aaronShowTub = document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0;
-                inventoryData.aaronInventory[i] = { price: aaronPrice, storage: aaronStorage, showTub: aaronShowTub };
+            if (!window.firebaseReady) {
+                alert('⏳ Firebase is still initializing. Please try again in a moment.');
+                return;
             }
 
-            sheets.forEach(sheetId => {
-                inventoryData.salesSheets[sheetId] = {};
-                for (let i = 0; i < 8; i++) {
-                    const brought = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
-                    const left = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
-                    inventoryData.salesSheets[sheetId][i] = { brought: brought, left: left };
-                }
-            });
+            try {
+                const inventoryData = {
+                    popInventory: {},
+                    aaronInventory: {},
+                    salesSheets: {}
+                };
 
-            const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
-            window.firebaseSet(inventoryRef, inventoryData)
-                .then(() => console.log('✅ Data saved to Firebase'))
-                .catch(err => console.error('Save error:', err));
+                for (let i = 0; i < 8; i++) {
+                    const popPrice = document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0;
+                    const popStorage = document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0;
+                    const popShowTub = document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0;
+                    inventoryData.popInventory[i] = { price: popPrice, storage: popStorage, showTub: popShowTub };
+
+                    const aaronPrice = document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0;
+                    const aaronStorage = document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0;
+                    const aaronShowTub = document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0;
+                    inventoryData.aaronInventory[i] = { price: aaronPrice, storage: aaronStorage, showTub: aaronShowTub };
+                }
+
+                sheets.forEach(sheetId => {
+                    inventoryData.salesSheets[sheetId] = {};
+                    for (let i = 0; i < 8; i++) {
+                        const brought = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
+                        const left = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
+                        inventoryData.salesSheets[sheetId][i] = { brought: brought, left: left };
+                    }
+                });
+
+                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+                window.firebaseSet(inventoryRef, inventoryData)
+                    .then(() => {
+                        console.log('✅ All data saved to Firebase successfully!');
+                        alert('✅ All data saved to Firebase!');
+                    })
+                    .catch(err => {
+                        console.error('Firebase error:', err);
+                        alert('❌ Error saving to Firebase: ' + err.message);
+                    });
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('❌ Error: ' + error.message);
+            }
         }
 
         document.addEventListener('input', (e) => {
@@ -1405,7 +1414,6 @@
             if (e.target.classList.contains('pop-show-tub') || e.target.classList.contains('aaron-show-tub') || 
                 e.target.classList.contains('pop-price') || e.target.classList.contains('aaron-price')) {
                 updateAllInventories();
-                saveAppData();
             }
         });
 
