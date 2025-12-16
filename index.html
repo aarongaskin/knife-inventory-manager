@@ -50,6 +50,8 @@
         input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
         input[readonly] { background-color: #f8f9fa; color: #666; cursor: not-allowed; }
         input:disabled { background-color: #f5f5f5; color: #999; cursor: not-allowed; }
+        select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
         .revenue-row { font-weight: 700; background: #fffacd; border-top: 2px solid #667eea; }
         .units-sold-row { font-weight: 700; background: #e8f5e9; }
         .tax-summary-row { font-weight: 700; background: #e0e7ff; }
@@ -488,6 +490,8 @@
             </div>
         </div>
 
+        <!-- MODALS START HERE -->
+
         <!-- Add Inventory Modals -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
@@ -634,14 +638,140 @@
                 </div>
             </div>
         </div>
+
+        <!-- New Sales Sheet Modals -->
+        <div id="newSalesModal" class="modal">
+            <div class="modal-content">
+                <h3>Create New Pop Sales Sheet</h3>
+                <form onsubmit="event.preventDefault(); createNewSalesSheet()">
+                    <div class="form-group">
+                        <label for="sheetName">Sheet Name</label>
+                        <input type="text" id="sheetName" placeholder="e.g., Denver, Colorado" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sheetDate">Date</label>
+                        <input type="text" id="sheetDate" placeholder="e.g., 2/14-15" required>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn-cancel" onclick="closeNewSalesSheetModal()">Cancel</button>
+                        <button type="submit" class="btn-create">Create Sheet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="newAaronSalesModal" class="modal">
+            <div class="modal-content">
+                <h3>Create New Aaron Sales Sheet</h3>
+                <form onsubmit="event.preventDefault(); createNewAaronSalesSheet()">
+                    <div class="form-group">
+                        <label for="aaronSheetName">Sheet Name</label>
+                        <input type="text" id="aaronSheetName" placeholder="e.g., Denver, Colorado" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="aaronSheetDate">Date</label>
+                        <input type="text" id="aaronSheetDate" placeholder="e.g., 2/14-15" required>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button>
+                        <button type="submit" class="btn-create">Create Sheet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Sales Sheet Modals -->
+        <div id="deletePopSalesSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>Delete Pop Sales Sheet</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete</p>
+                <div class="form-group">
+                    <select id="popSheetToDelete">
+                        <option value="">-- Select a sheet to delete --</option>
+                        <option value="custom1">Custom Sheet 1</option>
+                        <option value="custom2">Custom Sheet 2</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button>
+                    <button type="button" class="btn-remove" onclick="deletePopSalesSheet()">Delete Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteAaronSalesSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>Delete Aaron Sales Sheet</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete</p>
+                <div class="form-group">
+                    <select id="aaronSheetToDelete">
+                        <option value="">-- Select a sheet to delete --</option>
+                        <option value="custom1">Custom Sheet 1</option>
+                        <option value="custom2">Custom Sheet 2</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button>
+                    <button type="button" class="btn-remove" onclick="deleteAaronSalesSheet()">Delete Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EVENT MODALS - EVENT COMPLETED & LOCK/UNLOCK CONFIRMATION MODALS -->
+        <div id="eventCompletedConfirmModal" class="modal">
+            <div class="modal-content">
+                <h3>✅ Confirm Event Completed</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">This will lock the sheet and save totals to Firebase. This action cannot be easily reversed without unlocking.</p>
+                <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="confirmEventSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Total Units: <strong id="confirmEventUnits">--</strong></p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Total Revenue: <strong id="confirmEventRevenue">--</strong></p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel - Don't Lock</button>
+                    <button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Yes, Complete Event</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="lockSheetConfirmModal" class="modal">
+            <div class="modal-content">
+                <h3>🔒 Lock Sheet Confirmation</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Lock this sheet to prevent accidental edits?</p>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="lockSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Once locked, you can still unlock with the 🔓 button.</p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeLockSheetConfirmModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="unlockSheetConfirmModal" class="modal">
+            <div class="modal-content">
+                <h3>🔓 Unlock Sheet Confirmation</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Unlock this sheet for editing? This will allow changes to be made.</p>
+                <div style="background: #c8e6c9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="unlockSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">You can lock it again after making changes.</p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeUnlockSheetConfirmModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock Sheet</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ========== CRITICAL FIREBASE FIX FOR TOTAL SALES/REVENUE ==========
+        // ========== GLOBAL VARS ==========
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         const sheetStates = {};
         let currentPerson = null;
         let currentSheetId = null;
+        let pendingEventCompletedSheet = null;
 
         // Load sheet locked states from Firebase on page load
         function loadSheetLockedStates() {
@@ -676,8 +806,13 @@
         }
 
         function unlockSheet(sheetId) {
-            if (!confirm(`🔓 Unlock ${sheetId.toUpperCase()}? This will allow editing.`)) return;
+            document.getElementById('unlockSheetName').innerText = sheetId.toUpperCase();
+            window.pendingUnlockSheet = sheetId;
+            document.getElementById('unlockSheetConfirmModal').classList.add('active');
+        }
 
+        function confirmUnlockSheet() {
+            const sheetId = window.pendingUnlockSheet;
             const sheetRef = window.firebaseRef(window.firebaseDB, `salesSheets/${sheetId}`);
             window.firebaseSet(sheetRef, { locked: false, totalUnits: null, totalRevenue: null })
                 .then(() => {
@@ -689,23 +824,15 @@
                     document.getElementById(`total-revenue-${sheetId}`).value = '';
                     updateSheetStatus(sheetId);
                     alert(`✅ ${sheetId.toUpperCase()} unlocked!`);
+                    closeUnlockSheetConfirmModal();
                 })
                 .catch(err => alert(`Error: ${err.message}`));
         }
 
-        // Load on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadSheetLockedStates();
-        });
-
-        // CRITICAL SAFARI FIX: Force reload fresh data every time page loads
-        function forceFreshDataOnLoad() {
-            localStorage.removeItem('knifeInventoryData');
-            try { localStorage.clear(); } catch(e) {}
-            console.log('Cache cleared - forcing fresh data load');
+        function closeUnlockSheetConfirmModal() {
+            document.getElementById('unlockSheetConfirmModal').classList.remove('active');
+            window.pendingUnlockSheet = null;
         }
-
-        forceFreshDataOnLoad();
 
         function loadFromFirebase() {
             if (!window.firebaseDB) { setTimeout(loadFromFirebase, 500); return; }
@@ -803,19 +930,52 @@
 
         function toggleEventCompleted(sheetId) {
             const checkbox = document.getElementById(`event-completed-${sheetId}`);
+            
+            if (checkbox.checked) {
+                // SHOW CONFIRMATION MODAL
+                pendingEventCompletedSheet = sheetId;
+                document.getElementById('confirmEventSheetName').innerText = sheetId.toUpperCase();
+                
+                // Calculate totals to display
+                let totalUnits = 0;
+                let totalRevenue = 0;
+                for (let i = 0; i < 8; i++) {
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                    const sold = parseFloat(soldEl?.value || 0);
+                    const price = parseFloat(priceEl?.value || 0);
+                    totalUnits += sold;
+                    totalRevenue += sold * price;
+                }
+                
+                document.getElementById('confirmEventUnits').innerText = totalUnits;
+                document.getElementById('confirmEventRevenue').innerText = '$' + totalRevenue.toFixed(2);
+                
+                document.getElementById('eventCompletedConfirmModal').classList.add('active');
+                checkbox.checked = false; // Uncheck until confirmed
+            }
+        }
+
+        function confirmEventCompleted() {
+            const sheetId = pendingEventCompletedSheet;
+            const checkbox = document.getElementById(`event-completed-${sheetId}`);
+            checkbox.checked = true;
+
             const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
             inputs.forEach(input => {
-                input.disabled = checkbox.checked;
+                input.disabled = true;
             });
 
-            if (checkbox.checked) {
-                updateRevenueTotal(sheetId);
-                currentPerson = 'pop';
-                currentSheetId = sheetId;
-                openNextSheetModal('pop', sheetId);
-            }
-
+            updateRevenueTotal(sheetId);
+            currentPerson = 'pop';
+            currentSheetId = sheetId;
             updateAllInventories();
+            closeEventCompletedConfirmModal();
+        }
+
+        function closeEventCompletedConfirmModal() {
+            document.getElementById('eventCompletedConfirmModal').classList.remove('active');
+            pendingEventCompletedSheet = null;
         }
 
         function updateRevenueTotal(sheetId) {
@@ -850,6 +1010,7 @@
                     sheetStates[sheetId].completed = true;
                     document.getElementById(`unlock-${sheetId}`).style.display = 'inline-block';
                     updateSheetStatus(sheetId);
+                    alert(`✅ ${sheetId.toUpperCase()} saved to Firebase!\n\nUnits: ${totalUnits}\nRevenue: $${totalRevenue.toFixed(2)}`);
                 })
                 .catch(err => console.error(`Firebase save error for ${sheetId}:`, err));
         }
@@ -871,14 +1032,8 @@
         }
 
         // Inventory Functions
-        function openPopInventoryReceivedModal() {
-            document.getElementById('popInventoryReceivedModal').classList.add('active');
-        }
-
-        function closePopInventoryReceivedModal() {
-            document.getElementById('popInventoryReceivedModal').classList.remove('active');
-        }
-
+        function openPopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.add('active'); }
+        function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); }
         function addPopInventoryReceived() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('pop-received-' + i).value || 0);
@@ -902,11 +1057,7 @@
                 document.getElementById('pop-storage-view-' + i).value = storage;
             }
         }
-
-        function closePopMoveInventoryModal() {
-            document.getElementById('popMoveInventoryModal').classList.remove('active');
-        }
-
+        function closePopMoveInventoryModal() { document.getElementById('popMoveInventoryModal').classList.remove('active'); }
         function movePopInventory() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('pop-move-' + i).value || 0);
@@ -935,11 +1086,7 @@
                 document.getElementById('pop-remove-storage-' + i).value = storage;
             }
         }
-
-        function closePopRemoveInventoryModal() {
-            document.getElementById('popRemoveInventoryModal').classList.remove('active');
-        }
-
+        function closePopRemoveInventoryModal() { document.getElementById('popRemoveInventoryModal').classList.remove('active'); }
         function removePopInventory() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('pop-remove-' + i).value || 0);
@@ -960,14 +1107,8 @@
             alert('✅ Inventory removed from Pop storage!');
         }
 
-        function openAaronInventoryReceivedModal() {
-            document.getElementById('aaronInventoryReceivedModal').classList.add('active');
-        }
-
-        function closeAaronInventoryReceivedModal() {
-            document.getElementById('aaronInventoryReceivedModal').classList.remove('active');
-        }
-
+        function openAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.add('active'); }
+        function closeAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.remove('active'); }
         function addAaronInventoryReceived() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('aaron-received-' + i).value || 0);
@@ -991,11 +1132,7 @@
                 document.getElementById('aaron-storage-view-' + i).value = storage;
             }
         }
-
-        function closeAaronMoveInventoryModal() {
-            document.getElementById('aaronMoveInventoryModal').classList.remove('active');
-        }
-
+        function closeAaronMoveInventoryModal() { document.getElementById('aaronMoveInventoryModal').classList.remove('active'); }
         function moveAaronInventory() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('aaron-move-' + i).value || 0);
@@ -1024,11 +1161,7 @@
                 document.getElementById('aaron-remove-storage-' + i).value = storage;
             }
         }
-
-        function closeAaronRemoveInventoryModal() {
-            document.getElementById('aaronRemoveInventoryModal').classList.remove('active');
-        }
-
+        function closeAaronRemoveInventoryModal() { document.getElementById('aaronRemoveInventoryModal').classList.remove('active'); }
         function removeAaronInventory() {
             for (let i = 0; i < 8; i++) {
                 const value = parseFloat(document.getElementById('aaron-remove-' + i).value || 0);
@@ -1047,6 +1180,51 @@
             saveAppData();
             closeAaronRemoveInventoryModal();
             alert('✅ Inventory removed from Aaron storage!');
+        }
+
+        // New Sales Sheet Modals
+        function openNewSalesSheetModal() { document.getElementById('newSalesModal').classList.add('active'); }
+        function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
+        function createNewSalesSheet() {
+            const name = document.getElementById('sheetName').value;
+            const date = document.getElementById('sheetDate').value;
+            if (!name || !date) return alert('Please fill in all fields');
+            alert('Sales sheet ' + name + ' - ' + date + ' created! Demo - not saved');
+            closeNewSalesSheetModal();
+            document.getElementById('sheetName').value = '';
+            document.getElementById('sheetDate').value = '';
+        }
+
+        function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.add('active'); }
+        function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
+        function createNewAaronSalesSheet() {
+            const name = document.getElementById('aaronSheetName').value;
+            const date = document.getElementById('aaronSheetDate').value;
+            if (!name || !date) return alert('Please fill in all fields');
+            alert('Aaron sales sheet ' + name + ' - ' + date + ' created! Demo - not saved');
+            closeNewAaronSalesSheetModal();
+            document.getElementById('aaronSheetName').value = '';
+            document.getElementById('aaronSheetDate').value = '';
+        }
+
+        function openDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.add('active'); }
+        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
+        function deletePopSalesSheet() {
+            const sheetId = document.getElementById('popSheetToDelete').value;
+            if (!sheetId) return alert('Please select a sheet to delete');
+            alert('Sales sheet deleted! Demo - not saved');
+            closeDeletePopSalesSheetModal();
+            document.getElementById('popSheetToDelete').value = '';
+        }
+
+        function openDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.add('active'); }
+        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
+        function deleteAaronSalesSheet() {
+            const sheetId = document.getElementById('aaronSheetToDelete').value;
+            if (!sheetId) return alert('Please select a sheet to delete');
+            alert('Aaron sales sheet deleted! Demo - not saved');
+            closeDeleteAaronSalesSheetModal();
+            document.getElementById('aaronSheetToDelete').value = '';
         }
 
         // Update All Inventories
@@ -1176,10 +1354,6 @@
             }
         });
 
-        function openNextSheetModal(person, currentSheet) {
-            alert('✅ ' + currentSheet.toUpperCase() + ' EVENT COMPLETED!\n\nTotals saved to Firebase.\nYou can now close and select the next sheet.');
-        }
-
         function refreshInventoryFromActiveSheet(person) {
             const sheetId = currentSheetId;
             if (!sheetId) { alert('No active sheet selected'); return; }
@@ -1193,24 +1367,9 @@
             alert('✅ Inventory refreshed from active sheet!');
         }
 
-        function openNewSalesSheetModal() {
-            alert('Feature coming soon!');
-        }
-
-        function openDeletePopSalesSheetModal() {
-            alert('Feature coming soon!');
-        }
-
-        function openNewAaronSalesSheetModal() {
-            alert('Feature coming soon!');
-        }
-
-        function openDeleteAaronSalesSheetModal() {
-            alert('Feature coming soon!');
-        }
-
         // Initialize
         initSheetStates();
+        loadSheetLockedStates();
     </script>
 </body>
 </html>
