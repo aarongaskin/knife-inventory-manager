@@ -15,6 +15,7 @@
         .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); overflow: hidden; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
         .nav-tabs { display: flex; flex-wrap: wrap; background: #f8f9fa; border-bottom: 2px solid #e0e0e0; overflow-x: auto; }
         .nav-tabs button { background: none; border: none; padding: 15px 20px; font-size: 14px; font-weight: 500; cursor: pointer; color: #666; transition: all 0.3s ease; border-bottom: 3px solid transparent; white-space: nowrap; }
         .nav-tabs button:hover { background: #e8e8e8; color: #667eea; }
@@ -66,6 +67,8 @@
         .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
         .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
         .nav-link:hover { background: #667eea; color: white; }
+        .nav-link.reset-btn { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+        .nav-link.reset-btn:hover { background: #ff5252; }
         .refresh-btn, .refresh-inv-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
         .refresh-btn:hover, .refresh-inv-btn:hover { background: #1976d2; }
         .refresh-btn::before, .refresh-inv-btn::before { content: '↻'; font-size: 16px; }
@@ -100,6 +103,7 @@
             .nav-tabs { justify-content: flex-start; }
             .nav-tabs button { padding: 12px 15px; font-size: 12px; }
             .header h1 { font-size: 1.8em; }
+            .header-buttons { flex-direction: column; }
             table { font-size: 0.9em; }
             th, td { padding: 8px 10px; }
             .sheet-controls { flex-direction: column; align-items: flex-start; }
@@ -139,7 +143,10 @@
         <div class="header">
             <h1>Knife Inventory Manager v20k</h1>
             <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed ✅ → Pick Next Sheet</p>
-            <button class="nav-link" onclick="saveAppData()" style="margin-top:15px">💾 Save All Data</button>
+            <div class="header-buttons">
+                <button class="nav-link" onclick="saveAppData()">💾 Save All Data</button>
+                <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
+            </div>
         </div>
 
         <div class="nav-tabs">
@@ -340,7 +347,7 @@
             </div>
         </div>
 
-        <!-- Placeholder divs for other sheets (can be fleshed out similar to wetumpka) -->
+        <!-- Placeholder divs for other sheets -->
         <div id="trussville" class="tab-content"></div>
         <div id="columbia" class="tab-content"></div>
         <div id="hattiesburg" class="tab-content"></div>
@@ -1349,6 +1356,145 @@
             } catch (error) {
                 console.error('Save error:', error);
                 alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function resetAllData() {
+            if (!window.firebaseReady) {
+                alert('⏳ Firebase is still initializing. Please try again in a moment.');
+                return;
+            }
+
+            const confirmReset = confirm(
+                '⚠️ This will CLEAR all inventory, sales sheets, and lifetime units from this page and Firebase.\n\n' +
+                'You cannot undo this. Are you sure you want to RESET ALL DATA?'
+            );
+            if (!confirmReset) return;
+
+            try {
+                // 1) Clear UI fields (Pop & Aaron inventories)
+                for (let i = 0; i < 8; i++) {
+                    // Pop
+                    const popPrice = document.querySelector(`.pop-price[data-product="${i}"]`);
+                    const popShowTub = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                    const popUnitsBrought = document.querySelector(`.pop-units-brought[data-product="${i}"]`);
+                    const popPostShow = document.querySelector(`.pop-post-show[data-product="${i}"]`);
+                    const popCurrent = document.querySelector(`.pop-current-stock[data-product="${i}"]`);
+                    const popLifetime = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
+
+                    if (popPrice) popPrice.value = '';
+                    if (popShowTub) popShowTub.value = '';
+                    if (popUnitsBrought) popUnitsBrought.value = '';
+                    if (popPostShow) popPostShow.value = '';
+                    if (popCurrent) popCurrent.value = 0;
+                    if (popLifetime) popLifetime.value = 0;
+
+                    // Aaron
+                    const aaronPrice = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                    const aaronStorage = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const aaronShowTub = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                    const aaronUnitsBrought = document.querySelector(`.aaron-units-brought[data-product="${i}"]`);
+                    const aaronPostShow = document.querySelector(`.aaron-post-show[data-product="${i}"]`);
+                    const aaronCurrent = document.querySelector(`.aaron-current-stock[data-product="${i}"]`);
+                    const aaronLifetime = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
+
+                    if (aaronPrice) aaronPrice.value = '';
+                    if (aaronStorage) aaronStorage.value = '';
+                    if (aaronShowTub) aaronShowTub.value = '';
+                    if (aaronUnitsBrought) aaronUnitsBrought.value = '';
+                    if (aaronPostShow) aaronPostShow.value = '';
+                    if (aaronCurrent) aaronCurrent.value = 0;
+                    if (aaronLifetime) aaronLifetime.value = 0;
+                }
+
+                // Reset totals on hand
+                const popTotalOnHand = document.getElementById('pop-total-on-hand');
+                const aaronTotalOnHand = document.getElementById('aaron-total-on-hand');
+                if (popTotalOnHand) popTotalOnHand.value = 0;
+                if (aaronTotalOnHand) aaronTotalOnHand.value = 0;
+
+                // Reset master inventory fields
+                for (let i = 0; i < 8; i++) {
+                    const mp = document.querySelector(`.master-pop-stock[data-product="${i}"]`);
+                    const ma = document.querySelector(`.master-aaron-stock[data-product="${i}"]`);
+                    const mc = document.querySelector(`.master-combined[data-product="${i}"]`);
+                    if (mp) mp.value = 0;
+                    if (ma) ma.value = 0;
+                    if (mc) mc.value = 0;
+                }
+                const masterPopTotal = document.getElementById('master-pop-total');
+                const masterAaronTotal = document.getElementById('master-aaron-total');
+                const masterGrandTotal = document.getElementById('master-grand-total');
+                if (masterPopTotal) masterPopTotal.value = 0;
+                if (masterAaronTotal) masterAaronTotal.value = 0;
+                if (masterGrandTotal) masterGrandTotal.value = 0;
+
+                // 2) Clear sales sheets UI
+                sheets.forEach(sheetId => {
+                    for (let i = 0; i < 8; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        if (broughtEl) broughtEl.value = '';
+                        if (leftEl) {
+                            leftEl.value = '';
+                            leftEl.disabled = false;
+                        }
+                        if (soldEl) soldEl.value = '';
+                    }
+                    const totalUnitsEl = document.getElementById(`total-units-${sheetId}`);
+                    const totalRevEl = document.getElementById(`total-revenue-${sheetId}`);
+                    const eventChk = document.getElementById(`event-completed-${sheetId}`);
+                    const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+                    const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+                    const statusEl = document.getElementById(`${sheetId}-status`);
+
+                    if (totalUnitsEl) totalUnitsEl.value = '';
+                    if (totalRevEl) totalRevEl.value = '';
+                    if (eventChk) eventChk.checked = false;
+                    if (lockBtn) lockBtn.style.display = 'none';
+                    if (unlockBtn) unlockBtn.style.display = 'none';
+                    if (statusEl) {
+                        statusEl.textContent = '● Inactive';
+                        statusEl.className = 'sheet-status inactive';
+                    }
+                    if (sheetStates[sheetId]) {
+                        sheetStates[sheetId].active = false;
+                        sheetStates[sheetId].locked = false;
+                        sheetStates[sheetId].completed = false;
+                    }
+                });
+
+                // 3) Reset lifetime units object
+                for (let i = 0; i < 8; i++) {
+                    lifetimeUnits.pop[i] = 0;
+                    lifetimeUnits.aaron[i] = 0;
+                }
+
+                // 4) Clear Firebase data
+                const db = window.firebaseDB;
+                const inventoryRef = window.firebaseRef(db, 'inventory');
+                const sheetsRef = window.firebaseRef(db, 'salesSheets');
+                const lifetimeRef = window.firebaseRef(db, 'lifetimeUnits');
+
+                Promise.all([
+                    window.firebaseSet(inventoryRef, null),
+                    window.firebaseSet(sheetsRef, null),
+                    window.firebaseSet(lifetimeRef, { pop: lifetimeUnits.pop, aaron: lifetimeUnits.aaron })
+                ])
+                .then(() => {
+                    console.log('✅ All data reset in Firebase and UI');
+                    alert('✅ All data has been reset!');
+                    updateAllInventories();
+                })
+                .catch(err => {
+                    console.error('Reset error:', err);
+                    alert('❌ Error resetting data: ' + err.message);
+                });
+
+            } catch (err) {
+                console.error('Reset error:', err);
+                alert('❌ Error: ' + err.message);
             }
         }
 
