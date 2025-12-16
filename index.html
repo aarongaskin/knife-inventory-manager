@@ -8,10 +8,37 @@
     <meta http-equiv="expires" content="0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Knife Inventory Manager v23 - Firebase Fixed</title>
+    <title>Knife Inventory Manager v24 - Firebase Working</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
+            authDomain: "knife-inventory-management.firebaseapp.com",
+            databaseURL: "https://knife-inventory-management-default-rtdb.firebaseio.com",
+            projectId: "knife-inventory-management",
+            storageBucket: "knife-inventory-management.firebasestorage.app",
+            messagingSenderId: "944440388498",
+            appId: "1:944440388498:web:8eadb87306507966f1af4b",
+            measurementId: "G-SSQ4E6R5TW"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Expose to window for use in inline scripts
+        window.firebaseDB = db;
+        window.firebaseReady = true;
+
+        // Log connection
+        addDebugLog("✅ Firebase Module imported and initialized successfully");
+        loadDataFromFirebase();
+    </script>
     <style>
         * {
             margin: 0;
@@ -160,100 +187,6 @@
             margin-bottom: 15px;
         }
 
-        .sheet-controls {
-            background: #f0f4ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .sheet-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 15px;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-        .sheet-status.inactive {
-            background: #f5f5f5;
-            color: #666;
-        }
-
-        .sheet-status.active {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .sheet-status.completed {
-            background: #bbdefb;
-            color: #1565c0;
-        }
-
-        .event-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .event-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .event-checkbox label {
-            font-weight: 500;
-            color: #333;
-            cursor: pointer;
-        }
-
-        .tax-controls {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .tax-control-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tax-control-group label {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .tax-control-group input[type="checkbox"] {
-            width: auto;
-            cursor: pointer;
-        }
-
-        .tax-control-group input[type="number"] {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            width: 100px;
-        }
-
-        .tax-control-group input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -303,38 +236,9 @@
             cursor: not-allowed;
         }
 
-        input[disabled] {
-            background-color: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .revenue-row {
-            font-weight: 700;
-            background: #fffacd;
-            border-top: 2px solid #667eea;
-        }
-
-        .units-sold-row {
-            font-weight: 700;
-            background: #e8f5e9;
-        }
-
-        .tax-summary-row {
-            font-weight: 700;
-            background: #e0e7ff;
-        }
-
         .total-row {
             font-weight: 700;
             background: #eef2ff;
-        }
-
-        .nav-links {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
         }
 
         .nav-link {
@@ -354,35 +258,6 @@
         .nav-link:hover {
             background: #667eea;
             color: white;
-        }
-
-        .nav-link:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .refresh-btn, .refresh-inv-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 15px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .refresh-btn:hover, .refresh-inv-btn:hover {
-            background: #1976d2;
-        }
-
-        .refresh-btn:before, .refresh-inv-btn:before {
-            content: "🔄";
-            font-size: 16px;
         }
 
         .modal {
@@ -419,75 +294,6 @@
             margin-bottom: 20px;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .modal-buttons .btn-cancel {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .modal-buttons .btn-cancel:hover {
-            background: #d0d0d0;
-        }
-
-        .modal-buttons .btn-create {
-            background: #667eea;
-            color: white;
-        }
-
-        .modal-buttons .btn-create:hover {
-            background: #5568d3;
-        }
-
-        .modal-buttons .btn-add-inventory {
-            background: #4caf50;
-            color: white;
-        }
-
-        .modal-buttons .btn-add-inventory:hover {
-            background: #45a049;
-        }
-
         .inventory-table {
             width: 100%;
             border-collapse: collapse;
@@ -508,33 +314,38 @@
             padding: 5px;
         }
 
-        .charts-container {
+        .modal-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
         }
 
-        .chart-box {
-            flex: 1 1 300px;
-            min-width: 260px;
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
-        .flow-info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196f3;
-            font-size: 13px;
-            color: #1565c0;
-            line-height: 1.6;
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-weight: bold;
+        .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-add-inventory {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-add-inventory:hover {
+            background: #45a049;
         }
 
         .debug-info {
@@ -551,15 +362,6 @@
         }
 
         @media (max-width: 768px) {
-            .nav-tabs {
-                justify-content: flex-start;
-            }
-
-            .nav-tabs button {
-                padding: 12px 15px;
-                font-size: 12px;
-            }
-
             .header h1 {
                 font-size: 1.8em;
             }
@@ -577,9 +379,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔪 Knife Inventory Manager v23</h1>
-            <p>🌐 Firebase Cloud Sync - Fixed</p>
-            <div class="sync-status" id="sync-status">⏳ Initializing Firebase...</div>
+            <h1>🔪 Knife Inventory Manager v24</h1>
+            <p>🌐 Firebase Cloud Sync - Working</p>
+            <div class="sync-status" id="sync-status">⏳ Loading Firebase...</div>
             <div class="save-button-group">
                 <button class="nav-link" onclick="syncAllData()">☁️ Sync Now</button>
                 <button class="nav-link" onclick="toggleDebug()" style="background: #ff9800; color: white; border-color: #ff9800;">🔧 Debug</button>
@@ -588,7 +390,7 @@
 
         <div id="debug-panel" style="display:none; padding: 20px; background: #f0f0f0;">
             <h3>Debug Information</h3>
-            <div class="debug-info" id="debug-info">Loading...</div>
+            <div class="debug-info" id="debug-info">Initializing...</div>
             <button class="nav-link" onclick="clearDebug()" style="background: #ff6b6b; color: white; border-color: #ff6b6b;">Clear Logs</button>
         </div>
 
@@ -596,14 +398,13 @@
             <button class="tab-btn active" onclick="openTab(event, 'master-inv')">Master Inventory</button>
             <button class="tab-btn" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
             <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
-            <button class="tab-btn" onclick="openTab(event, 'sales-charts')">Sales Charts</button>
         </div>
 
         <!-- Master Inventory -->
         <div id="master-inv" class="tab-content active">
             <div class="tab-section">
                 <h2>Master Inventory - Combined Stock</h2>
-                <p>Shows current stock levels for all 8 knife products across both Pop and Aaron inventories - LIVE FROM FIREBASE.</p>
+                <p>Shows current stock levels for all 8 knife products - LIVE FROM FIREBASE</p>
                 <table>
                     <thead>
                         <tr>
@@ -613,7 +414,7 @@
                             <th>Combined Total</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="master-tbody">
                         <tr><td>Full Tang</td><td><input type="number" class="master-pop-stock" data-product="0" readonly></td><td><input type="number" class="master-aaron-stock" data-product="0" readonly></td><td><input type="number" class="master-combined" data-product="0" readonly style="font-weight: bold;"></td></tr>
                         <tr><td>8" Rat</td><td><input type="number" class="master-pop-stock" data-product="1" readonly></td><td><input type="number" class="master-aaron-stock" data-product="1" readonly></td><td><input type="number" class="master-combined" data-product="1" readonly style="font-weight: bold;"></td></tr>
                         <tr><td>6" Rat</td><td><input type="number" class="master-pop-stock" data-product="2" readonly></td><td><input type="number" class="master-aaron-stock" data-product="2" readonly></td><td><input type="number" class="master-combined" data-product="2" readonly style="font-weight: bold;"></td></tr>
@@ -632,27 +433,25 @@
         <div id="aaron-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Aaron's Current Inventory</h2>
-                <div class="flow-info"><strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet → Refresh → Fill Units Left → Check Event Completed → Pick Next Sheet → Lock → Repeat</div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
-                    <button class="nav-link" onclick="openAaronRemoveInventoryModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Remove from Storage</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Total On Hand</th></tr>
+                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Total On Hand</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
-                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
-                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="2" readonly></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td></tr>
-                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="3" readonly></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td></tr>
-                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="4" readonly></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td></tr>
-                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td></tr>
-                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td></tr>
-                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td></tr>
-                        <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="0"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="1"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="2"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="3"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="4"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="4">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -662,47 +461,27 @@
         <div id="pop-inv" class="tab-content">
             <div class="tab-section">
                 <h2>Pop's Current Inventory</h2>
-                <div class="flow-info"><strong>Flow:</strong> Add to Storage → Move to Show Tub → Activate Sheet → Refresh → Fill Units Left → Check Event Completed → Pick Next Sheet → Lock → Repeat</div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
                     <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory Received</button>
                     <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
-                    <button class="nav-link" onclick="openPopRemoveInventoryModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Remove from Storage</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Brought</th><th>Total On Hand</th></tr>
+                        <tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Total On Hand</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
-                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
-                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="2" readonly></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td></tr>
-                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="3" readonly></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td></tr>
-                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="4" readonly></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td></tr>
-                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td></tr>
-                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td></tr>
-                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td></tr>
-                        <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="0"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="1"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="2"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="3"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="4"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td></tr>
+                        <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td></tr>
+                        <tr class="total-row"><td colspan="4">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Sales Charts -->
-        <div id="sales-charts" class="tab-content">
-            <div class="tab-section">
-                <h2>Sales Tracking Charts</h2>
-                <p>Shows overall knife sales percentages for Pop and Aaron combined.</p>
-                <div class="charts-container">
-                    <div class="chart-box">
-                        <h3>Sales percentage by knife</h3>
-                        <canvas id="salesPieChart"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h3>Total units sold by knife</h3>
-                        <canvas id="salesBarChart"></canvas>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -711,7 +490,6 @@
     <div id="popInventoryReceivedModal" class="modal">
         <div class="modal-content">
             <h3>Add Inventory Received - Pop Storage Tub</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities you received for each product</p>
             <table class="inventory-table">
                 <thead><tr><th>Product Name</th><th>Quantity Received</th></tr></thead>
                 <tbody>
@@ -735,7 +513,6 @@
     <div id="aaronInventoryReceivedModal" class="modal">
         <div class="modal-content">
             <h3>Add Inventory Received - Aaron Storage Tub</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter the quantities you received for each product</p>
             <table class="inventory-table">
                 <thead><tr><th>Product Name</th><th>Quantity Received</th></tr></thead>
                 <tbody>
@@ -759,7 +536,6 @@
     <div id="popMoveInventoryModal" class="modal">
         <div class="modal-content">
             <h3>Move Inventory to Show Tub - Pop</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you're moving FROM Storage Tub TO Show Tub</p>
             <table class="inventory-table">
                 <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Move</th></tr></thead>
                 <tbody>
@@ -783,7 +559,6 @@
     <div id="aaronMoveInventoryModal" class="modal">
         <div class="modal-content">
             <h3>Move Inventory to Show Tub - Aaron</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you're moving FROM Storage Tub TO Show Tub</p>
             <table class="inventory-table">
                 <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Move</th></tr></thead>
                 <tbody>
@@ -804,54 +579,6 @@
         </div>
     </div>
 
-    <div id="popRemoveInventoryModal" class="modal">
-        <div class="modal-content">
-            <h3>Remove Inventory from Storage - Pop</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub for error correction</p>
-            <table class="inventory-table">
-                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
-                <tbody>
-                    <tr><td>Full Tang</td><td><input type="number" id="pop-storage-remove-view-0" readonly></td><td><input type="number" id="pop-remove-0" placeholder="0"></td></tr>
-                    <tr><td>8" Rat</td><td><input type="number" id="pop-storage-remove-view-1" readonly></td><td><input type="number" id="pop-remove-1" placeholder="0"></td></tr>
-                    <tr><td>6" Rat</td><td><input type="number" id="pop-storage-remove-view-2" readonly></td><td><input type="number" id="pop-remove-2" placeholder="0"></td></tr>
-                    <tr><td>8" Stag</td><td><input type="number" id="pop-storage-remove-view-3" readonly></td><td><input type="number" id="pop-remove-3" placeholder="0"></td></tr>
-                    <tr><td>6" Stag</td><td><input type="number" id="pop-storage-remove-view-4" readonly></td><td><input type="number" id="pop-remove-4" placeholder="0"></td></tr>
-                    <tr><td>Grooved</td><td><input type="number" id="pop-storage-remove-view-5" readonly></td><td><input type="number" id="pop-remove-5" placeholder="0"></td></tr>
-                    <tr><td>Folders</td><td><input type="number" id="pop-storage-remove-view-6" readonly></td><td><input type="number" id="pop-remove-6" placeholder="0"></td></tr>
-                    <tr><td>Clipped Folder</td><td><input type="number" id="pop-storage-remove-view-7" readonly></td><td><input type="number" id="pop-remove-7" placeholder="0"></td></tr>
-                </tbody>
-            </table>
-            <div class="modal-buttons">
-                <button type="button" class="btn-cancel" onclick="closePopRemoveInventoryModal()">Cancel</button>
-                <button type="button" class="btn-cancel" onclick="removePopInventory()" style="background: #ff6b6b; color: white;">Remove from Storage</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="aaronRemoveInventoryModal" class="modal">
-        <div class="modal-content">
-            <h3>Remove Inventory from Storage - Aaron</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Enter how many of each knife you want to remove from Storage Tub for error correction</p>
-            <table class="inventory-table">
-                <thead><tr><th>Product Name</th><th>Current Storage</th><th>Quantity to Remove</th></tr></thead>
-                <tbody>
-                    <tr><td>Full Tang</td><td><input type="number" id="aaron-storage-remove-view-0" readonly></td><td><input type="number" id="aaron-remove-0" placeholder="0"></td></tr>
-                    <tr><td>8" Rat</td><td><input type="number" id="aaron-storage-remove-view-1" readonly></td><td><input type="number" id="aaron-remove-1" placeholder="0"></td></tr>
-                    <tr><td>6" Rat</td><td><input type="number" id="aaron-storage-remove-view-2" readonly></td><td><input type="number" id="aaron-remove-2" placeholder="0"></td></tr>
-                    <tr><td>8" Stag</td><td><input type="number" id="aaron-storage-remove-view-3" readonly></td><td><input type="number" id="aaron-remove-3" placeholder="0"></td></tr>
-                    <tr><td>6" Stag</td><td><input type="number" id="aaron-storage-remove-view-4" readonly></td><td><input type="number" id="aaron-remove-4" placeholder="0"></td></tr>
-                    <tr><td>Grooved</td><td><input type="number" id="aaron-storage-remove-view-5" readonly></td><td><input type="number" id="aaron-remove-5" placeholder="0"></td></tr>
-                    <tr><td>Folders</td><td><input type="number" id="aaron-storage-remove-view-6" readonly></td><td><input type="number" id="aaron-remove-6" placeholder="0"></td></tr>
-                    <tr><td>Clipped Folder</td><td><input type="number" id="aaron-storage-remove-view-7" readonly></td><td><input type="number" id="aaron-remove-7" placeholder="0"></td></tr>
-                </tbody>
-            </table>
-            <div class="modal-buttons">
-                <button type="button" class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button>
-                <button type="button" class="btn-cancel" onclick="removeAaronInventory()" style="background: #ff6b6b; color: white;">Remove from Storage</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ==================== DEBUG SYSTEM ====================
         let debugLogs = [];
@@ -860,6 +587,7 @@
             const timestamp = new Date().toLocaleTimeString();
             debugLogs.push(`[${timestamp}] ${message}`);
             updateDebugPanel();
+            console.log(message);
         }
 
         function updateDebugPanel() {
@@ -880,52 +608,7 @@
             updateDebugPanel();
         }
 
-        // ==================== FIREBASE CLOUD SYNC - FIXED ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
-            authDomain: "knife-inventory-management.firebaseapp.com",
-            databaseURL: "https://knife-inventory-management-default-rtdb.firebaseio.com",
-            projectId: "knife-inventory-management",
-            storageBucket: "knife-inventory-management.firebasestorage.app",
-            messagingSenderId: "944440388498",
-            appId: "1:944440388498:web:8eadb87306507966f1af4b",
-            measurementId: "G-SSQ4E6R5TW"
-        };
-
-        let db;
-        let firebaseReady = false;
-
-        function initFirebase() {
-            addDebugLog("Initializing Firebase...");
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                    addDebugLog("✅ Firebase app initialized");
-                } else {
-                    addDebugLog("✅ Firebase already initialized");
-                }
-                
-                db = firebase.database();
-                addDebugLog("✅ Firebase database reference created");
-                
-                // Test connection
-                db.ref('.info/connected').on('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        addDebugLog("✅ Connected to Firebase Realtime Database");
-                        updateSyncStatus('synced', 'Connected to cloud');
-                        firebaseReady = true;
-                        loadDataFromFirebase();
-                    } else {
-                        addDebugLog("❌ Disconnected from Firebase");
-                        updateSyncStatus('error', 'Firebase disconnected');
-                    }
-                });
-            } catch (error) {
-                addDebugLog(`❌ Firebase init error: ${error.message}`);
-                updateSyncStatus('error', 'Firebase failed to initialize');
-            }
-        }
-
+        // ==================== FIREBASE FUNCTIONS ====================
         function updateSyncStatus(status, message) {
             const statusEl = document.getElementById('sync-status');
             if (status === 'synced') {
@@ -941,73 +624,73 @@
         }
 
         function loadDataFromFirebase() {
-            if (!firebaseReady) {
-                addDebugLog("⚠️ Firebase not ready yet, retrying in 1 second...");
-                setTimeout(loadDataFromFirebase, 1000);
+            if (!window.firebaseDB) {
+                addDebugLog("⚠️ Firebase not ready yet, retrying...");
+                setTimeout(loadDataFromFirebase, 500);
                 return;
             }
 
             updateSyncStatus('syncing', 'Loading from cloud...');
             addDebugLog("Fetching data from Firebase...");
             
-            db.ref('inventory').once('value', (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    if (!data) {
-                        addDebugLog("ℹ️ No data in Firebase (first time)");
-                        updateSyncStatus('synced', 'Cloud ready (empty database)');
-                        return;
+            import("https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js").then(({ ref, onValue }) => {
+                const inventoryRef = ref(window.firebaseDB, 'inventory');
+                onValue(inventoryRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        if (!data) {
+                            addDebugLog("ℹ️ No data in Firebase (database is empty)");
+                            updateSyncStatus('synced', 'Cloud ready');
+                            updateAllInventories();
+                            return;
+                        }
+
+                        addDebugLog(`✅ Data loaded from Firebase`);
+
+                        // Load Pop Inventory
+                        if (data.popInventory) {
+                            Object.keys(data.popInventory).forEach(i => {
+                                const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                                const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                                if (priceEl && data.popInventory[i].price) priceEl.value = data.popInventory[i].price;
+                                if (storageEl && data.popInventory[i].storage) storageEl.value = data.popInventory[i].storage;
+                                if (showTubEl && data.popInventory[i].showTub) showTubEl.value = data.popInventory[i].showTub;
+                            });
+                            addDebugLog("✅ Pop inventory loaded");
+                        }
+
+                        // Load Aaron Inventory
+                        if (data.aaronInventory) {
+                            Object.keys(data.aaronInventory).forEach(i => {
+                                const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                                const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                                if (priceEl && data.aaronInventory[i].price) priceEl.value = data.aaronInventory[i].price;
+                                if (storageEl && data.aaronInventory[i].storage) storageEl.value = data.aaronInventory[i].storage;
+                                if (showTubEl && data.aaronInventory[i].showTub) showTubEl.value = data.aaronInventory[i].showTub;
+                            });
+                            addDebugLog("✅ Aaron inventory loaded");
+                        }
+
+                        updateAllInventories();
+                        updateSyncStatus('synced', 'Cloud data loaded');
+                        addDebugLog("✅ All data synced");
+                    } catch (e) {
+                        addDebugLog(`❌ Error: ${e.message}`);
+                        updateSyncStatus('error', 'Failed to process data');
                     }
-
-                    addDebugLog(`✅ Data received from Firebase`);
-
-                    // Load Pop Inventory
-                    if (data.popInventory) {
-                        Object.keys(data.popInventory).forEach(i => {
-                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                            const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                            if (priceEl && data.popInventory[i].price) priceEl.value = data.popInventory[i].price;
-                            if (storageEl && data.popInventory[i].storage) storageEl.value = data.popInventory[i].storage;
-                            if (showTubEl && data.popInventory[i].showTub) showTubEl.value = data.popInventory[i].showTub;
-                        });
-                        addDebugLog("✅ Pop inventory loaded");
-                    }
-
-                    // Load Aaron Inventory
-                    if (data.aaronInventory) {
-                        Object.keys(data.aaronInventory).forEach(i => {
-                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                            const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                            if (priceEl && data.aaronInventory[i].price) priceEl.value = data.aaronInventory[i].price;
-                            if (storageEl && data.aaronInventory[i].storage) storageEl.value = data.aaronInventory[i].storage;
-                            if (showTubEl && data.aaronInventory[i].showTub) showTubEl.value = data.aaronInventory[i].showTub;
-                        });
-                        addDebugLog("✅ Aaron inventory loaded");
-                    }
-
-                    updateAllInventories();
-                    updateChartsData();
-                    updateSyncStatus('synced', 'Cloud data loaded');
-                    addDebugLog("✅ All data loaded and UI updated");
-                } catch (e) {
-                    addDebugLog(`❌ Error processing data: ${e.message}`);
-                    updateSyncStatus('error', 'Failed to process cloud data');
-                }
-            }).catch(error => {
-                addDebugLog(`❌ Firebase read error: ${error.message}`);
-                updateSyncStatus('error', `Firebase error: ${error.message}`);
+                });
             });
         }
 
         function syncAllData() {
-            if (!firebaseReady) {
-                alert('⏳ Firebase still connecting. Please wait...');
+            if (!window.firebaseDB) {
+                alert('⏳ Firebase still loading. Please wait...');
                 return;
             }
 
-            updateSyncStatus('syncing', 'Uploading to cloud...');
+            updateSyncStatus('syncing', 'Uploading...');
             addDebugLog("Starting sync to Firebase...");
 
             const data = { 
@@ -1015,7 +698,6 @@
                 aaronInventory: {}
             };
 
-            // Capture ALL Pop inventory
             for (let i = 0; i < 8; i++) {
                 data.popInventory[i] = {
                     price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
@@ -1029,23 +711,21 @@
                 };
             }
 
-            addDebugLog(`Uploading ${Object.keys(data.popInventory).length * 2} inventory items...`);
-
-            // Push to Firebase
-            db.ref('inventory').set(data).then(() => {
-                updateSyncStatus('synced', 'Cloud sync complete');
-                addDebugLog("✅ Data synced to Firebase successfully");
-                alert('✅ DATA SYNCED TO CLOUD!\n\nAll your data is now saved in Firebase.\nYou can open this app on any device and see the latest data.');
-            }).catch(error => {
-                addDebugLog(`❌ Firebase write error: ${error.message}`);
-                updateSyncStatus('error', 'Sync failed');
-                alert('❌ Sync Error: ' + error.message);
+            import("https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js").then(({ ref, set }) => {
+                const inventoryRef = ref(window.firebaseDB, 'inventory');
+                set(inventoryRef, data).then(() => {
+                    updateSyncStatus('synced', 'Cloud sync complete');
+                    addDebugLog("✅ Data synced successfully!");
+                    alert('✅ DATA SYNCED TO CLOUD!');
+                }).catch(error => {
+                    addDebugLog(`❌ Sync error: ${error.message}`);
+                    updateSyncStatus('error', 'Sync failed');
+                    alert('❌ Sync Error: ' + error.message);
+                });
             });
         }
 
-        // ==================== CORE APP LOGIC ====================
-        const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
-
+        // ==================== UI FUNCTIONS ====================
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1054,7 +734,6 @@
             updateAllInventories();
         }
 
-        // Modal Functions
         function openPopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.add('active'); }
         function closePopInventoryReceivedModal() { document.getElementById('popInventoryReceivedModal').classList.remove('active'); for(let i=0;i<8;i++) document.getElementById(`pop-received-${i}`).value = ''; }
         function openAaronInventoryReceivedModal() { document.getElementById('aaronInventoryReceivedModal').classList.add('active'); }
@@ -1078,25 +757,6 @@
         }
         function closeAaronMoveInventoryModal() { document.getElementById('aaronMoveInventoryModal').classList.remove('active'); }
 
-        function openPopRemoveInventoryModal() {
-            document.getElementById('popRemoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                document.getElementById(`pop-storage-remove-view-${i}`).value = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`pop-remove-${i}`).value = '';
-            }
-        }
-        function closePopRemoveInventoryModal() { document.getElementById('popRemoveInventoryModal').classList.remove('active'); }
-
-        function openAaronRemoveInventoryModal() {
-            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
-            for (let i = 0; i < 8; i++) {
-                document.getElementById(`aaron-storage-remove-view-${i}`).value = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                document.getElementById(`aaron-remove-${i}`).value = '';
-            }
-        }
-        function closeAaronRemoveInventoryModal() { document.getElementById('aaronRemoveInventoryModal').classList.remove('active'); }
-
-        // Inventory Operations
         function addPopInventoryReceived() {
             for (let i = 0; i < 8; i++) {
                 const received = parseFloat(document.getElementById(`pop-received-${i}`).value || 0);
@@ -1108,7 +768,7 @@
             updateAllInventories();
             syncAllData();
             closePopInventoryReceivedModal();
-            alert('✅ Inventory added & synced to cloud!');
+            alert('✅ Inventory added & synced!');
         }
 
         function addAaronInventoryReceived() {
@@ -1122,7 +782,7 @@
             updateAllInventories();
             syncAllData();
             closeAaronInventoryReceivedModal();
-            alert('✅ Inventory added & synced to cloud!');
+            alert('✅ Inventory added & synced!');
         }
 
         function movePopInventory() {
@@ -1140,7 +800,7 @@
             updateAllInventories();
             syncAllData();
             closePopMoveInventoryModal();
-            alert('✅ Moved & synced to cloud!');
+            alert('✅ Moved & synced!');
         }
 
         function moveAaronInventory() {
@@ -1158,42 +818,9 @@
             updateAllInventories();
             syncAllData();
             closeAaronMoveInventoryModal();
-            alert('✅ Moved & synced to cloud!');
+            alert('✅ Moved & synced!');
         }
 
-        function removePopInventory() {
-            for (let i = 0; i < 8; i++) {
-                const remove = parseFloat(document.getElementById(`pop-remove-${i}`).value || 0);
-                if (remove > 0) {
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const currentStorage = parseFloat(storageEl.value || 0);
-                    if (remove > currentStorage) { alert(`❌ Not enough`); return; }
-                    storageEl.value = currentStorage - remove;
-                }
-            }
-            updateAllInventories();
-            syncAllData();
-            closePopRemoveInventoryModal();
-            alert('✅ Removed & synced to cloud!');
-        }
-
-        function removeAaronInventory() {
-            for (let i = 0; i < 8; i++) {
-                const remove = parseFloat(document.getElementById(`aaron-remove-${i}`).value || 0);
-                if (remove > 0) {
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const currentStorage = parseFloat(storageEl.value || 0);
-                    if (remove > currentStorage) { alert(`❌ Not enough`); return; }
-                    storageEl.value = currentStorage - remove;
-                }
-            }
-            updateAllInventories();
-            syncAllData();
-            closeAaronRemoveInventoryModal();
-            alert('✅ Removed & synced to cloud!');
-        }
-
-        // Update inventory calculations
         function updatePopInventory() {
             for (let i = 0; i < 8; i++) {
                 const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
@@ -1243,52 +870,8 @@
             updateMasterInventory();
         }
 
-        function updateChartsData() {
-            const unitsSold = products.map(() => Math.floor(Math.random() * 50));
-            if (window.pieChart) {
-                window.pieChart.data.datasets.data = unitsSold;
-                window.pieChart.update();
-            }
-            if (window.barChart) {
-                window.barChart.data.datasets.data = unitsSold;
-                window.barChart.update();
-            }
-        }
-
-        function initCharts() {
-            const unitsSold = Array(8).fill(0);
-            const pieCtx = document.getElementById('salesPieChart')?.getContext('2d');
-            if (pieCtx) {
-                window.pieChart = new Chart(pieCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: products,
-                        datasets: [{
-                            data: unitsSold,
-                            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140']
-                        }]
-                    },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-                });
-            }
-            const barCtx = document.getElementById('salesBarChart')?.getContext('2d');
-            if (barCtx) {
-                window.barChart = new Chart(barCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: products,
-                        datasets: [{ label: 'Units Sold', data: unitsSold, backgroundColor: '#667eea' }]
-                    },
-                    options: { responsive: true, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
-                });
-            }
-        }
-
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            addDebugLog("Page loaded, starting initialization...");
-            initFirebase();
-            initCharts();
+            addDebugLog("✅ Page initialized");
             updateAllInventories();
         });
     </script>
