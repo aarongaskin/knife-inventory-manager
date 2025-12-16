@@ -25,11 +25,17 @@
         .tab-section p { color: #666; margin-bottom: 20px; font-size: 14px; }
         .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .inventory-controls h3 { width: 100%; color: #2e7d32; margin-bottom: 15px; }
-        .sheet-controls { background: #f0f4ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+        .sheet-controls { background: #f0f4ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
         .sheet-status { display: inline-flex; align-items: center; gap: 8px; padding: 12px 15px; border-radius: 6px; font-weight: 500; }
         .sheet-status.inactive { background: #f5f5f5; color: #666; }
         .sheet-status.active { background: #c8e6c9; color: #2e7d32; }
         .sheet-status.completed { background: #bbdefb; color: #1565c0; }
+        .sheet-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px; }
+        .sheet-btn:hover { background: #5568d3; }
+        .sheet-btn.lock-btn { background: #ff9800; }
+        .sheet-btn.lock-btn:hover { background: #fb8c00; }
+        .sheet-btn.unlock-btn { background: #4caf50; }
+        .sheet-btn.unlock-btn:hover { background: #45a049; }
         .event-checkbox { display: flex; align-items: center; gap: 10px; }
         .event-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
         .event-checkbox label { font-weight: 500; color: #333; cursor: pointer; }
@@ -298,14 +304,13 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="wetumpka-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="wetumpka" onchange="activateSheet('pop', 'wetumpka')"> Activate this sheet
-                    </label>
-                    <div class="event-checkbox" id="wetumpka-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')">
-                        <label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label>
-                    </div>
-                    <button class="nav-link" onclick="unlockSheet('wetumpka')" id="unlock-wetumpka" style="display:none; background:#d32f2f; color:white; border-color:#d32f2f;">🔓 Unlock Sheet</button>
+                    <button class="sheet-btn" onclick="openActivateSheetModal('pop', 'wetumpka')">📋 Activate Sheet</button>
+                    <button class="sheet-btn lock-btn" id="lock-btn-wetumpka" style="display:none;" onclick="openLockSheetModal('wetumpka')">🔒 Lock Sheet</button>
+                    <button class="sheet-btn unlock-btn" id="unlock-btn-wetumpka" style="display:none;" onclick="openUnlockSheetModal('wetumpka')">🔓 Unlock Sheet</button>
+                </div>
+                <div class="event-checkbox" id="wetumpka-event-box" style="display: none;">
+                    <input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')">
+                    <label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label>
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
@@ -343,14 +348,13 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="trussville-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="trussville" onchange="activateSheet('pop', 'trussville')"> Activate this sheet
-                    </label>
-                    <div class="event-checkbox" id="trussville-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')">
-                        <label for="event-completed-trussville">✅ Event Completed (Locks Data)</label>
-                    </div>
-                    <button class="nav-link" onclick="unlockSheet('trussville')" id="unlock-trussville" style="display:none; background:#d32f2f; color:white; border-color:#d32f2f;">🔓 Unlock Sheet</button>
+                    <button class="sheet-btn" onclick="openActivateSheetModal('pop', 'trussville')">📋 Activate Sheet</button>
+                    <button class="sheet-btn lock-btn" id="lock-btn-trussville" style="display:none;" onclick="openLockSheetModal('trussville')">🔒 Lock Sheet</button>
+                    <button class="sheet-btn unlock-btn" id="unlock-btn-trussville" style="display:none;" onclick="openUnlockSheetModal('trussville')">🔓 Unlock Sheet</button>
+                </div>
+                <div class="event-checkbox" id="trussville-event-box" style="display: none;">
+                    <input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')">
+                    <label for="event-completed-trussville">✅ Event Completed (Locks Data)</label>
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
@@ -388,14 +392,13 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="columbia-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="columbia" onchange="activateSheet('pop', 'columbia')"> Activate this sheet
-                    </label>
-                    <div class="event-checkbox" id="columbia-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')">
-                        <label for="event-completed-columbia">✅ Event Completed (Locks Data)</label>
-                    </div>
-                    <button class="nav-link" onclick="unlockSheet('columbia')" id="unlock-columbia" style="display:none; background:#d32f2f; color:white; border-color:#d32f2f;">🔓 Unlock Sheet</button>
+                    <button class="sheet-btn" onclick="openActivateSheetModal('pop', 'columbia')">📋 Activate Sheet</button>
+                    <button class="sheet-btn lock-btn" id="lock-btn-columbia" style="display:none;" onclick="openLockSheetModal('columbia')">🔒 Lock Sheet</button>
+                    <button class="sheet-btn unlock-btn" id="unlock-btn-columbia" style="display:none;" onclick="openUnlockSheetModal('columbia')">🔓 Unlock Sheet</button>
+                </div>
+                <div class="event-checkbox" id="columbia-event-box" style="display: none;">
+                    <input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')">
+                    <label for="event-completed-columbia">✅ Event Completed (Locks Data)</label>
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
@@ -433,14 +436,13 @@
                 <button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button>
                 <div class="sheet-controls">
                     <div class="sheet-status inactive" id="hattiesburg-status">● Inactive</div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;">
-                        <input type="radio" name="pop-active-sheet" class="pop-active-radio" value="hattiesburg" onchange="activateSheet('pop', 'hattiesburg')"> Activate this sheet
-                    </label>
-                    <div class="event-checkbox" id="hattiesburg-event-box" style="display: none;">
-                        <input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')">
-                        <label for="event-completed-hattiesburg">✅ Event Completed (Locks Data)</label>
-                    </div>
-                    <button class="nav-link" onclick="unlockSheet('hattiesburg')" id="unlock-hattiesburg" style="display:none; background:#d32f2f; color:white; border-color:#d32f2f;">🔓 Unlock Sheet</button>
+                    <button class="sheet-btn" onclick="openActivateSheetModal('pop', 'hattiesburg')">📋 Activate Sheet</button>
+                    <button class="sheet-btn lock-btn" id="lock-btn-hattiesburg" style="display:none;" onclick="openLockSheetModal('hattiesburg')">🔒 Lock Sheet</button>
+                    <button class="sheet-btn unlock-btn" id="unlock-btn-hattiesburg" style="display:none;" onclick="openUnlockSheetModal('hattiesburg')">🔓 Unlock Sheet</button>
+                </div>
+                <div class="event-checkbox" id="hattiesburg-event-box" style="display: none;">
+                    <input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')">
+                    <label for="event-completed-hattiesburg">✅ Event Completed (Locks Data)</label>
                 </div>
                 <div class="tax-controls">
                     <div class="tax-control-group">
@@ -490,9 +492,74 @@
             </div>
         </div>
 
-        <!-- MODALS START HERE -->
+        <!-- BUTTON MODALS FOR SHEET CONTROLS -->
+        
+        <!-- Activate Sheet Modal -->
+        <div id="activateSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>📋 Activate Sales Sheet</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">You are about to activate this sheet and make it the active tracking sheet. Units in Show Tub will be loaded as Units Brought.</p>
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="activateSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">This will become your active tracking sheet.</p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate Sheet</button>
+                </div>
+            </div>
+        </div>
 
-        <!-- Add Inventory Modals -->
+        <!-- Lock Sheet Modal -->
+        <div id="lockSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>🔒 Lock Sheet Confirmation</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Lock this sheet to prevent accidental edits after event completion?</p>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="lockSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Once locked, you can still unlock with the 🔓 Unlock button.</p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unlock Sheet Modal -->
+        <div id="unlockSheetModal" class="modal">
+            <div class="modal-content">
+                <h3>🔓 Unlock Sheet Confirmation</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Unlock this sheet for editing? This will allow changes to be made.</p>
+                <div style="background: #c8e6c9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="unlockSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">You can lock it again after making changes.</p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button>
+                    <button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock Sheet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Completed Modal -->
+        <div id="eventCompletedConfirmModal" class="modal">
+            <div class="modal-content">
+                <h3>✅ Confirm Event Completed</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">This will lock the sheet and save totals to Firebase. Review your data below:</p>
+                <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="confirmEventSheetName"></span></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Total Units: <strong id="confirmEventUnits">--</strong></p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Total Revenue: <strong id="confirmEventRevenue">--</strong></p>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel - Don't Lock</button>
+                    <button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Yes, Complete Event</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- INVENTORY & SALES MODALS (Keep all existing ones) -->
         <div id="popInventoryReceivedModal" class="modal">
             <div class="modal-content">
                 <h3>Add Inventory Received - Pop Storage Tub</h3>
@@ -541,7 +608,6 @@
             </div>
         </div>
 
-        <!-- Move to Show Tub Modals -->
         <div id="popMoveInventoryModal" class="modal">
             <div class="modal-content">
                 <h3>Move Inventory to Show Tub - Pop</h3>
@@ -590,7 +656,6 @@
             </div>
         </div>
 
-        <!-- Remove Inventory Modals -->
         <div id="popRemoveInventoryModal" class="modal">
             <div class="modal-content">
                 <h3>Remove Inventory from Storage - Pop</h3>
@@ -639,7 +704,7 @@
             </div>
         </div>
 
-        <!-- New Sales Sheet Modals -->
+        <!-- New & Delete Sales Modals -->
         <div id="newSalesModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Pop Sales Sheet</h3>
@@ -680,7 +745,6 @@
             </div>
         </div>
 
-        <!-- Delete Sales Sheet Modals -->
         <div id="deletePopSalesSheetModal" class="modal">
             <div class="modal-content">
                 <h3>Delete Pop Sales Sheet</h3>
@@ -716,62 +780,19 @@
                 </div>
             </div>
         </div>
-
-        <!-- EVENT MODALS - EVENT COMPLETED & LOCK/UNLOCK CONFIRMATION MODALS -->
-        <div id="eventCompletedConfirmModal" class="modal">
-            <div class="modal-content">
-                <h3>✅ Confirm Event Completed</h3>
-                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">This will lock the sheet and save totals to Firebase. This action cannot be easily reversed without unlocking.</p>
-                <div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
-                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="confirmEventSheetName"></span></p>
-                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Total Units: <strong id="confirmEventUnits">--</strong></p>
-                    <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Total Revenue: <strong id="confirmEventRevenue">--</strong></p>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel - Don't Lock</button>
-                    <button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Yes, Complete Event</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="lockSheetConfirmModal" class="modal">
-            <div class="modal-content">
-                <h3>🔒 Lock Sheet Confirmation</h3>
-                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Lock this sheet to prevent accidental edits?</p>
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
-                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="lockSheetName"></span></p>
-                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">Once locked, you can still unlock with the 🔓 button.</p>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeLockSheetConfirmModal()">Cancel</button>
-                    <button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock Sheet</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="unlockSheetConfirmModal" class="modal">
-            <div class="modal-content">
-                <h3>🔓 Unlock Sheet Confirmation</h3>
-                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Unlock this sheet for editing? This will allow changes to be made.</p>
-                <div style="background: #c8e6c9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
-                    <p style="margin: 0; font-weight: 600; color: #333;">Sheet: <span id="unlockSheetName"></span></p>
-                    <p style="margin: 10px 0 0 0; color: #666; font-size: 13px;">You can lock it again after making changes.</p>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeUnlockSheetConfirmModal()">Cancel</button>
-                    <button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock Sheet</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
-        // ========== GLOBAL VARS ==========
+        // ========== GLOBAL VARS & FIREBASE SETUP ==========
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         const sheetStates = {};
         let currentPerson = null;
         let currentSheetId = null;
         let pendingEventCompletedSheet = null;
+        let pendingActivateSheet = null;
+        let pendingActivatePerson = null;
+        let pendingLockSheet = null;
+        let pendingUnlockSheet = null;
 
         // Load sheet locked states from Firebase on page load
         function loadSheetLockedStates() {
@@ -783,13 +804,11 @@
                     const data = snapshot.val();
                     if (!data) return;
 
-                    // Check if sheet is locked
                     if (data.locked === true) {
                         sheetStates[sheetId] = sheetStates[sheetId] || {};
                         sheetStates[sheetId].locked = true;
                         sheetStates[sheetId].completed = true;
 
-                        // CRITICAL: Load totals from Firebase
                         if (data.totalUnits !== undefined) {
                             document.getElementById(`total-units-${sheetId}`).value = data.totalUnits;
                         }
@@ -797,41 +816,83 @@
                             document.getElementById(`total-revenue-${sheetId}`).value = data.totalRevenue;
                         }
 
-                        // Show unlock button
-                        document.getElementById(`unlock-${sheetId}`).style.display = 'inline-block';
+                        document.getElementById(`lock-btn-${sheetId}`).style.display = 'none';
+                        document.getElementById(`unlock-btn-${sheetId}`).style.display = 'inline-flex';
                         updateSheetStatus(sheetId);
                     }
                 });
             });
         }
 
-        function unlockSheet(sheetId) {
-            document.getElementById('unlockSheetName').innerText = sheetId.toUpperCase();
-            window.pendingUnlockSheet = sheetId;
-            document.getElementById('unlockSheetConfirmModal').classList.add('active');
+        // BUTTON MODAL FUNCTIONS
+        function openActivateSheetModal(person, sheetId) {
+            pendingActivateSheet = sheetId;
+            pendingActivatePerson = person;
+            document.getElementById('activateSheetName').innerText = sheetId.charAt(0).toUpperCase() + sheetId.slice(1);
+            document.getElementById('activateSheetModal').classList.add('active');
+        }
+
+        function closeActivateSheetModal() {
+            document.getElementById('activateSheetModal').classList.remove('active');
+            pendingActivateSheet = null;
+            pendingActivatePerson = null;
+        }
+
+        function confirmActivateSheet() {
+            const sheetId = pendingActivateSheet;
+            const person = pendingActivatePerson;
+            activateSheet(person, sheetId);
+            closeActivateSheetModal();
+        }
+
+        function openLockSheetModal(sheetId) {
+            pendingLockSheet = sheetId;
+            document.getElementById('lockSheetName').innerText = sheetId.charAt(0).toUpperCase() + sheetId.slice(1);
+            document.getElementById('lockSheetModal').classList.add('active');
+        }
+
+        function closeLockSheetModal() {
+            document.getElementById('lockSheetModal').classList.remove('active');
+            pendingLockSheet = null;
+        }
+
+        function confirmLockSheet() {
+            const sheetId = pendingLockSheet;
+            document.getElementById(`lock-btn-${sheetId}`).style.display = 'none';
+            document.getElementById(`unlock-btn-${sheetId}`).style.display = 'inline-flex';
+            updateSheetStatus(sheetId);
+            alert(`🔒 ${sheetId.toUpperCase()} locked!`);
+            closeLockSheetModal();
+        }
+
+        function openUnlockSheetModal(sheetId) {
+            pendingUnlockSheet = sheetId;
+            document.getElementById('unlockSheetName').innerText = sheetId.charAt(0).toUpperCase() + sheetId.slice(1);
+            document.getElementById('unlockSheetModal').classList.add('active');
+        }
+
+        function closeUnlockSheetModal() {
+            document.getElementById('unlockSheetModal').classList.remove('active');
+            pendingUnlockSheet = null;
         }
 
         function confirmUnlockSheet() {
-            const sheetId = window.pendingUnlockSheet;
+            const sheetId = pendingUnlockSheet;
             const sheetRef = window.firebaseRef(window.firebaseDB, `salesSheets/${sheetId}`);
             window.firebaseSet(sheetRef, { locked: false, totalUnits: null, totalRevenue: null })
                 .then(() => {
                     console.log(`✅ ${sheetId} unlocked`);
                     sheetStates[sheetId].locked = false;
                     sheetStates[sheetId].completed = false;
-                    document.getElementById(`unlock-${sheetId}`).style.display = 'none';
+                    document.getElementById(`unlock-btn-${sheetId}`).style.display = 'none';
+                    document.getElementById(`lock-btn-${sheetId}`).style.display = 'none';
                     document.getElementById(`total-units-${sheetId}`).value = '';
                     document.getElementById(`total-revenue-${sheetId}`).value = '';
                     updateSheetStatus(sheetId);
                     alert(`✅ ${sheetId.toUpperCase()} unlocked!`);
-                    closeUnlockSheetConfirmModal();
+                    closeUnlockSheetModal();
                 })
                 .catch(err => alert(`Error: ${err.message}`));
-        }
-
-        function closeUnlockSheetConfirmModal() {
-            document.getElementById('unlockSheetConfirmModal').classList.remove('active');
-            window.pendingUnlockSheet = null;
         }
 
         function loadFromFirebase() {
@@ -894,9 +955,6 @@
         }
 
         function activateSheet(person, sheetId) {
-            const radioBtn = document.querySelector(`input[name="${person}-active-sheet"][value="${sheetId}"]`);
-            if (!radioBtn || !radioBtn.checked) return;
-
             Object.keys(sheetStates).forEach(sheet => {
                 if (sheet !== sheetId) {
                     sheetStates[sheet].active = false;
@@ -916,8 +974,10 @@
             }
 
             document.getElementById(`${sheetId}-event-box`).style.display = 'flex';
+            document.getElementById(`lock-btn-${sheetId}`).style.display = 'inline-flex';
             updateSheetStatus(sheetId);
             refreshSheetData(person, sheetId);
+            alert(`✅ ${sheetId.toUpperCase()} activated!`);
         }
 
         function refreshSheetData(person, sheetId) {
@@ -932,11 +992,9 @@
             const checkbox = document.getElementById(`event-completed-${sheetId}`);
             
             if (checkbox.checked) {
-                // SHOW CONFIRMATION MODAL
                 pendingEventCompletedSheet = sheetId;
                 document.getElementById('confirmEventSheetName').innerText = sheetId.toUpperCase();
                 
-                // Calculate totals to display
                 let totalUnits = 0;
                 let totalRevenue = 0;
                 for (let i = 0; i < 8; i++) {
@@ -952,7 +1010,7 @@
                 document.getElementById('confirmEventRevenue').innerText = '$' + totalRevenue.toFixed(2);
                 
                 document.getElementById('eventCompletedConfirmModal').classList.add('active');
-                checkbox.checked = false; // Uncheck until confirmed
+                checkbox.checked = false;
             }
         }
 
@@ -994,7 +1052,6 @@
             document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`).value = totalUnits;
             document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`).value = totalRevenue.toFixed(2);
 
-            // CRITICAL: SAVE TOTALS TO FIREBASE WHEN EVENT COMPLETED
             const sheetRef = window.firebaseRef(window.firebaseDB, `salesSheets/${sheetId}`);
             const sheetData = {
                 locked: true,
@@ -1008,7 +1065,8 @@
                     console.log(`✅ ${sheetId} totals saved to Firebase: ${totalUnits} units, $${totalRevenue.toFixed(2)}`);
                     sheetStates[sheetId].locked = true;
                     sheetStates[sheetId].completed = true;
-                    document.getElementById(`unlock-${sheetId}`).style.display = 'inline-block';
+                    document.getElementById(`lock-btn-${sheetId}`).style.display = 'none';
+                    document.getElementById(`unlock-btn-${sheetId}`).style.display = 'inline-flex';
                     updateSheetStatus(sheetId);
                     alert(`✅ ${sheetId.toUpperCase()} saved to Firebase!\n\nUnits: ${totalUnits}\nRevenue: $${totalRevenue.toFixed(2)}`);
                 })
@@ -1182,7 +1240,6 @@
             alert('✅ Inventory removed from Aaron storage!');
         }
 
-        // New Sales Sheet Modals
         function openNewSalesSheetModal() { document.getElementById('newSalesModal').classList.add('active'); }
         function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
         function createNewSalesSheet() {
@@ -1227,7 +1284,6 @@
             document.getElementById('aaronSheetToDelete').value = '';
         }
 
-        // Update All Inventories
         function updatePopShowTubTotal() {
             let showTotal = 0;
             for (let i = 0; i < 8; i++) {
@@ -1335,7 +1391,6 @@
                 .catch(err => console.error('Save error:', err));
         }
 
-        // Event listeners
         document.addEventListener('input', (e) => {
             if (e.target.classList.contains('units-left')) {
                 const sheetId = e.target.dataset.sheet;
@@ -1367,7 +1422,6 @@
             alert('✅ Inventory refreshed from active sheet!');
         }
 
-        // Initialize
         initSheetStates();
         loadSheetLockedStates();
     </script>
