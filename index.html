@@ -6,7 +6,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v21 - Firebase Hosted</title>
+    <title>Knife Inventory Manager v21 - Firebase Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -34,6 +34,7 @@
             onValue: onValue,
             remove: remove
         };
+        window.firebaseReady = true;
     </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -440,86 +441,97 @@
         let popSheets = {};
         let aaronSheets = {};
         let firebaseReady = false;
+        let inSheetViewer = false;
 
-        // Wait for Firebase to initialize
-        setTimeout(() => {
-            if (window.firebase) {
-                db = window.firebase.getDatabase();
-                firebaseReady = true;
-                initializeFirebaseListeners();
-            } else {
-                setTimeout(arguments.callee, 100);
+        function initFirebase() {
+            if (!window.firebaseReady || !window.firebase) {
+                setTimeout(initFirebase, 100);
+                return;
             }
-        }, 100);
-
-        function initializeFirebaseListeners() {
-            const popSheetsRef = window.firebase.ref(db, 'inventory/popSheets');
-            const aaronSheetsRef = window.firebase.ref(db, 'inventory/aaronSheets');
-
-            window.firebase.onValue(popSheetsRef, (snapshot) => {
-                popSheets = snapshot.val() || {};
-                updatePopSheetsList();
-            });
-
-            window.firebase.onValue(aaronSheetsRef, (snapshot) => {
-                aaronSheets = snapshot.val() || {};
-                updateAaronSheetsList();
-            });
-
-            // Load initial inventory
+            
+            db = window.firebase.getDatabase();
+            firebaseReady = true;
+            console.log('Firebase initialized');
+            
             loadFirebaseInventory();
+            setupSheetListeners();
+        }
+
+        function setupSheetListeners() {
+            try {
+                const popSheetsRef = window.firebase.ref(db, 'inventory/popSheets');
+                const aaronSheetsRef = window.firebase.ref(db, 'inventory/aaronSheets');
+
+                window.firebase.onValue(popSheetsRef, (snapshot) => {
+                    popSheets = snapshot.val() || {};
+                    updatePopSheetsList();
+                });
+
+                window.firebase.onValue(aaronSheetsRef, (snapshot) => {
+                    aaronSheets = snapshot.val() || {};
+                    updateAaronSheetsList();
+                });
+            } catch (e) {
+                console.error('Error setting up sheet listeners:', e);
+            }
         }
 
         function loadFirebaseInventory() {
-            const popStorageRef = window.firebase.ref(db, 'inventory/pop/storage');
-            const popShowRef = window.firebase.ref(db, 'inventory/pop/show');
-            const aaronStorageRef = window.firebase.ref(db, 'inventory/aaron/storage');
-            const aaronShowRef = window.firebase.ref(db, 'inventory/aaron/show');
+            try {
+                const popStorageRef = window.firebase.ref(db, 'inventory/pop/storage');
+                const popShowRef = window.firebase.ref(db, 'inventory/pop/show');
+                const aaronStorageRef = window.firebase.ref(db, 'inventory/aaron/storage');
+                const aaronShowRef = window.firebase.ref(db, 'inventory/aaron/show');
 
-            window.firebase.onValue(popStorageRef, (snapshot) => {
-                const storage = snapshot.val() || {};
-                buildInventoryTable('pop', storage, 'storage');
-                updateMasterInventory();
-            });
+                window.firebase.onValue(popStorageRef, (snapshot) => {
+                    const storage = snapshot.val() || {};
+                    buildInventoryTable('pop', storage);
+                    updateMasterInventory();
+                });
 
-            window.firebase.onValue(popShowRef, (snapshot) => {
-                const show = snapshot.val() || {};
-                buildInventoryTable('pop', show, 'show');
-                updateMasterInventory();
-            });
+                window.firebase.onValue(popShowRef, (snapshot) => {
+                    const show = snapshot.val() || {};
+                    for (let i = 0; i < 8; i++) {
+                        const el = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                        if (el) el.value = show[i] || 0;
+                    }
+                    updateMasterInventory();
+                });
 
-            window.firebase.onValue(aaronStorageRef, (snapshot) => {
-                const storage = snapshot.val() || {};
-                buildInventoryTable('aaron', storage, 'storage');
-                updateMasterInventory();
-            });
+                window.firebase.onValue(aaronStorageRef, (snapshot) => {
+                    const storage = snapshot.val() || {};
+                    buildInventoryTable('aaron', storage);
+                    updateMasterInventory();
+                });
 
-            window.firebase.onValue(aaronShowRef, (snapshot) => {
-                const show = snapshot.val() || {};
-                buildInventoryTable('aaron', show, 'show');
-                updateMasterInventory();
-            });
+                window.firebase.onValue(aaronShowRef, (snapshot) => {
+                    const show = snapshot.val() || {};
+                    for (let i = 0; i < 8; i++) {
+                        const el = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                        if (el) el.value = show[i] || 0;
+                    }
+                    updateMasterInventory();
+                });
+            } catch (e) {
+                console.error('Error loading inventory:', e);
+            }
         }
 
-        function buildInventoryTable(person, data, type) {
+        function buildInventoryTable(person, storage) {
             const tbody = document.getElementById(`${person}-inv-tbody`);
             if (!tbody) return;
             
             let html = '';
             for (let i = 0; i < 8; i++) {
-                const storageVal = data[i] || 0;
-                if (type === 'storage') {
-                    html += `<tr>
-                        <td>${PRODUCTS[i]}</td>
-                        <td><input type="number" placeholder="Enter price" class="${person}-price" data-product="${i}" min="0" step="0.01" onchange="savePrice('${person}', ${i})"></td>
-                        <td><input type="number" class="${person}-storage" data-product="${i}" value="${storageVal}" readonly></td>
-                        <td><input type="number" placeholder="Show" class="${person}-show-tub" data-product="${i}" onchange="saveShowTub('${person}', ${i})"></td>
-                    </tr>`;
-                }
+                const storageVal = storage[i] || 0;
+                html += `<tr>
+                    <td>${PRODUCTS[i]}</td>
+                    <td><input type="number" placeholder="Enter price" class="${person}-price" data-product="${i}" min="0" step="0.01" onchange="savePrice('${person}', ${i})"></td>
+                    <td><input type="number" class="${person}-storage" data-product="${i}" value="${storageVal}" readonly></td>
+                    <td><input type="number" placeholder="Show" class="${person}-show-tub" data-product="${i}" onchange="saveShowTub('${person}', ${i})"></td>
+                </tr>`;
             }
-            if (type === 'storage') {
-                tbody.innerHTML = html;
-            }
+            tbody.innerHTML = html;
         }
 
         function savePrice(person, idx) {
@@ -537,9 +549,16 @@
         }
 
         function openTab(evt, tabName) {
+            if (inSheetViewer) {
+                document.getElementById('sheet-viewer').innerHTML = '';
+                inSheetViewer = false;
+            }
+            
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabName)?.classList.add('active');
+            
+            const tab = document.getElementById(tabName);
+            if (tab) tab.classList.add('active');
             if (evt?.currentTarget) evt.currentTarget.classList.add('active');
         }
 
@@ -559,18 +578,22 @@
             if (!name) { alert('Please enter a sheet name'); return; }
             const id = 'pop-' + Date.now();
             const sheetRef = window.firebase.ref(db, `inventory/popSheets/${id}`);
-            window.firebase.set(sheetRef, { name, data: {} });
-            alert('✅ Pop sheet created!');
-            closeCreatePopSheetModal();
+            window.firebase.set(sheetRef, { name, data: {} }).then(() => {
+                alert('✅ Pop sheet created!');
+                closeCreatePopSheetModal();
+            }).catch(e => alert('Error: ' + e.message));
         }
 
         function updatePopSheetsList() {
             const list = document.getElementById('pop-sheets-list');
+            if (!list) return;
+            
             const sheets = Object.keys(popSheets);
             if (sheets.length === 0) {
                 list.innerHTML = '<p style="color: #999;">No sales sheets created yet.</p>';
                 return;
             }
+            
             let html = '';
             sheets.forEach(id => {
                 html += `<button class="nav-link" onclick="viewPopSheet('${id}')" style="margin-bottom: 5px;">${popSheets[id]?.name || 'Unknown'}</button>`;
@@ -581,6 +604,8 @@
         function viewPopSheet(id) {
             const sheet = popSheets[id];
             if (!sheet) return;
+            
+            inSheetViewer = true;
             
             let html = `<div class="tab-content active" style="padding: 30px; overflow-x: auto;">
                 <button class="nav-link" onclick="backToPop()" style="margin-bottom: 20px;">← Back</button>
@@ -645,12 +670,13 @@
             const input = document.querySelector(`.sheet-post-show[data-sheet="${id}"][data-idx="${idx}"]`);
             const postShow = parseInt(input.value) || 0;
             const sheetRef = window.firebase.ref(db, `inventory/popSheets/${id}/data/${idx}`);
-            window.firebase.set(sheetRef, { postShow });
+            window.firebase.set(sheetRef, { postShow }).catch(e => console.error(e));
             viewPopSheet(id);
         }
 
         function backToPop() {
             document.getElementById('sheet-viewer').innerHTML = '';
+            inSheetViewer = false;
             openTab(null, 'pop-nav');
         }
 
@@ -675,9 +701,10 @@
             const id = document.getElementById('popSheetSelect').value;
             if (!id) { alert('Select a sheet'); return; }
             const sheetRef = window.firebase.ref(db, `inventory/popSheets/${id}`);
-            window.firebase.remove(sheetRef);
-            alert('✅ Deleted!');
-            closeDeletePopSheetModal();
+            window.firebase.remove(sheetRef).then(() => {
+                alert('✅ Deleted!');
+                closeDeletePopSheetModal();
+            }).catch(e => alert('Error: ' + e.message));
         }
 
         // === AARON SHEET FUNCTIONS ===
@@ -696,18 +723,22 @@
             if (!name) { alert('Please enter a sheet name'); return; }
             const id = 'aaron-' + Date.now();
             const sheetRef = window.firebase.ref(db, `inventory/aaronSheets/${id}`);
-            window.firebase.set(sheetRef, { name, data: {} });
-            alert('✅ Aaron sheet created!');
-            closeCreateAaronSheetModal();
+            window.firebase.set(sheetRef, { name, data: {} }).then(() => {
+                alert('✅ Aaron sheet created!');
+                closeCreateAaronSheetModal();
+            }).catch(e => alert('Error: ' + e.message));
         }
 
         function updateAaronSheetsList() {
             const list = document.getElementById('aaron-sheets-list');
+            if (!list) return;
+            
             const sheets = Object.keys(aaronSheets);
             if (sheets.length === 0) {
                 list.innerHTML = '<p style="color: #999;">No sales sheets created yet.</p>';
                 return;
             }
+            
             let html = '';
             sheets.forEach(id => {
                 html += `<button class="nav-link" onclick="viewAaronSheet('${id}')" style="margin-bottom: 5px;">${aaronSheets[id]?.name || 'Unknown'}</button>`;
@@ -718,6 +749,8 @@
         function viewAaronSheet(id) {
             const sheet = aaronSheets[id];
             if (!sheet) return;
+            
+            inSheetViewer = true;
             
             let html = `<div class="tab-content active" style="padding: 30px; overflow-x: auto;">
                 <button class="nav-link" onclick="backToAaron()" style="margin-bottom: 20px;">← Back</button>
@@ -793,12 +826,13 @@
             const input = document.querySelector(`.aaron-sheet-post[data-sheet="${id}"][data-idx="${idx}"]`);
             const postShow = parseInt(input.value) || 0;
             const sheetRef = window.firebase.ref(db, `inventory/aaronSheets/${id}/data/${idx}`);
-            window.firebase.set(sheetRef, { postShow });
+            window.firebase.set(sheetRef, { postShow }).catch(e => console.error(e));
             viewAaronSheet(id);
         }
 
         function backToAaron() {
             document.getElementById('sheet-viewer').innerHTML = '';
+            inSheetViewer = false;
             openTab(null, 'aaron-nav');
         }
 
@@ -823,9 +857,10 @@
             const id = document.getElementById('aaronSheetSelect').value;
             if (!id) { alert('Select a sheet'); return; }
             const sheetRef = window.firebase.ref(db, `inventory/aaronSheets/${id}`);
-            window.firebase.remove(sheetRef);
-            alert('✅ Deleted!');
-            closeDeleteAaronSheetModal();
+            window.firebase.remove(sheetRef).then(() => {
+                alert('✅ Deleted!');
+                closeDeleteAaronSheetModal();
+            }).catch(e => alert('Error: ' + e.message));
         }
 
         // === POP INVENTORY FUNCTIONS ===
@@ -1070,7 +1105,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(initializeFirebaseListeners, 500);
+            initFirebase();
         });
     </script>
 </body>
