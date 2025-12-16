@@ -730,6 +730,7 @@
     </div>
 
     <script>
+        
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         let salesSheetCount = 0;
@@ -1758,32 +1759,107 @@
             const data = { 
                 popInventory: {}, 
                 aaronInventory: {},
-                salesSheets: {}
+                salesSheets: {},
+                salesSheetTotals: {}
             };
 
+            // Save Pop & Aaron inventory including lifetime units
             for (let i = 0; i < 8; i++) {
                 data.popInventory[i] = {
                     price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
                     storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
+                    showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0),
+                    lifetimeUnits: parseFloat(document.querySelector(`.pop-lifetime-units[data-product="${i}"]`)?.value || 0)
                 };
                 data.aaronInventory[i] = {
                     price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
                     storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0)
+                    showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0),
+                    lifetimeUnits: parseFloat(document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`)?.value || 0)
                 };
             }
 
-            document.querySelectorAll('input[data-sheet]').forEach(inp => {
+            // Save row-level sheet data
+            document.querySelectorAll('input[data-sheet][data-row]').forEach(inp => {
                 const sheetId = inp.dataset.sheet;
                 const row = inp.dataset.row;
+                if (!sheetId || row === undefined) return;
+
                 if (!data.salesSheets[sheetId]) data.salesSheets[sheetId] = {};
                 if (!data.salesSheets[sheetId][row]) data.salesSheets[sheetId][row] = {};
-                if (inp.classList.contains('units-brought')) data.salesSheets[sheetId][row].brought = inp.value;
-                else if (inp.classList.contains('units-left')) data.salesSheets[sheetId][row].left = inp.value;
-                else if (inp.classList.contains('units-sold')) data.salesSheets[sheetId][row].sold = inp.value;
+
+                if (inp.classList.contains('units-brought')) {
+                    data.salesSheets[sheetId][row].brought = inp.value;
+                } else if (inp.classList.contains('units-left')) {
+                    data.salesSheets[sheetId][row].left = inp.value;
+                } else if (inp.classList.contains('units-sold')) {
+                    data.salesSheets[sheetId][row].sold = inp.value;
+                }
             });
 
+            // NEW: Save per-sheet totals and tax settings for all sheets
+            sheets.forEach(sheetId => {
+                const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
+                const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
+                const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
+
+                data.salesSheetTotals[sheetId] = {
+                    totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
+                    totalRevenue: revenueEl ? revenueEl.value : '',
+                    taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
+                    taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
+                    taxRate: taxRateEl ? taxRateEl.value : ''
+                };
+            });
+
+            // Also save dynamic Pop sheets totals
+            const dynamicPopLinks = document.getElementById('dynamic-sales-links');
+            if (dynamicPopLinks) {
+                dynamicPopLinks.querySelectorAll('[data-pop-sheet-id]').forEach(link => {
+                    const sheetId = link.getAttribute('data-pop-sheet-id');
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                    const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
+                    const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
+                    const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
+
+                    data.salesSheetTotals[sheetId] = {
+                        totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
+                        totalRevenue: revenueEl ? revenueEl.value : '',
+                        taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
+                        taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
+                        taxRate: taxRateEl ? taxRateEl.value : ''
+                    };
+                });
+            }
+
+            // Also save dynamic Aaron sheets totals
+            const dynamicAaronLinks = document.getElementById('dynamic-aaron-sales-links');
+            if (dynamicAaronLinks) {
+                dynamicAaronLinks.querySelectorAll('[data-aaron-sheet-id]').forEach(link => {
+                    const sheetId = link.getAttribute('data-aaron-sheet-id');
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                    const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
+                    const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
+                    const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
+
+                    data.salesSheetTotals[sheetId] = {
+                        totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
+                        totalRevenue: revenueEl ? revenueEl.value : '',
+                        taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
+                        taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
+                        taxRate: taxRateEl ? taxRateEl.value : ''
+                    };
+                });
+            }
+
+            // Persist to localStorage so it survives refresh
+            localStorage.setItem('knifeInventoryData', JSON.stringify(data));
+
+            // Sync to Firebase
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
             window.firebaseSet(inventoryRef, data).then(() => {
                 alert('✅ DATA SYNCED TO CLOUD!');
@@ -1802,42 +1878,93 @@
             try {
                 const data = JSON.parse(saved);
 
+                // Restore Pop inventory
                 Object.keys(data.popInventory || {}).forEach(i => {
+                    const rec = data.popInventory[i];
                     const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
                     const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = data.popInventory[i].price;
-                    if (storageEl) storageEl.value = data.popInventory[i].storage;
-                    if (showTubEl) showTubEl.value = data.popInventory[i].showTub;
+                    const lifetimeEl = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
+                    if (priceEl) priceEl.value = rec.price ?? '';
+                    if (storageEl) storageEl.value = rec.storage ?? '';
+                    if (showTubEl) showTubEl.value = rec.showTub ?? '';
+                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits ?? '';
                 });
 
+                // Restore Aaron inventory
                 Object.keys(data.aaronInventory || {}).forEach(i => {
+                    const rec = data.aaronInventory[i];
                     const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
                     const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = data.aaronInventory[i].price;
-                    if (storageEl) storageEl.value = data.aaronInventory[i].storage;
-                    if (showTubEl) showTubEl.value = data.aaronInventory[i].showTub;
+                    const lifetimeEl = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
+                    if (priceEl) priceEl.value = rec.price ?? '';
+                    if (storageEl) storageEl.value = rec.storage ?? '';
+                    if (showTubEl) showTubEl.value = rec.showTub ?? '';
+                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits ?? '';
                 });
 
-                if (data.sheetStates) {
-                    sheetStates = data.sheetStates;
-                }
+                // Restore row-level sheet inputs
+                Object.keys(data.salesSheets || {}).forEach(sheetId => {
+                    Object.keys(data.salesSheets[sheetId] || {}).forEach(row => {
+                        const rowData = data.salesSheets[sheetId][row];
+                        const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
+                        const leftInput = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
+                        const soldInput = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
 
-                Object.keys(data.salesSheets || {}).forEach(sheet => {
-                    Object.keys(data.salesSheets[sheet] || {}).forEach(row => {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${row}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${row}"]`);
-                        if (broughtEl) broughtEl.value = data.salesSheets[sheet][row].brought;
-                        if (leftEl) leftEl.value = data.salesSheets[sheet][row].left;
+                        if (broughtInput && rowData.brought !== undefined) broughtInput.value = rowData.brought;
+                        if (leftInput && rowData.left !== undefined) leftInput.value = rowData.left;
+                        if (soldInput && rowData.sold !== undefined) soldInput.value = rowData.sold;
                     });
                 });
 
-                sheets.forEach(sheet => {
-                    updateSheetStatus(sheet);
+                // NEW: Restore per-sheet totals and tax settings
+                Object.keys(data.salesSheetTotals || {}).forEach(sheetId => {
+                    const totals = data.salesSheetTotals[sheetId] || {};
+
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                    const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
+                    const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
+                    const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
+                    const taxRowEl = document.getElementById(`tax-row-${sheetId}`);
+                    const taxInputGroup = document.getElementById(`tax-input-group-${sheetId}`);
+
+                    if (totalUnitsEl && totals.totalUnitsSold !== undefined) {
+                        totalUnitsEl.value = totals.totalUnitsSold;
+                    }
+                    if (revenueEl && totals.totalRevenue !== undefined) {
+                        revenueEl.value = totals.totalRevenue;
+                    }
+                    if (taxSummaryEl && totals.taxSummary !== undefined) {
+                        taxSummaryEl.value = totals.taxSummary;
+                    }
+                    if (taxRequiredEl && typeof totals.taxRequired === 'boolean') {
+                        taxRequiredEl.checked = totals.taxRequired;
+                    }
+                    if (taxRateEl && totals.taxRate !== undefined) {
+                        taxRateEl.value = totals.taxRate;
+                    }
+                    if (taxRowEl) {
+                        taxRowEl.style.display = totals.taxRequired ? '' : 'none';
+                    }
+                    if (taxInputGroup) {
+                        taxInputGroup.style.display = totals.taxRequired ? '' : 'none';
+                    }
                 });
-            } catch(e) {
-                console.error('Error loading data:', e);
+
+                // Recalculate derived values
+                updatePopShowTubTotal();
+                updateAaronShowTubTotal();
+                updatePopInventory();
+                updateAaronInventory();
+                updateMasterInventory();
+                if (typeof updateChartsData === 'function') {
+                    updateChartsData();
+                }
+
+            } catch (e) {
+                console.error('Error loading saved data', e);
             }
         }
 
@@ -1900,6 +2027,6 @@
 
             closeNextSheetModal();
         }
-    </script>
+        </script></script>
 </body>
 </html>
