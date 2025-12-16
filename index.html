@@ -730,7 +730,6 @@
     </div>
 
     <script>
-        
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         let salesSheetCount = 0;
@@ -1756,6 +1755,11 @@
                 return;
             }
 
+            // CRITICAL: Recalculate all sheet totals BEFORE saving
+            sheets.forEach(sheetId => {
+                updateRevenueTotal(sheetId);
+            });
+
             const data = { 
                 popInventory: {}, 
                 aaronInventory: {},
@@ -1763,7 +1767,6 @@
                 salesSheetTotals: {}
             };
 
-            // Save Pop & Aaron inventory including lifetime units
             for (let i = 0; i < 8; i++) {
                 data.popInventory[i] = {
                     price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
@@ -1779,25 +1782,18 @@
                 };
             }
 
-            // Save row-level sheet data
-            document.querySelectorAll('input[data-sheet][data-row]').forEach(inp => {
+            document.querySelectorAll('input[data-sheet]').forEach(inp => {
                 const sheetId = inp.dataset.sheet;
                 const row = inp.dataset.row;
                 if (!sheetId || row === undefined) return;
-
                 if (!data.salesSheets[sheetId]) data.salesSheets[sheetId] = {};
                 if (!data.salesSheets[sheetId][row]) data.salesSheets[sheetId][row] = {};
-
-                if (inp.classList.contains('units-brought')) {
-                    data.salesSheets[sheetId][row].brought = inp.value;
-                } else if (inp.classList.contains('units-left')) {
-                    data.salesSheets[sheetId][row].left = inp.value;
-                } else if (inp.classList.contains('units-sold')) {
-                    data.salesSheets[sheetId][row].sold = inp.value;
-                }
+                if (inp.classList.contains('units-brought')) data.salesSheets[sheetId][row].brought = inp.value;
+                else if (inp.classList.contains('units-left')) data.salesSheets[sheetId][row].left = inp.value;
+                else if (inp.classList.contains('units-sold')) data.salesSheets[sheetId][row].sold = inp.value;
             });
 
-            // NEW: Save per-sheet totals and tax settings for all sheets
+            // CRITICAL: Save the CALCULATED totals
             sheets.forEach(sheetId => {
                 const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
                 const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
@@ -1806,60 +1802,17 @@
                 const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
 
                 data.salesSheetTotals[sheetId] = {
-                    totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
-                    totalRevenue: revenueEl ? revenueEl.value : '',
+                    totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '0',
+                    totalRevenue: revenueEl ? revenueEl.value : '0',
                     taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
                     taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
-                    taxRate: taxRateEl ? taxRateEl.value : ''
+                    taxRate: taxRateEl ? taxRateEl.value : '0'
                 };
             });
 
-            // Also save dynamic Pop sheets totals
-            const dynamicPopLinks = document.getElementById('dynamic-sales-links');
-            if (dynamicPopLinks) {
-                dynamicPopLinks.querySelectorAll('[data-pop-sheet-id]').forEach(link => {
-                    const sheetId = link.getAttribute('data-pop-sheet-id');
-                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
-                    const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-                    const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
-                    const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
-                    const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
-
-                    data.salesSheetTotals[sheetId] = {
-                        totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
-                        totalRevenue: revenueEl ? revenueEl.value : '',
-                        taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
-                        taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
-                        taxRate: taxRateEl ? taxRateEl.value : ''
-                    };
-                });
-            }
-
-            // Also save dynamic Aaron sheets totals
-            const dynamicAaronLinks = document.getElementById('dynamic-aaron-sales-links');
-            if (dynamicAaronLinks) {
-                dynamicAaronLinks.querySelectorAll('[data-aaron-sheet-id]').forEach(link => {
-                    const sheetId = link.getAttribute('data-aaron-sheet-id');
-                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
-                    const revenueEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-                    const taxSummaryEl = document.querySelector(`.tax-summary[data-sheet="${sheetId}"]`);
-                    const taxRequiredEl = document.querySelector(`#tax-required-${sheetId}`);
-                    const taxRateEl = document.querySelector(`#tax-rate-${sheetId}`);
-
-                    data.salesSheetTotals[sheetId] = {
-                        totalUnitsSold: totalUnitsEl ? totalUnitsEl.value : '',
-                        totalRevenue: revenueEl ? revenueEl.value : '',
-                        taxSummary: taxSummaryEl ? taxSummaryEl.value : '',
-                        taxRequired: taxRequiredEl ? !!taxRequiredEl.checked : false,
-                        taxRate: taxRateEl ? taxRateEl.value : ''
-                    };
-                });
-            }
-
-            // Persist to localStorage so it survives refresh
+            // Save to localStorage
             localStorage.setItem('knifeInventoryData', JSON.stringify(data));
 
-            // Sync to Firebase
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
             window.firebaseSet(inventoryRef, data).then(() => {
                 alert('✅ DATA SYNCED TO CLOUD!');
@@ -1885,10 +1838,10 @@
                     const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
                     const lifetimeEl = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = rec.price ?? '';
-                    if (storageEl) storageEl.value = rec.storage ?? '';
-                    if (showTubEl) showTubEl.value = rec.showTub ?? '';
-                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits ?? '';
+                    if (priceEl) priceEl.value = rec.price || '';
+                    if (storageEl) storageEl.value = rec.storage || '';
+                    if (showTubEl) showTubEl.value = rec.showTub || '';
+                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits || '';
                 });
 
                 // Restore Aaron inventory
@@ -1898,13 +1851,13 @@
                     const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                     const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
                     const lifetimeEl = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
-                    if (priceEl) priceEl.value = rec.price ?? '';
-                    if (storageEl) storageEl.value = rec.storage ?? '';
-                    if (showTubEl) showTubEl.value = rec.showTub ?? '';
-                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits ?? '';
+                    if (priceEl) priceEl.value = rec.price || '';
+                    if (storageEl) storageEl.value = rec.storage || '';
+                    if (showTubEl) showTubEl.value = rec.showTub || '';
+                    if (lifetimeEl) lifetimeEl.value = rec.lifetimeUnits || '';
                 });
 
-                // Restore row-level sheet inputs
+                // Restore row-level inputs
                 Object.keys(data.salesSheets || {}).forEach(sheetId => {
                     Object.keys(data.salesSheets[sheetId] || {}).forEach(row => {
                         const rowData = data.salesSheets[sheetId][row];
@@ -1918,7 +1871,7 @@
                     });
                 });
 
-                // NEW: Restore per-sheet totals and tax settings
+                // CRITICAL: Restore the SAVED totals
                 Object.keys(data.salesSheetTotals || {}).forEach(sheetId => {
                     const totals = data.salesSheetTotals[sheetId] || {};
 
@@ -1930,44 +1883,23 @@
                     const taxRowEl = document.getElementById(`tax-row-${sheetId}`);
                     const taxInputGroup = document.getElementById(`tax-input-group-${sheetId}`);
 
-                    if (totalUnitsEl && totals.totalUnitsSold !== undefined) {
-                        totalUnitsEl.value = totals.totalUnitsSold;
-                    }
-                    if (revenueEl && totals.totalRevenue !== undefined) {
-                        revenueEl.value = totals.totalRevenue;
-                    }
-                    if (taxSummaryEl && totals.taxSummary !== undefined) {
-                        taxSummaryEl.value = totals.taxSummary;
-                    }
-                    if (taxRequiredEl && typeof totals.taxRequired === 'boolean') {
-                        taxRequiredEl.checked = totals.taxRequired;
-                    }
-                    if (taxRateEl && totals.taxRate !== undefined) {
-                        taxRateEl.value = totals.taxRate;
-                    }
-                    if (taxRowEl) {
-                        taxRowEl.style.display = totals.taxRequired ? '' : 'none';
-                    }
-                    if (taxInputGroup) {
-                        taxInputGroup.style.display = totals.taxRequired ? '' : 'none';
-                    }
+                    if (totalUnitsEl) totalUnitsEl.value = totals.totalUnitsSold || '0';
+                    if (revenueEl) revenueEl.value = totals.totalRevenue || '0';
+                    if (taxSummaryEl) taxSummaryEl.value = totals.taxSummary || '';
+                    if (taxRequiredEl) taxRequiredEl.checked = totals.taxRequired || false;
+                    if (taxRateEl) taxRateEl.value = totals.taxRate || '0';
+                    if (taxRowEl) taxRowEl.style.display = totals.taxRequired ? '' : 'none';
+                    if (taxInputGroup) taxInputGroup.style.display = totals.taxRequired ? '' : 'none';
                 });
 
-                // Recalculate derived values
-                updatePopShowTubTotal();
-                updateAaronShowTubTotal();
-                updatePopInventory();
-                updateAaronInventory();
+                // Recalculate UI
+                updateAllInventories();
                 updateMasterInventory();
-                if (typeof updateChartsData === 'function') {
-                    updateChartsData();
-                }
-
+                updateChartsData();
             } catch (e) {
                 console.error('Error loading saved data', e);
             }
         }
-
         function openNextSheetModal(person, currentSheetId) {
             const modal = document.getElementById('nextSheetModal');
             const select = document.getElementById('nextSheetSelect');
@@ -2027,6 +1959,6 @@
 
             closeNextSheetModal();
         }
-        </script></script>
+    </script>
 </body>
 </html>
