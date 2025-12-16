@@ -255,7 +255,7 @@
                         <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="5"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="5" readonly></td><td><span class="aaron-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="5" readonly></td></tr>
                         <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="6"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="6" readonly></td><td><span class="aaron-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="6" readonly></td></tr>
                         <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="aaron-price" data-product="7"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="aaron-units-brought" data-product="7" readonly></td><td><span class="aaron-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="aaron-post-show" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td><td><input type="number" class="aaron-lifetime-units" data-product="7" readonly></td></tr>
-                        <tr class="subtotal-row"><td><strong>Show Tub + Storage Total</strong></td><td colspan="6"></td><td><input type="number" id="aaron-show-storage-total" readonly></td></tr>
+                        <tr class="subtotal-row"><td><strong>Show Tub Total</strong></td><td colspan="6"></td><td><input type="number" id="aaron-show-tub-total" readonly></td></tr>
                         <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -287,7 +287,7 @@
                         <tr><td>Grooved</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="5"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="5" readonly></td><td><span class="pop-units-sold" data-product="5">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td><td><input type="number" class="pop-lifetime-units" data-product="5" readonly></td></tr>
                         <tr><td>Folders</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="6"></td><td><input type="number" value="66" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="6" readonly></td><td><span class="pop-units-sold" data-product="6">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="66"></td><td><input type="number" class="pop-lifetime-units" data-product="6" readonly></td></tr>
                         <tr><td>Clipped Folder</td><td><input type="number" placeholder="Enter price" class="pop-price" data-product="7"></td><td><input type="number" value="18" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" placeholder="Brought" class="pop-units-brought" data-product="7" readonly></td><td><span class="pop-units-sold" data-product="7">0</span></td><td><input type="number" placeholder="Post Show" class="pop-post-show" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="18"></td><td><input type="number" class="pop-lifetime-units" data-product="7" readonly></td></tr>
-                        <tr class="subtotal-row"><td><strong>Show Tub + Storage Total</strong></td><td colspan="6"></td><td><input type="number" id="pop-show-storage-total" readonly></td></tr>
+                        <tr class="subtotal-row"><td><strong>Show Tub Total</strong></td><td colspan="6"></td><td><input type="number" id="pop-show-tub-total" readonly></td></tr>
                         <tr class="total-row"><td colspan="7">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -786,30 +786,24 @@
         }
 
         // MODIFICATION 2: Show Tub + Storage Totals
-        function updatePopShowStorageTotal() {
+        function updatePopShowTubTotal() {
             let showTotal = 0;
-            let storageTotal = 0;
             for (let i = 0; i < 8; i++) {
                 const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                 showTotal += parseFloat(showEl?.value || 0);
-                storageTotal += parseFloat(storageEl?.value || 0);
             }
-            const totalEl = document.getElementById('pop-show-storage-total');
-            if (totalEl) totalEl.value = showTotal + storageTotal;
+            const totalEl = document.getElementById('pop-show-tub-total');
+            if (totalEl) totalEl.value = showTotal;
         }
 
-        function updateAaronShowStorageTotal() {
+        function updateAaronShowTubTotal() {
             let showTotal = 0;
-            let storageTotal = 0;
             for (let i = 0; i < 8; i++) {
                 const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                 showTotal += parseFloat(showEl?.value || 0);
-                storageTotal += parseFloat(storageEl?.value || 0);
             }
-            const totalEl = document.getElementById('aaron-show-storage-total');
-            if (totalEl) totalEl.value = showTotal + storageTotal;
+            const totalEl = document.getElementById('aaron-show-tub-total');
+            if (totalEl) totalEl.value = showTotal;
         }
 
         // ==================== END NEW FUNCTIONS ====================
@@ -1003,6 +997,7 @@
             });
 
             if (checkbox.checked) {
+            updateRevenue(sheetId);
             addToLifetimeTotals("pop", sheetId);
                 alert(`✓ Event Completed! Data for ${sheetId} is now locked.`);
 
@@ -1568,8 +1563,8 @@
             updateManualTax(sheetId);
         }
 
-        function updateAllInventories() {updatePopShowStorageTotal();
-        updateAaronShowStorageTotal();
+        function updateAllInventories() {updatePopShowTubTotal();
+        updateAaronShowTubTotal();
         
             updatePopInventory();
             updateAaronInventory();
