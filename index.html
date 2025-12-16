@@ -9,8 +9,10 @@
     <meta http-equiv="expires" content="0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Knife Inventory Manager v21 - Safari Fixed</title>
+    <title>Knife Inventory Manager v22 - Firebase Cloud Sync</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
     <style>
         * {
             margin: 0;
@@ -53,7 +55,7 @@
             margin-bottom: 15px;
         }
 
-        .cache-status {
+        .sync-status {
             font-size: 12px;
             margin-top: 10px;
             opacity: 0.95;
@@ -63,6 +65,21 @@
             background: rgba(255,255,255,0.15);
             border-radius: 5px;
             display: inline-block;
+        }
+
+        .sync-status.synced {
+            background: rgba(76, 175, 80, 0.3);
+            color: #fff;
+        }
+
+        .sync-status.syncing {
+            background: rgba(255, 193, 7, 0.3);
+            color: #fff;
+        }
+
+        .sync-status.error {
+            background: rgba(244, 67, 54, 0.3);
+            color: #fff;
         }
 
         .save-button-group {
@@ -340,6 +357,11 @@
             color: white;
         }
 
+        .nav-link:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .refresh-btn, .refresh-inv-btn {
             display: inline-flex;
             align-items: center;
@@ -509,6 +531,13 @@
             line-height: 1.6;
         }
 
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .nav-tabs {
                 justify-content: flex-start;
@@ -553,12 +582,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔪 Knife Inventory Manager v21</h1>
-            <p>Storage → Show Tub → Activate → Refresh → Fill Units Left → Lock with Event Completed → Pick Next Sheet</p>
-            <div class="cache-status" id="cache-status">⏳ Initializing...</div>
+            <h1>🔪 Knife Inventory Manager v22</h1>
+            <p>🌐 Firebase Cloud Sync - Always Latest Data</p>
+            <div class="sync-status" id="sync-status">⏳ Connecting to Firebase...</div>
             <div class="save-button-group">
-                <button class="nav-link" onclick="saveAppDataSafari()">💾 Save All Data NOW</button>
-                <button class="nav-link" onclick="clearAllData()" style="background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Clear All Data</button>
+                <button class="nav-link" onclick="syncAllData()">☁️ Sync Now</button>
             </div>
         </div>
 
@@ -575,7 +603,7 @@
         <div id="master-inv" class="tab-content active">
             <div class="tab-section">
                 <h2>Master Inventory - Combined Stock</h2>
-                <p>Shows current stock levels for all 8 knife products across both Pop and Aaron inventories.</p>
+                <p>Shows current stock levels for all 8 knife products across both Pop and Aaron inventories - LIVE FROM FIREBASE.</p>
                 <table>
                     <thead>
                         <tr>
@@ -1073,122 +1101,122 @@
         </div>
     </div>
 
-    <div id="deletePopSalesSheetModal" class="modal">
-        <div class="modal-content">
-            <h3>Delete Pop Sales Sheet</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete</p>
-            <div class="form-group">
-                <select id="popSheetToDelete">
-                    <option value="">-- Select a sheet to delete --</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button>
-                <button type="button" class="btn-cancel" onclick="deletePopSalesSheet()" style="background: #ff6b6b; color: white;">Delete Sheet</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="deleteAaronSalesSheetModal" class="modal">
-        <div class="modal-content">
-            <h3>Delete Aaron Sales Sheet</h3>
-            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Select a sales sheet to delete</p>
-            <div class="form-group">
-                <select id="aaronSheetToDelete">
-                    <option value="">-- Select a sheet to delete --</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button>
-                <button type="button" class="btn-cancel" onclick="deleteAaronSalesSheet()" style="background: #ff6b6b; color: white;">Delete Sheet</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="newSalesModal" class="modal">
-        <div class="modal-content">
-            <h3>Create New Pop Sales Sheet</h3>
-            <form onsubmit="event.preventDefault(); createNewSalesSheet();">
-                <div class="form-group">
-                    <label for="sheetName">Sheet Name</label>
-                    <input type="text" id="sheetName" placeholder="e.g., Denver, Colorado" required>
-                </div>
-                <div class="form-group">
-                    <label for="sheetDate">Date</label>
-                    <input type="text" id="sheetDate" placeholder="e.g., 2/14-15" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeNewSalesSheetModal()">Cancel</button>
-                    <button type="submit" class="btn-create">Create Sheet</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="newAaronSalesModal" class="modal">
-        <div class="modal-content">
-            <h3>Create New Aaron Sales Sheet</h3>
-            <form onsubmit="event.preventDefault(); createNewAaronSalesSheet();">
-                <div class="form-group">
-                    <label for="aaronSheetName">Sheet Name</label>
-                    <input type="text" id="aaronSheetName" placeholder="e.g., Denver, Colorado" required>
-                </div>
-                <div class="form-group">
-                    <label for="aaronSheetDate">Date</label>
-                    <input type="text" id="aaronSheetDate" placeholder="e.g., 2/14-15" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button>
-                    <button type="submit" class="btn-create">Create Sheet</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // ==================== SAFARI iOS CACHE FIX - CRITICAL ====================
-        const CACHE_KEY = 'knifeInventoryData_v21_safari';
-        const TIMESTAMP_KEY = 'knifeInventorySaveTime_v21';
-        
-        function updateCacheStatus() {
-            const lastSave = localStorage.getItem(TIMESTAMP_KEY);
-            const statusEl = document.getElementById('cache-status');
-            if (lastSave) {
-                const date = new Date(parseInt(lastSave));
-                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-                statusEl.textContent = `✅ CACHED: ${timeStr} | Safari iOS Fixed v21`;
-                statusEl.style.color = '#4caf50';
-            } else {
-                statusEl.textContent = '⏳ No data cached yet. Click "Save All Data NOW" to cache.';
-                statusEl.style.color = '#fff';
+        // ==================== FIREBASE CLOUD SYNC - NO LOCAL STORAGE ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
+            authDomain: "knife-inventory-management.firebaseapp.com",
+            databaseURL: "https://knife-inventory-management-default-rtdb.firebaseio.com",
+            projectId: "knife-inventory-management",
+            storageBucket: "knife-inventory-management.firebasestorage.app",
+            messagingSenderId: "944440388498",
+            appId: "1:944440388498:web:8eadb87306507966f1af4b",
+            measurementId: "G-SSQ4E6R5TW"
+        };
+
+        let db;
+        let firebaseReady = false;
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+
+        function updateSyncStatus(status, message) {
+            const statusEl = document.getElementById('sync-status');
+            if (status === 'synced') {
+                statusEl.textContent = `✅ Synced - ${message}`;
+                statusEl.className = 'sync-status synced';
+            } else if (status === 'syncing') {
+                statusEl.textContent = `⏳ Syncing...`;
+                statusEl.className = 'sync-status syncing';
+            } else if (status === 'error') {
+                statusEl.textContent = `❌ Error: ${message}`;
+                statusEl.className = 'sync-status error';
             }
         }
 
-        function clearAllData() {
-            if (!confirm('⚠️ THIS WILL DELETE ALL YOUR DATA PERMANENTLY!\n\nAre you ABSOLUTELY sure? Type "yes" to confirm.')) {
-                return;
-            }
-            const response = prompt('Type YES (in all caps) to confirm deletion:');
-            if (response !== 'YES') {
-                alert('❌ Cancelled. Your data is safe.');
-                return;
-            }
-            localStorage.removeItem(CACHE_KEY);
-            localStorage.removeItem(TIMESTAMP_KEY);
-            sessionStorage.removeItem(CACHE_KEY);
-            location.reload();
-        }
-
-        function saveAppDataSafari() {
-            // Force clear session storage before save
-            sessionStorage.removeItem(CACHE_KEY);
+        function loadDataFromFirebase() {
+            updateSyncStatus('syncing', 'Loading from cloud...');
             
+            db.ref('inventory').once('value', (snapshot) => {
+                try {
+                    const data = snapshot.val();
+                    if (!data) {
+                        updateSyncStatus('synced', 'Cloud ready (empty database)');
+                        firebaseReady = true;
+                        return;
+                    }
+
+                    // Load Pop Inventory
+                    if (data.popInventory) {
+                        Object.keys(data.popInventory).forEach(i => {
+                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                            const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                            if (priceEl && data.popInventory[i].price) priceEl.value = data.popInventory[i].price;
+                            if (storageEl && data.popInventory[i].storage) storageEl.value = data.popInventory[i].storage;
+                            if (showTubEl && data.popInventory[i].showTub) showTubEl.value = data.popInventory[i].showTub;
+                        });
+                    }
+
+                    // Load Aaron Inventory
+                    if (data.aaronInventory) {
+                        Object.keys(data.aaronInventory).forEach(i => {
+                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                            const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                            if (priceEl && data.aaronInventory[i].price) priceEl.value = data.aaronInventory[i].price;
+                            if (storageEl && data.aaronInventory[i].storage) storageEl.value = data.aaronInventory[i].storage;
+                            if (showTubEl && data.aaronInventory[i].showTub) showTubEl.value = data.aaronInventory[i].showTub;
+                        });
+                    }
+
+                    // Load Sales Sheets
+                    if (data.salesSheets) {
+                        Object.keys(data.salesSheets).forEach(sheetId => {
+                            Object.keys(data.salesSheets[sheetId]).forEach(row => {
+                                const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
+                                const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
+                                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
+                                if (broughtEl && data.salesSheets[sheetId][row].brought) broughtEl.value = data.salesSheets[sheetId][row].brought;
+                                if (leftEl && data.salesSheets[sheetId][row].left) leftEl.value = data.salesSheets[sheetId][row].left;
+                                if (soldEl && data.salesSheets[sheetId][row].sold) soldEl.value = data.salesSheets[sheetId][row].sold;
+                            });
+                        });
+                    }
+
+                    if (data.sheetStates) {
+                        sheetStates = data.sheetStates;
+                        Object.keys(sheetStates).forEach(sheetId => updateSheetStatus(sheetId));
+                    }
+
+                    updateAllInventories();
+                    updateChartsData();
+                    updateSyncStatus('synced', 'Cloud data loaded successfully');
+                    firebaseReady = true;
+                } catch (e) {
+                    console.error('Firebase load error:', e);
+                    updateSyncStatus('error', 'Failed to load cloud data');
+                }
+            }).catch(error => {
+                console.error('Firebase read error:', error);
+                updateSyncStatus('error', 'Firebase connection failed');
+            });
+        }
+
+        function syncAllData() {
+            if (!firebaseReady) {
+                alert('⏳ Firebase still connecting. Please wait...');
+                return;
+            }
+
+            updateSyncStatus('syncing', 'Uploading to cloud...');
+
             const data = { 
                 popInventory: {}, 
                 aaronInventory: {}, 
-                salesSheets: {}, 
-                sheetStates,
-                timestamp: Date.now()
+                salesSheets: {},
+                sheetStates: sheetStates
             };
 
             // Capture ALL Pop inventory
@@ -1216,101 +1244,21 @@
                 else if (inp.classList.contains('units-sold')) data.salesSheets[sheetId][row].sold = inp.value;
             });
 
-            // TRIPLE SAVE - localStorage + sessionStorage
-            try {
-                const jsonString = JSON.stringify(data);
-                localStorage.setItem(CACHE_KEY, jsonString);
-                localStorage.setItem(TIMESTAMP_KEY, Date.now().toString());
-                sessionStorage.setItem(CACHE_KEY, jsonString);
-                
-                updateCacheStatus();
-                alert('✅ DATA SAVED!\n\n✓ localStorage synced\n✓ sessionStorage synced\n✓ Ready for offline use\n\nYour data is now protected!');
-            } catch (e) {
-                alert('❌ Storage Error: ' + e.message + '\n\nTry clearing Safari cache and try again.');
-            }
-        }
-
-        function loadAppDataSafari() {
-            let data = null;
-            
-            // Try localStorage first
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            if (cachedData) {
-                try {
-                    data = JSON.parse(cachedData);
-                } catch (e) {
-                    console.error('localStorage parse error:', e);
-                }
-            }
-            
-            // Fallback to sessionStorage
-            if (!data) {
-                const sessionData = sessionStorage.getItem(CACHE_KEY);
-                if (sessionData) {
-                    try {
-                        data = JSON.parse(sessionData);
-                    } catch (e) {
-                        console.error('sessionStorage parse error:', e);
-                    }
-                }
-            }
-            
-            if (!data) {
-                updateCacheStatus();
-                return;
-            }
-
-            // Restore Pop Inventory
-            if (data.popInventory) {
-                Object.keys(data.popInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                    if (priceEl && data.popInventory[i].price) priceEl.value = data.popInventory[i].price;
-                    if (storageEl && data.popInventory[i].storage) storageEl.value = data.popInventory[i].storage;
-                    if (showTubEl && data.popInventory[i].showTub) showTubEl.value = data.popInventory[i].showTub;
-                });
-            }
-
-            // Restore Aaron Inventory
-            if (data.aaronInventory) {
-                Object.keys(data.aaronInventory).forEach(i => {
-                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                    const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                    if (priceEl && data.aaronInventory[i].price) priceEl.value = data.aaronInventory[i].price;
-                    if (storageEl && data.aaronInventory[i].storage) storageEl.value = data.aaronInventory[i].storage;
-                    if (showTubEl && data.aaronInventory[i].showTub) showTubEl.value = data.aaronInventory[i].showTub;
-                });
-            }
-
-            // Restore Sales Sheets
-            if (data.salesSheets) {
-                Object.keys(data.salesSheets).forEach(sheetId => {
-                    Object.keys(data.salesSheets[sheetId]).forEach(row => {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`);
-                        if (broughtEl && data.salesSheets[sheetId][row].brought) broughtEl.value = data.salesSheets[sheetId][row].brought;
-                        if (leftEl && data.salesSheets[sheetId][row].left) leftEl.value = data.salesSheets[sheetId][row].left;
-                        if (soldEl && data.salesSheets[sheetId][row].sold) soldEl.value = data.salesSheets[sheetId][row].sold;
-                    });
-                });
-            }
-
-            if (data.sheetStates) sheetStates = data.sheetStates;
-            
-            updateAllInventories();
-            updateChartsData();
-            updateCacheStatus();
+            // Push to Firebase
+            db.ref('inventory').set(data).then(() => {
+                updateSyncStatus('synced', 'Cloud sync complete');
+                alert('✅ DATA SYNCED TO CLOUD!\n\nAll your data is now saved in Firebase.\nYou can open this app on any device and see the latest data.');
+            }).catch(error => {
+                console.error('Firebase write error:', error);
+                updateSyncStatus('error', 'Sync failed');
+                alert('❌ Sync Error: ' + error.message);
+            });
         }
 
         // ==================== CORE APP LOGIC ====================
         const products = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder'];
         const sheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         let sheetStates = {};
-        let salesSheetCount = 0;
-        let aaronSalesSheetCount = 0;
 
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -1372,9 +1320,9 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closePopInventoryReceivedModal();
-            alert('✅ Inventory added & saved!');
+            alert('✅ Inventory added & synced to cloud!');
         }
 
         function addAaronInventoryReceived() {
@@ -1386,9 +1334,9 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closeAaronInventoryReceivedModal();
-            alert('✅ Inventory added & saved!');
+            alert('✅ Inventory added & synced to cloud!');
         }
 
         function movePopInventory() {
@@ -1404,9 +1352,9 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closePopMoveInventoryModal();
-            alert('✅ Moved & saved!');
+            alert('✅ Moved & synced to cloud!');
         }
 
         function moveAaronInventory() {
@@ -1422,9 +1370,9 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closeAaronMoveInventoryModal();
-            alert('✅ Moved & saved!');
+            alert('✅ Moved & synced to cloud!');
         }
 
         function removePopInventory() {
@@ -1438,9 +1386,9 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closePopRemoveInventoryModal();
-            alert('✅ Removed & saved!');
+            alert('✅ Removed & synced to cloud!');
         }
 
         function removeAaronInventory() {
@@ -1454,14 +1402,13 @@
                 }
             }
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
             closeAaronRemoveInventoryModal();
-            alert('✅ Removed & saved!');
+            alert('✅ Removed & synced to cloud!');
         }
 
         // Update inventory calculations
         function updatePopInventory() {
-            const activePopSheet = document.querySelector('input[name="pop-active-sheet"]:checked')?.value;
             for (let i = 0; i < 8; i++) {
                 const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                 const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
@@ -1475,7 +1422,6 @@
         }
 
         function updateAaronInventory() {
-            const activeAaronSheet = document.querySelector('input[name="aaron-active-sheet"]:checked')?.value;
             for (let i = 0; i < 8; i++) {
                 const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                 const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
@@ -1518,7 +1464,7 @@
             updateSheetStatus(sheetId);
             document.getElementById(`${sheetId}-event-box`).style.display = 'flex';
             updateAllInventories();
-            saveAppDataSafari();
+            syncAllData();
         }
 
         function toggleEventCompleted(sheetId) {
@@ -1527,9 +1473,9 @@
             updateSheetStatus(sheetId);
             document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(input => input.disabled = checkbox.checked);
             if (checkbox.checked) {
-                alert(`🔒 Event Completed!\n\nData for ${sheetId} is LOCKED & PROTECTED.\nData auto-saved.`);
+                alert(`🔒 Event Completed!\n\nData for ${sheetId} is LOCKED.\nData synced to cloud.`);
                 updateAllInventories();
-                saveAppDataSafari();
+                syncAllData();
             }
         }
 
@@ -1599,6 +1545,7 @@
             const sold = Math.max(0, brought - left);
             document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${row}"]`).value = sold;
             updateRevenue(sheetId);
+            syncAllData();
         }
 
         function refreshSheetData(person, sheetId) {
@@ -1611,7 +1558,8 @@
                 }
             }
             updateRevenue(sheetId);
-            alert('✅ Sheet refreshed!');
+            syncAllData();
+            alert('✅ Sheet refreshed & synced!');
         }
 
         function refreshInventoryFromActiveSheet(person) {
@@ -1621,7 +1569,8 @@
                 return;
             }
             updateAllInventories();
-            alert(`✅ ${person === 'pop' ? 'Pop' : 'Aaron'} inventory refreshed!`);
+            syncAllData();
+            alert(`✅ ${person === 'pop' ? 'Pop' : 'Aaron'} inventory refreshed & synced!`);
         }
 
         function refreshSalesCharts() { updateChartsData(); }
@@ -1675,45 +1624,16 @@
 
         // Modal Stubs
         function openNewSalesSheetModal() { alert('New sales sheet creation - available in full version'); }
-        function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
         function openNewAaronSalesSheetModal() { alert('New Aaron sales sheet creation - available in full version'); }
-        function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
         function openDeletePopSalesSheetModal() { alert('Delete pop sales sheet - available in full version'); }
-        function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
         function openDeleteAaronSalesSheetModal() { alert('Delete Aaron sales sheet - available in full version'); }
-        function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
-        function createNewSalesSheet() { alert('Create new sheet - available in full version'); }
-        function createNewAaronSalesSheet() { alert('Create new Aaron sheet - available in full version'); }
-        function deletePopSalesSheet() { alert('Delete pop sheet - available in full version'); }
-        function deleteAaronSalesSheet() { alert('Delete Aaron sheet - available in full version'); }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadAppDataSafari();
+            loadDataFromFirebase();
             initCharts();
             sheets.forEach(sheet => updateSheetStatus(sheet));
-            updateCacheStatus();
         });
-
-        // Force save on exit
-        window.addEventListener('beforeunload', function() {
-            saveAppDataSafari();
-        });
-
-        // Cross-tab sync
-        window.addEventListener('storage', function(e) {
-            if (e.key === CACHE_KEY || e.key === TIMESTAMP_KEY) {
-                loadAppDataSafari();
-            }
-        });
-
-        // Auto-save every 2 minutes
-        setInterval(function() {
-            const lastSave = localStorage.getItem(TIMESTAMP_KEY);
-            if (lastSave && Date.now() - parseInt(lastSave) > 120000) {
-                saveAppDataSafari();
-            }
-        }, 120000);
     </script>
 </body>
 </html>
