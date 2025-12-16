@@ -1799,69 +1799,85 @@
                 return;
             }
 
-            const data = { 
-                popInventory: {}, 
-                aaronInventory: {},
-                salesSheets: {},
-                sheetTotals: {}
-            };
-
-            // Save Pop Inventory
-            for (let i = 0; i < 8; i++) {
-                data.popInventory[i] = {
-                    price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
-                    storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
-                };
-            }
-
-            // Save Aaron Inventory
-            for (let i = 0; i < 8; i++) {
-                data.aaronInventory[i] = {
-                    price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
-                    storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
-                    showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0)
-                };
-            }
-
-            // Save all 4 sales sheets
+            // STEP 1: Recalculate all sheet totals FIRST
             const allSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
-
             for (let s = 0; s < allSheets.length; s++) {
-                const sheet = allSheets[s];
-                data.salesSheets[sheet] = {};
-                data.sheetTotals[sheet] = {};
+                updateRevenue(allSheets[s]);
+            }
 
-                // Save each product row for this sheet
+            // STEP 2: Wait a moment for calculations to complete
+            setTimeout(() => {
+                const data = { 
+                    popInventory: {}, 
+                    aaronInventory: {},
+                    salesSheets: {},
+                    sheetTotals: {}
+                };
+
+                // Save Pop Inventory
                 for (let i = 0; i < 8; i++) {
-                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${i}"]`);
-                    const leftEl = document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${i}"]`);
-                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheet}"][data-row="${i}"]`);
-
-                    data.salesSheets[sheet][i] = {
-                        brought: broughtEl ? parseFloat(broughtEl.value || 0) : 0,
-                        left: leftEl ? parseFloat(leftEl.value || 0) : 0,
-                        sold: soldEl ? parseFloat(soldEl.value || 0) : 0
+                    data.popInventory[i] = {
+                        price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
+                        storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
+                        showTub: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0)
                     };
                 }
 
-                // Save totals for this sheet
-                const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheet}"]`);
-                const totalRevenueEl = document.querySelector(`.revenue-total[data-sheet="${sheet}"]`);
-                const completedCheckbox = document.getElementById(`event-completed-${sheet}`);
+                // Save Aaron Inventory
+                for (let i = 0; i < 8; i++) {
+                    data.aaronInventory[i] = {
+                        price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
+                        storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
+                        showTub: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0)
+                    };
+                }
 
-                if (totalUnitsEl) data.sheetTotals[sheet].totalUnitsSold = parseFloat(totalUnitsEl.value || 0);
-                if (totalRevenueEl) data.sheetTotals[sheet].totalRevenue = parseFloat(totalRevenueEl.value || 0);
-                if (completedCheckbox) data.sheetTotals[sheet].completed = completedCheckbox.checked;
-            }
+                // Save all 4 sales sheets with their totals
+                for (let s = 0; s < allSheets.length; s++) {
+                    const sheet = allSheets[s];
+                    data.salesSheets[sheet] = {};
+                    data.sheetTotals[sheet] = {};
 
-            // Save to Firebase
-            const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
-            window.firebaseSet(inventoryRef, data).then(() => {
-                alert('✅ All data saved to cloud!');
-            }).catch(error => {
-                alert('❌ Error saving: ' + error.message);
-            });
+                    // Save each product row for this sheet
+                    for (let i = 0; i < 8; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheet}"][data-row="${i}"]`);
+
+                        data.salesSheets[sheet][i] = {
+                            brought: broughtEl ? parseFloat(broughtEl.value || 0) : 0,
+                            left: leftEl ? parseFloat(leftEl.value || 0) : 0,
+                            sold: soldEl ? parseFloat(soldEl.value || 0) : 0
+                        };
+                    }
+
+                    // CRITICAL: Read the calculated totals from the display fields
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheet}"]`);
+                    const totalRevenueEl = document.querySelector(`.revenue-total[data-sheet="${sheet}"]`);
+                    const completedCheckbox = document.getElementById(`event-completed-${sheet}`);
+
+                    console.log(`${sheet} - Units: ${totalUnitsEl?.value}, Revenue: ${totalRevenueEl?.value}`);
+
+                    if (totalUnitsEl && totalUnitsEl.value) {
+                        data.sheetTotals[sheet].totalUnitsSold = parseFloat(totalUnitsEl.value);
+                    }
+                    if (totalRevenueEl && totalRevenueEl.value) {
+                        data.sheetTotals[sheet].totalRevenue = parseFloat(totalRevenueEl.value);
+                    }
+                    if (completedCheckbox) {
+                        data.sheetTotals[sheet].completed = completedCheckbox.checked;
+                    }
+                }
+
+                // STEP 3: Save everything to Firebase
+                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+                window.firebaseSet(inventoryRef, data).then(() => {
+                    alert('✅ All data saved to cloud!');
+                    console.log('Saved data:', data.sheetTotals);
+                }).catch(error => {
+                    alert('❌ Error saving: ' + error.message);
+                });
+            }, 100);
         }
 
 
