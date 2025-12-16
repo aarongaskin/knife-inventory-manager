@@ -762,6 +762,50 @@
                 const el = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
                 if (el) el.value = lifetimeTotals.popSalesPerProduct[i] || 0;
             }
+
+        function loadSheetTotals() {
+            if (!window.firebaseDB) { setTimeout(loadSheetTotals, 500); return; }
+            const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+            window.firebaseOnValue(inventoryRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data || !data.sheetTotals) return;
+
+                // Restore all sheet totals
+                Object.keys(data.sheetTotals).forEach(sheet => {
+                    const sheetData = data.sheetTotals[sheet];
+
+                    // Restore total units sold
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheet}"]`);
+                    if (totalUnitsEl && sheetData.totalUnitsSold !== undefined) {
+                        totalUnitsEl.value = sheetData.totalUnitsSold;
+                    }
+
+                    // Restore total revenue
+                    const totalRevenueEl = document.querySelector(`.revenue-total[data-sheet="${sheet}"]`);
+                    if (totalRevenueEl && sheetData.totalRevenue !== undefined) {
+                        totalRevenueEl.value = sheetData.totalRevenue;
+                    }
+
+                    // Restore completed status
+                    if (sheetData.completed) {
+                        const completedCheckbox = document.getElementById(`event-completed-${sheet}`);
+                        if (completedCheckbox) {
+                            completedCheckbox.checked = true;
+                            // Update the status display
+                            const statusEl = document.getElementById(`${sheet}-status`);
+                            if (statusEl) {
+                                statusEl.textContent = '🔒 Event Completed';
+                                statusEl.className = 'sheet-status completed';
+                            }
+                            // Disable inputs if locked
+                            document.querySelectorAll(`.units-left[data-sheet="${sheet}"]`).forEach(input => {
+                                input.disabled = true;
+                            });
+                        }
+                    }
+                });
+            });
+        }
             // Aaron lifetime totals
             for (let i = 0; i < 8; i++) {
                 const el = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
@@ -1758,9 +1802,11 @@
             const data = { 
                 popInventory: {}, 
                 aaronInventory: {},
-                salesSheets: {}
+                salesSheets: {},
+                sheetTotals: {}  // NEW: Store final totals
             };
 
+            // Save inventory data
             for (let i = 0; i < 8; i++) {
                 data.popInventory[i] = {
                     price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
@@ -1774,24 +1820,44 @@
                 };
             }
 
-            document.querySelectorAll('input[data-sheet]').forEach(inp => {
-                const sheetId = inp.dataset.sheet;
-                const row = inp.dataset.row;
-                if (!data.salesSheets[sheetId]) data.salesSheets[sheetId] = {};
-                if (!data.salesSheets[sheetId][row]) data.salesSheets[sheetId][row] = {};
-                if (inp.classList.contains('units-brought')) data.salesSheets[sheetId][row].brought = inp.value;
-                else if (inp.classList.contains('units-left')) data.salesSheets[sheetId][row].left = inp.value;
-                else if (inp.classList.contains('units-sold')) data.salesSheets[sheetId][row].sold = inp.value;
+            // Save sales sheet data AND capture totals
+            sheets.forEach(sheet => {
+                data.salesSheets[sheet] = {};
+                data.sheetTotals[sheet] = {};
+
+                for (let i = 0; i < 8; i++) {
+                    data.salesSheets[sheet][i] = {
+                        brought: parseFloat(document.querySelector(`.units-brought[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0),
+                        left: parseFloat(document.querySelector(`.units-left[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0),
+                        sold: parseFloat(document.querySelector(`.units-sold[data-sheet="${sheet}"][data-row="${i}"]`)?.value || 0)
+                    };
+                }
+
+                // CRITICAL: Capture the total units sold and revenue
+                const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheet}"]`);
+                const totalRevenueEl = document.querySelector(`.revenue-total[data-sheet="${sheet}"]`);
+
+                if (totalUnitsEl) {
+                    data.sheetTotals[sheet].totalUnitsSold = parseFloat(totalUnitsEl.value || 0);
+                }
+                if (totalRevenueEl) {
+                    data.sheetTotals[sheet].totalRevenue = parseFloat(totalRevenueEl.value || 0);
+                }
+
+                // Also capture if the sheet is completed/locked
+                const completedCheckbox = document.getElementById(`event-completed-${sheet}`);
+                if (completedCheckbox) {
+                    data.sheetTotals[sheet].completed = completedCheckbox.checked;
+                }
             });
 
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
             window.firebaseSet(inventoryRef, data).then(() => {
-                alert('✅ DATA SYNCED TO CLOUD!');
+                console.log('✅ Data saved to Firebase including sheet totals');
             }).catch(error => {
                 alert('❌ Sync Error: ' + error.message);
             });
         }
-
         function loadAppData() {
             const saved = localStorage.getItem('knifeInventoryData');
             if (!saved) {
