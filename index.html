@@ -143,7 +143,7 @@
     <div class="container">
         <div class="header">
             <h1>Knife Inventory Manager v21 FIXED</h1>
-            <p>🎯 Auto-Depletion + Save Fixed! Storage → Show Tub → Activate → Fill Units Left → Firebase Saves ✅</p>
+            <p>🎯 Auto-Depletion + Revenue + Firebase Saves ✅</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
@@ -693,7 +693,7 @@
             });
         }
 
-        // FIXED: Units Sold calculation for sales sheets + saving to Firebase
+        // FIXED: Units Sold calculation + Revenue calculation + Firebase save
         function handleUnitsLeftChange(e) {
             const sheetId = e.target.getAttribute('data-sheet');
             const rowIndex = parseInt(e.target.getAttribute('data-row'));
@@ -762,7 +762,44 @@
             return null;
         }
 
-        // ===== FIXED SAVE FUNCTION (INCLUDES SALES SHEET DATA) =====
+        // ===== FIXED REVENUE CALCULATION =====
+        function updateRevenueTotal(sheetId) {
+            let totalUnits = 0;
+            let totalRevenue = 0;
+            
+            // Determine owner based on sheet ID
+            const owner = determineSheetOwner(sheetId);
+            if (!owner) {
+                console.warn(`Could not determine owner for sheet: ${sheetId}`);
+                return;
+            }
+
+            console.log(`📊 Calculating revenue for ${owner} sheet: ${sheetId}`);
+
+            for (let i = 0; i < 8; i++) {
+                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const priceEl = document.querySelector(`.${owner}-price[data-product="${i}"]`);
+                
+                const sold = parseFloat(soldEl?.value || soldEl?.textContent || 0);
+                const price = parseFloat(priceEl?.value || 0);
+                
+                const lineRevenue = sold * price;
+                totalUnits += sold;
+                totalRevenue += lineRevenue;
+
+                console.log(`  Product ${i}: ${sold} units × $${price} = $${lineRevenue.toFixed(2)}`);
+            }
+
+            const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+            const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+            
+            if (totalUnitsEl) totalUnitsEl.value = totalUnits;
+            if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
+
+            console.log(`✅ Sheet ${sheetId} totals: ${totalUnits} units, $${totalRevenue.toFixed(2)} revenue`);
+        }
+
+        // ===== FIXED SAVE FUNCTION (INCLUDES SALES SHEET DATA + REVENUE) =====
         function saveAllDataNow() {
             if (!window.firebaseReady || !window.firebaseDB) {
                 console.log('⏳ Firebase not ready yet...');
@@ -840,22 +877,20 @@
                     sheetObj.totalRevenue = parseFloat(totalRevEl?.value || 0);
 
                     inventoryData.sheets[sheetId] = sheetObj;
+                    console.log(`📌 Saving sheet ${sheetId}: ${sheetObj.totalUnits} units, $${sheetObj.totalRevenue.toFixed(2)} revenue`);
                 });
 
                 const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
                 window.firebaseSet(inventoryRef, inventoryData)
                     .then(() => {
                         console.log('✅ All data saved to Firebase successfully!');
-                        alert('✅ Data saved to Firebase!');
                     })
                     .catch(err => {
                         console.error('❌ Firebase save error:', err);
-                        alert('❌ Error saving to Firebase: ' + err.message);
                     });
 
             } catch (error) {
                 console.error('❌ Save error:', error);
-                alert('❌ Error: ' + error.message);
             }
         }
 
@@ -1120,27 +1155,6 @@
                 statusEl.textContent = '● Inactive';
                 statusEl.className = 'sheet-status inactive';
             }
-        }
-
-        // ===== REVENUE CALCULATIONS =====
-        function updateRevenueTotal(sheetId) {
-            let totalUnits = 0;
-            let totalRevenue = 0;
-            const owner = determineSheetOwner(sheetId) || currentPerson || 'pop';
-
-            for (let i = 0; i < 8; i++) {
-                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                const priceEl = document.querySelector(`.${owner}-price[data-product="${i}"]`);
-                const sold = parseFloat(soldEl?.value || soldEl?.textContent || 0);
-                const price = parseFloat(priceEl?.value || 0);
-                totalUnits += sold;
-                totalRevenue += sold * price;
-            }
-
-            const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
-            const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-            if (totalUnitsEl) totalUnitsEl.value = totalUnits;
-            if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
         }
 
         // ===== INVENTORY MANAGEMENT MODALS =====
@@ -1655,7 +1669,7 @@
                     initSheetStates();
                     initializeUnitsLeftListeners();
                     loadDataFromFirebase();
-                    console.log('✅ Knife Inventory Manager v21 FIXED ready with Auto-Depletion + Firebase load/save!');
+                    console.log('✅ Knife Inventory Manager v21 FIXED ready with Auto-Depletion + Revenue + Firebase!');
                 }
             }, 1000);
         });
