@@ -817,6 +817,74 @@
             }
         }
 
+        // ===== LOAD DATA FROM FIREBASE ON PAGE LOAD =====
+        function loadDataFromFirebase() {
+            if (!window.firebaseReady || !window.firebaseDB) {
+                console.log('⏳ Firebase not ready yet, retrying...');
+                setTimeout(loadDataFromFirebase, 1000);
+                return;
+            }
+
+            try {
+                console.log('📥 Loading data from Firebase...');
+                
+                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+                
+                // Import onValue for real-time listener
+                import("https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js")
+                    .then(module => {
+                        const { onValue } = module;
+                        
+                        onValue(inventoryRef, (snapshot) => {
+                            if (snapshot.exists()) {
+                                const data = snapshot.val();
+                                console.log('✅ Data loaded from Firebase:', data);
+                                
+                                // Load Pop inventory
+                                if (data.pop) {
+                                    for (let i = 0; i < 8; i++) {
+                                        if (data.pop[i]) {
+                                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                                            const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                                            
+                                            if (priceEl) priceEl.value = data.pop[i].price || 0;
+                                            if (storageEl) storageEl.value = data.pop[i].storage || 0;
+                                            if (showTubEl) showTubEl.value = data.pop[i].showTub || 0;
+                                        }
+                                    }
+                                }
+                                
+                                // Load Aaron inventory
+                                if (data.aaron) {
+                                    for (let i = 0; i < 8; i++) {
+                                        if (data.aaron[i]) {
+                                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                                            const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                                            
+                                            if (priceEl) priceEl.value = data.aaron[i].price || 0;
+                                            if (storageEl) storageEl.value = data.aaron[i].storage || 0;
+                                            if (showTubEl) showTubEl.value = data.aaron[i].showTub || 0;
+                                        }
+                                    }
+                                }
+                                
+                                // Update all displays
+                                updateAllInventories();
+                            } else {
+                                console.log('📭 No data in Firebase yet');
+                            }
+                        }, (error) => {
+                            console.error('❌ Firebase load error:', error);
+                        });
+                    });
+
+            } catch (error) {
+                console.error('❌ Load error:', error);
+            }
+        }
+
         // ===== MODAL FUNCTIONS =====
         function openActivateSheetModal(person, sheetId) {
             pendingActivateSheet = sheetId;
@@ -1512,7 +1580,8 @@
                 if (window.firebaseReady) {
                     initSheetStates();
                     initializeUnitsLeftListeners();
-                    console.log('✅ Knife Inventory Manager v21 FIXED ready with Auto-Depletion!');
+                    loadDataFromFirebase();
+                    console.log('✅ Knife Inventory Manager v22 ready with Auto-Depletion + Firebase Persistence!');
                 }
             }, 1000);
         });
