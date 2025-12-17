@@ -114,7 +114,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
@@ -133,6 +133,7 @@
         window.firebaseDB = db;
         window.firebaseRef = ref;
         window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
         window.firebaseReady = true;
 
         console.log("✅ Firebase initialized and ready");
@@ -692,6 +693,7 @@
             });
         }
 
+        // FIXED: Units Sold calculation for sales sheets + saving to Firebase
         function handleUnitsLeftChange(e) {
             const sheetId = e.target.getAttribute('data-sheet');
             const rowIndex = parseInt(e.target.getAttribute('data-row'));
@@ -704,7 +706,11 @@
             
             const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
             if (unitsSoldEl) {
-                unitsSoldEl.textContent = unitsSold;
+                if (unitsSoldEl.tagName === 'SPAN') {
+                    unitsSoldEl.textContent = unitsSold;
+                } else {
+                    unitsSoldEl.value = unitsSold;
+                }
             }
             
             depleteShowTubFromActiveSheet(sheetId, rowIndex, unitsSold);
@@ -756,7 +762,7 @@
             return null;
         }
 
-        // ===== FIXED SAVE FUNCTION =====
+        // ===== FIXED SAVE FUNCTION (INCLUDES SALES SHEET DATA) =====
         function saveAllDataNow() {
             if (!window.firebaseReady || !window.firebaseDB) {
                 console.log('⏳ Firebase not ready yet...');
@@ -770,6 +776,7 @@
                 const inventoryData = {
                     pop: {},
                     aaron: {},
+                    sheets: {},
                     timestamp: new Date().toISOString()
                 };
 
@@ -799,7 +806,42 @@
                     };
                 }
 
-                // Save to Firebase
+                // Collect sales sheets (static + dynamic)
+                const allSheetIds = [
+                    ...sheets,
+                    ...(window.customPopSheets || []),
+                    ...(window.customAaronSheets || [])
+                ];
+
+                allSheetIds.forEach(sheetId => {
+                    const sheetObj = {
+                        rows: [],
+                        totalUnits: 0,
+                        totalRevenue: 0
+                    };
+
+                    for (let i = 0; i < 8; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+
+                        if (!broughtEl && !soldEl && !leftEl) continue;
+
+                        const brought = parseFloat(broughtEl?.value || 0);
+                        const sold = parseFloat(soldEl?.value || soldEl?.textContent || 0);
+                        const left = parseFloat(leftEl?.value || 0);
+
+                        sheetObj.rows.push({ brought, sold, left });
+                    }
+
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                    sheetObj.totalUnits = parseFloat(totalUnitsEl?.value || 0);
+                    sheetObj.totalRevenue = parseFloat(totalRevEl?.value || 0);
+
+                    inventoryData.sheets[sheetId] = sheetObj;
+                });
+
                 const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
                 window.firebaseSet(inventoryRef, inventoryData)
                     .then(() => {
@@ -817,72 +859,87 @@
             }
         }
 
-        // ===== LOAD DATA FROM FIREBASE ON PAGE LOAD =====
+        // ===== LOAD DATA FROM FIREBASE ON STARTUP =====
         function loadDataFromFirebase() {
             if (!window.firebaseReady || !window.firebaseDB) {
-                console.log('⏳ Firebase not ready yet, retrying...');
+                console.log('⏳ Firebase not ready yet for load...');
                 setTimeout(loadDataFromFirebase, 1000);
                 return;
             }
 
-            try {
-                console.log('📥 Loading data from Firebase...');
-                
-                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
-                
-                // Import onValue for real-time listener
-                import("https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js")
-                    .then(module => {
-                        const { onValue } = module;
-                        
-                        onValue(inventoryRef, (snapshot) => {
-                            if (snapshot.exists()) {
-                                const data = snapshot.val();
-                                console.log('✅ Data loaded from Firebase:', data);
-                                
-                                // Load Pop inventory
-                                if (data.pop) {
-                                    for (let i = 0; i < 8; i++) {
-                                        if (data.pop[i]) {
-                                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                                            const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                                            
-                                            if (priceEl) priceEl.value = data.pop[i].price || 0;
-                                            if (storageEl) storageEl.value = data.pop[i].storage || 0;
-                                            if (showTubEl) showTubEl.value = data.pop[i].showTub || 0;
-                                        }
-                                    }
-                                }
-                                
-                                // Load Aaron inventory
-                                if (data.aaron) {
-                                    for (let i = 0; i < 8; i++) {
-                                        if (data.aaron[i]) {
-                                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                                            const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                                            
-                                            if (priceEl) priceEl.value = data.aaron[i].price || 0;
-                                            if (storageEl) storageEl.value = data.aaron[i].storage || 0;
-                                            if (showTubEl) showTubEl.value = data.aaron[i].showTub || 0;
-                                        }
-                                    }
-                                }
-                                
-                                // Update all displays
-                                updateAllInventories();
-                            } else {
-                                console.log('📭 No data in Firebase yet');
-                            }
-                        }, (error) => {
-                            console.error('❌ Firebase load error:', error);
-                        });
-                    });
+            const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+            window.firebaseOnValue(inventoryRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    console.log('ℹ️ No inventory data found in Firebase yet.');
+                    return;
+                }
 
-            } catch (error) {
-                console.error('❌ Load error:', error);
-            }
+                console.log('📥 Loading data from Firebase...', data);
+
+                // Restore Pop inventory
+                if (data.pop) {
+                    for (let i = 0; i < 8; i++) {
+                        const item = data.pop[i] || {};
+                        const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                        const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                        const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+
+                        if (priceEl) priceEl.value = item.price ?? '';
+                        if (storageEl) storageEl.value = item.storage ?? 0;
+                        if (showTubEl) showTubEl.value = item.showTub ?? 0;
+                    }
+                }
+
+                // Restore Aaron inventory
+                if (data.aaron) {
+                    for (let i = 0; i < 8; i++) {
+                        const item = data.aaron[i] || {};
+                        const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                        const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                        const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+
+                        if (priceEl) priceEl.value = item.price ?? '';
+                        if (storageEl) storageEl.value = item.storage ?? 0;
+                        if (showTubEl) showTubEl.value = item.showTub ?? 0;
+                    }
+                }
+
+                // Restore sheet data (for already existing DOM sheets)
+                if (data.sheets) {
+                    Object.keys(data.sheets).forEach(sheetId => {
+                        const sheetData = data.sheets[sheetId];
+                        if (!sheetData || !sheetData.rows) return;
+
+                        sheetData.rows.forEach((row, idx) => {
+                            const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                            const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
+
+                            if (broughtEl) broughtEl.value = row.brought ?? 0;
+                            if (soldEl) {
+                                if (soldEl.tagName === 'SPAN') {
+                                    soldEl.textContent = row.sold ?? 0;
+                                } else {
+                                    soldEl.value = row.sold ?? 0;
+                                }
+                            }
+                            if (leftEl) leftEl.value = row.left ?? 0;
+                        });
+
+                        const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                        const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                        if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0;
+                        if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
+                    });
+                }
+
+                updateAllInventories();
+                initializeUnitsLeftListeners();
+                console.log('✅ Firebase data loaded and inventories updated.');
+            }, (error) => {
+                console.error('❌ Error loading from Firebase:', error);
+            });
         }
 
         // ===== MODAL FUNCTIONS =====
@@ -923,8 +980,10 @@
             const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
             if (lockBtn) lockBtn.style.display = 'none';
             if (unlockBtn) unlockBtn.style.display = 'inline-flex';
+            if (sheetStates[sheetId]) sheetStates[sheetId].locked = true;
             updateSheetStatus(sheetId);
             alert(`🔒 ${sheetId.toUpperCase()} locked!`);
+            saveAllDataNow();
             closeLockSheetModal();
         }
 
@@ -945,8 +1004,10 @@
             const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
             if (lockBtn) lockBtn.style.display = 'inline-flex';
             if (unlockBtn) unlockBtn.style.display = 'none';
+            if (sheetStates[sheetId]) sheetStates[sheetId].locked = false;
             updateSheetStatus(sheetId);
             alert(`🔓 ${sheetId.toUpperCase()} unlocked!`);
+            saveAllDataNow();
             closeUnlockSheetModal();
         }
 
@@ -959,6 +1020,7 @@
                 }
             });
 
+            if (!sheetStates[sheetId]) sheetStates[sheetId] = { active: false, locked: false, completed: false };
             sheetStates[sheetId].active = true;
             currentPerson = person;
             currentSheetId = sheetId;
@@ -980,6 +1042,7 @@
             initializeUnitsLeftListeners();
             
             alert(`✅ ${sheetId.toUpperCase()} activated! Start entering "Units Left" to auto-deplete Show Tub.`);
+            saveAllDataNow();
         }
 
         function refreshSheetData(person, sheetId) {
@@ -1000,10 +1063,12 @@
                 
                 let totalUnits = 0;
                 let totalRevenue = 0;
+                const owner = determineSheetOwner(sheetId) || 'pop';
+
                 for (let i = 0; i < 8; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                    const sold = parseFloat(soldEl?.textContent || 0);
+                    const priceEl = document.querySelector(`.${owner}-price[data-product="${i}"]`);
+                    const sold = parseFloat(soldEl?.value || soldEl?.textContent || 0);
                     const price = parseFloat(priceEl?.value || 0);
                     totalUnits += sold;
                     totalRevenue += sold * price;
@@ -1032,7 +1097,7 @@
                 input.disabled = true;
             });
 
-            currentPerson = 'pop';
+            currentPerson = determineSheetOwner(sheetId) || 'pop';
             currentSheetId = sheetId;
             updateRevenueTotal(sheetId);
             saveAllDataNow();
@@ -1061,11 +1126,12 @@
         function updateRevenueTotal(sheetId) {
             let totalUnits = 0;
             let totalRevenue = 0;
+            const owner = determineSheetOwner(sheetId) || currentPerson || 'pop';
 
             for (let i = 0; i < 8; i++) {
                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                const priceEl = document.querySelector(`.${currentPerson}-price[data-product="${i}"]`);
-                const sold = parseFloat(soldEl?.textContent || 0);
+                const priceEl = document.querySelector(`.${owner}-price[data-product="${i}"]`);
+                const sold = parseFloat(soldEl?.value || soldEl?.textContent || 0);
                 const price = parseFloat(priceEl?.value || 0);
                 totalUnits += sold;
                 totalRevenue += sold * price;
@@ -1289,6 +1355,7 @@
             
             closeNewSalesSheetModal();
             alert(`✅ Sales sheet "${name}" created!`);
+            saveAllDataNow();
         }
 
         function openNewAaronSalesSheetModal() {
@@ -1315,6 +1382,7 @@
             
             closeNewAaronSalesSheetModal();
             alert(`✅ Aaron sales sheet "${name}" created!`);
+            saveAllDataNow();
         }
 
         function createDynamicSalesSheet(person, sheetId, name, date) {
@@ -1349,10 +1417,10 @@
                         <thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead>
                         <tbody>
                             <tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="0"></td></tr>
-                            <tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="1"></td></tr>
-                            <tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="2"></td></tr>
-                            <tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="3"></td></tr>
-                            <tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="4"></td></tr>
+                            <tr><td>8&quot; Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="1"></td></tr>
+                            <tr><td>6&quot; Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="2"></td></tr>
+                            <tr><td>8&quot; Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="3"></td></tr>
+                            <tr><td>6&quot; Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="4"></td></tr>
                             <tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="5"></td></tr>
                             <tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="6"></td></tr>
                             <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="${sheetId}" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="7"></td></tr>
@@ -1365,6 +1433,9 @@
             
             document.querySelector('.container').appendChild(sheetDiv);
             sheetStates[sheetId] = { active: false, locked: false, completed: false };
+
+            // Ensure listeners attach to new sheet
+            initializeUnitsLeftListeners();
         }
 
         // ===== DELETE SALES SHEET =====
@@ -1398,6 +1469,7 @@
             window.customPopSheets = window.customPopSheets.filter(s => s !== sheetId);
             
             alert('✅ Sales sheet deleted!');
+            saveAllDataNow();
             closeDeletePopSalesSheetModal();
         }
 
@@ -1431,6 +1503,7 @@
             window.customAaronSheets = window.customAaronSheets.filter(s => s !== sheetId);
             
             alert('✅ Aaron sales sheet deleted!');
+            saveAllDataNow();
             closeDeleteAaronSalesSheetModal();
         }
 
@@ -1526,7 +1599,7 @@
             }
 
             const confirmReset = confirm(
-                '⚠️ This will CLEAR all inventory, sales sheets, and lifetime units.\\n\\nAre you sure?'
+                '⚠️ This will CLEAR all inventory, sales sheets, and lifetime units.\n\nAre you sure?'
             );
             if (!confirmReset) return;
 
@@ -1572,6 +1645,7 @@
             }
             updateAllInventories();
             alert('✅ Inventory refreshed from active sheet!');
+            saveAllDataNow();
         }
 
         // ===== INITIALIZATION =====
@@ -1581,7 +1655,7 @@
                     initSheetStates();
                     initializeUnitsLeftListeners();
                     loadDataFromFirebase();
-                    console.log('✅ Knife Inventory Manager v22 ready with Auto-Depletion + Firebase Persistence!');
+                    console.log('✅ Knife Inventory Manager v21 FIXED ready with Auto-Depletion + Firebase load/save!');
                 }
             }, 1000);
         });
