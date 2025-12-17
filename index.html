@@ -6,7 +6,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v26 - Dynamic Sheets Fixed</title>
+    <title>Knife Inventory Manager v27 - Show Tub Auto-Depletion Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -139,8 +139,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v26</h1>
-            <p>✅ Dynamic Sheets Firebase Persistence Fixed 🎯</p>
+            <h1>Knife Inventory Manager v27</h1>
+            <p>✅ Show Tub Auto-Depletion Fixed & Firebase Synced 🎯</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
@@ -381,19 +381,43 @@
             }
         }
 
-        // ===== UNITS LEFT CHANGE HANDLER =====
+        // ===== UNITS LEFT CHANGE HANDLER - FIXED WITH DELTA CALCULATION =====
         function handleUnitsLeftChange(e) {
             const sheetId = e.target.getAttribute('data-sheet');
             const rowIndex = parseInt(e.target.getAttribute('data-row'));
+            const person = sheetMetadata[sheetId]?.person;
+            
             const unitsLeft = parseFloat(e.target.value || 0);
             const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
             const unitsBrought = parseFloat(unitsBroughtEl?.value || 0);
-            const unitsSold = Math.max(0, unitsBrought - unitsLeft);
+            
+            // Calculate NEW units sold
+            const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
+            
+            // Get OLD units sold (before this change)
             const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
-            if (unitsSoldEl) unitsSoldEl.textContent = unitsSold;
-            depleteShowTubFromActiveSheet(sheetId, rowIndex, unitsSold);
+            const oldUnitsSold = parseFloat(unitsSoldEl?.textContent || 0);
+            
+            // Calculate DELTA (difference)
+            const deltaUnitsSold = newUnitsSold - oldUnitsSold;
+            
+            // Update units sold display
+            unitsSoldEl.textContent = newUnitsSold;
+            
+            // DEPLETE SHOW TUB BY DELTA ONLY (not total)
+            if (deltaUnitsSold !== 0) {
+                const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${rowIndex}"]`);
+                if (showTubEl) {
+                    const currentShowTub = parseFloat(showTubEl.value || 0);
+                    const newShowTub = Math.max(0, currentShowTub - deltaUnitsSold);
+                    console.log(`📊 ${sheetId} Product ${rowIndex}: Old Sold=${oldUnitsSold}, New Sold=${newUnitsSold}, Delta=${deltaUnitsSold}, Show Tub: ${currentShowTub} → ${newShowTub}`);
+                    showTubEl.value = newShowTub;
+                }
+            }
+            
             recalculateRevenueForSheet(sheetId);
             updateInventoryAggregatedUnitsSold();
+            updateAllInventories();
             saveAllDataNow();
         }
 
@@ -420,18 +444,6 @@
             const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
             allSheetIds.forEach(sheetId => { const el = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`); if (el) recalculateRevenueForSheet(sheetId); });
             saveAllDataNow();
-        }
-
-        // ===== DEPLETE SHOW TUB =====
-        function depleteShowTubFromActiveSheet(sheetId, productIndex, unitsSold) {
-            const person = sheetMetadata[sheetId]?.person;
-            if (!person) return;
-            const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${productIndex}"]`);
-            if (!showTubEl) return;
-            const currentShowTub = parseFloat(showTubEl.value || 0);
-            const newShowTub = Math.max(0, currentShowTub - unitsSold);
-            showTubEl.value = newShowTub;
-            updateAllInventories();
         }
 
         // ===== FIREBASE SAVE =====
@@ -487,7 +499,7 @@
             } catch (error) { console.error('❌ Save error:', error); showSuccess('❌ Error: ' + error.message); }
         }
 
-        // ===== LOAD FROM FIREBASE - FIXED FOR DYNAMIC SHEETS =====
+        // ===== LOAD FROM FIREBASE =====
         function loadDataFromFirebase() {
             if (!window.firebaseReady || !window.firebaseDB) { setTimeout(loadDataFromFirebase, 500); return; }
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
@@ -850,7 +862,7 @@
         function resetAllData() { if (!window.firebaseReady || !window.firebaseDB) { alert('Firebase loading'); return; } if (!confirm('⚠️ Clear ALL data?')) return; for (let i = 0; i < 8; i++) { const els = [`.pop-price[data-product="${i}"]`, `.pop-show-tub[data-product="${i}"]`, `.aaron-price[data-product="${i}"]`, `.aaron-show-tub[data-product="${i}"]`]; els.forEach(sel => { const el = document.querySelector(sel); if (el) el.value = ''; }); } const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory'); window.firebaseSet(inventoryRef, null).then(() => { showSuccess('✅ Reset!'); updateAllInventories(); updateInventoryAggregatedUnitsSold(); }).catch(err => showSuccess('❌ Error')); }
 
         // ===== INITIALIZATION =====
-        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v26 READY - DYNAMIC SHEETS PERSISTENT!'); } }, 1000); });
+        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v27 READY - SHOW TUB AUTO-DEPLETION FIXED!'); } }, 1000); });
     </script>
 </body>
 </html>
