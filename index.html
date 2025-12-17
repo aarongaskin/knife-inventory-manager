@@ -6,7 +6,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v27 - Show Tub Auto-Depletion Fixed</title>
+    <title>Knife Inventory Manager v28 - Show Tub Depletion on Lock Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -139,8 +139,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v27</h1>
-            <p>✅ Show Tub Auto-Depletion Fixed & Firebase Synced 🎯</p>
+            <h1>Knife Inventory Manager v28</h1>
+            <p>✅ Show Tub Lock Depletion Fixed - Final Production Build 🎯</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
@@ -234,7 +234,7 @@
                     <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
                 </div>
                 <div class="depletion-notice">
-                    ✅ Auto-Depletion Active: When you enter "Units Left" on a sales sheet, Show Tub automatically decreases!
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
                 </div>
                 <div class="aggregation-info">
                     📊 Units Sold = Running total from all LOCKED sales sheets
@@ -270,7 +270,7 @@
                     <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
                 </div>
                 <div class="depletion-notice">
-                    ✅ Auto-Depletion Active: When you enter "Units Left" on a sales sheet, Show Tub automatically decreases!
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
                 </div>
                 <div class="aggregation-info">
                     📊 Units Sold = Running total from all LOCKED sales sheets
@@ -298,7 +298,7 @@
             </div>
         </div>
 
-        <!-- Sales Sheets (Abbreviated for space) -->
+        <!-- Sales Sheets (Abbreviated for space - Full code follows in script section) -->
         <div id="wetumpka" class="tab-content"><div class="tab-section"><h2>Wetumpka, Alabama - December 12-13</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="wetumpka-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'wetumpka')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-wetumpka" style="display:none;" onclick="openLockSheetModal('wetumpka')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-wetumpka" style="display:none;" onclick="openUnlockSheetModal('wetumpka')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="wetumpka-event-box" style="display: none;"><input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')"><label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6"></td></tr><tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" id="total-units-wetumpka" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" id="total-revenue-wetumpka" readonly></td></tr></tbody></table></div></div>
 
         <div id="trussville" class="tab-content"><div class="tab-section"><h2>Trussville, Alabama - January 3-4</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="trussville-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'trussville')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-trussville" style="display:none;" onclick="openLockSheetModal('trussville')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-trussville" style="display:none;" onclick="openUnlockSheetModal('trussville')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="trussville-event-box" style="display: none;"><input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')"><label for="event-completed-trussville">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="6"></td></tr><tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="7"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="trussville" id="total-units-trussville" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="trussville" id="total-revenue-trussville" readonly></td></tr></tbody></table></div></div>
@@ -311,7 +311,7 @@
     <!-- MODALS -->
     <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
 
-    <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking adds units sold to inventory total. This cannot be undone per sheet.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
+    <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and add to inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
 
     <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
 
@@ -381,7 +381,7 @@
             }
         }
 
-        // ===== UNITS LEFT CHANGE HANDLER - FIXED WITH DELTA CALCULATION =====
+        // ===== UNITS LEFT CHANGE HANDLER =====
         function handleUnitsLeftChange(e) {
             const sheetId = e.target.getAttribute('data-sheet');
             const rowIndex = parseInt(e.target.getAttribute('data-row'));
@@ -389,28 +389,24 @@
             
             const unitsLeft = parseFloat(e.target.value || 0);
             const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
-            const unitsBrought = parseFloat(unitsBroughtEl?.value || 0);
+            if (!unitsBroughtEl) return;
             
-            // Calculate NEW units sold
+            const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
             const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
             
-            // Get OLD units sold (before this change)
             const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
-            const oldUnitsSold = parseFloat(unitsSoldEl?.textContent || 0);
+            if (!unitsSoldEl) return;
             
-            // Calculate DELTA (difference)
+            const oldUnitsSold = parseFloat(unitsSoldEl.textContent || 0);
             const deltaUnitsSold = newUnitsSold - oldUnitsSold;
             
-            // Update units sold display
             unitsSoldEl.textContent = newUnitsSold;
             
-            // DEPLETE SHOW TUB BY DELTA ONLY (not total)
             if (deltaUnitsSold !== 0) {
                 const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${rowIndex}"]`);
                 if (showTubEl) {
                     const currentShowTub = parseFloat(showTubEl.value || 0);
                     const newShowTub = Math.max(0, currentShowTub - deltaUnitsSold);
-                    console.log(`📊 ${sheetId} Product ${rowIndex}: Old Sold=${oldUnitsSold}, New Sold=${newUnitsSold}, Delta=${deltaUnitsSold}, Show Tub: ${currentShowTub} → ${newShowTub}`);
                     showTubEl.value = newShowTub;
                 }
             }
@@ -453,23 +449,18 @@
                 console.log('💾 Starting Firebase save...');
                 const inventoryData = { pop: {}, aaron: {}, sheets: {}, sheetMetadata: sheetMetadata, sheetStates: sheetStates, timestamp: new Date().toISOString() };
                 
-                // Save Pop prices
                 for (let i = 0; i < 8; i++) {
-                    const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
-                    const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                    const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
-                    inventoryData.pop[i] = { price, storage, showTub };
+                    const popPrice = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
+                    const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                    const popShowTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                    inventoryData.pop[i] = { price: popPrice, storage: popStorage, showTub: popShowTub };
+                    
+                    const aaronPrice = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                    const aaronStorage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                    const aaronShowTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                    inventoryData.aaron[i] = { price: aaronPrice, storage: aaronStorage, showTub: aaronShowTub };
                 }
                 
-                // Save Aaron prices
-                for (let i = 0; i < 8; i++) {
-                    const price = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
-                    const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                    const showTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
-                    inventoryData.aaron[i] = { price, storage, showTub };
-                }
-                
-                // Save all sheets (BOTH STATIC AND DYNAMIC)
                 const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [], totalUnits: 0, totalRevenue: 0, metadata: sheetMetadata[sheetId] };
@@ -508,15 +499,12 @@
                 if (!data) { console.log('ℹ️ No Firebase data'); return; }
                 console.log('📥 Loading from Firebase');
                 
-                // Restore metadata and states FIRST
                 if (data.sheetMetadata) Object.assign(sheetMetadata, data.sheetMetadata);
                 if (data.sheetStates) Object.assign(sheetStates, data.sheetStates);
                 
-                // RECONSTRUCT DYNAMIC SHEETS FROM METADATA
                 console.log('🔄 Reconstructing dynamic sheets...');
                 Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
                     if (!staticSheets.includes(sheetId)) {
-                        // Check if DOM already exists
                         if (!document.getElementById(sheetId)) {
                             console.log(`  Creating DOM for: ${sheetId}`);
                             createDynamicSalesSheet(meta.person, sheetId, meta.name, meta.date);
@@ -524,11 +512,9 @@
                     }
                 });
 
-                // Load inventory data
                 if (data.pop) { for (let i = 0; i < 8; i++) { const item = data.pop[i] || {}; const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`); const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`); const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`); if (priceEl) priceEl.value = item.price ?? ''; if (storageEl) storageEl.value = item.storage ?? 0; if (showTubEl) showTubEl.value = item.showTub ?? 0; } }
                 if (data.aaron) { for (let i = 0; i < 8; i++) { const item = data.aaron[i] || {}; const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`); const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`); const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`); if (priceEl) priceEl.value = item.price ?? ''; if (storageEl) storageEl.value = item.storage ?? 0; if (showTubEl) showTubEl.value = item.showTub ?? 0; } }
                 
-                // Load all sheet data
                 if (data.sheets) { 
                     Object.entries(data.sheets).forEach(([sheetId, sheetData]) => { 
                         if (!sheetData?.rows) return; 
@@ -564,6 +550,26 @@
         function closeLockSheetModal() { document.getElementById('lockSheetModal').classList.remove('active'); pendingLockSheet = null; }
         function confirmLockSheet() {
             const sheetId = pendingLockSheet;
+            const person = sheetMetadata[sheetId]?.person;
+            
+            // DEPLETE SHOW TUB ON LOCK
+            console.log(`🔒 Locking sheet: ${sheetId} (${person})`);
+            for (let i = 0; i < 8; i++) {
+                const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${i}"]`);
+                
+                if (!unitsSoldEl || !showTubEl) continue;
+                
+                const unitsSold = parseFloat(unitsSoldEl.textContent || 0);
+                if (unitsSold > 0) {
+                    const currentShowTub = parseFloat(showTubEl.value || 0);
+                    const newShowTub = Math.max(0, currentShowTub - unitsSold);
+                    console.log(`✂️ LOCK DEPLETE: ${person} product ${i}: ${currentShowTub} - ${unitsSold} = ${newShowTub}`);
+                    showTubEl.value = newShowTub;
+                }
+            }
+            
+            // NOW lock sheet
             const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
             const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
             if (lockBtn) lockBtn.style.display = 'none';
@@ -572,6 +578,7 @@
             sheetStates[sheetId].locked = true;
             updateSheetStatus(sheetId);
             updateInventoryAggregatedUnitsSold();
+            updateAllInventories();
             saveAllDataNow();
             closeLockSheetModal();
         }
@@ -862,7 +869,7 @@
         function resetAllData() { if (!window.firebaseReady || !window.firebaseDB) { alert('Firebase loading'); return; } if (!confirm('⚠️ Clear ALL data?')) return; for (let i = 0; i < 8; i++) { const els = [`.pop-price[data-product="${i}"]`, `.pop-show-tub[data-product="${i}"]`, `.aaron-price[data-product="${i}"]`, `.aaron-show-tub[data-product="${i}"]`]; els.forEach(sel => { const el = document.querySelector(sel); if (el) el.value = ''; }); } const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory'); window.firebaseSet(inventoryRef, null).then(() => { showSuccess('✅ Reset!'); updateAllInventories(); updateInventoryAggregatedUnitsSold(); }).catch(err => showSuccess('❌ Error')); }
 
         // ===== INITIALIZATION =====
-        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v27 READY - SHOW TUB AUTO-DEPLETION FIXED!'); } }, 1000); });
+        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v28 READY - LOCK SHEET DEPLETION FIXED!'); } }, 1000); });
     </script>
 </body>
 </html>
