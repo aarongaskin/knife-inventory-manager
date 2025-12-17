@@ -7,7 +7,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v21 - Auto Depletion</title>
+    <title>Knife Inventory Manager v21 - Auto Depletion FIXED</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -114,7 +114,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
@@ -132,20 +132,19 @@
 
         window.firebaseDB = db;
         window.firebaseRef = ref;
-        window.firebaseOnValue = onValue;
         window.firebaseSet = set;
         window.firebaseReady = true;
 
-        console.log("✅ Firebase initialized");
+        console.log("✅ Firebase initialized and ready");
     </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v21</h1>
-            <p>🎯 NEW: Auto-Depletion! Sales reduce Show Tub automatically. Storage → Show Tub → Activate → Fill Units Left → Firebase Saves ✅</p>
+            <h1>Knife Inventory Manager v21 FIXED</h1>
+            <p>🎯 Auto-Depletion + Save Fixed! Storage → Show Tub → Activate → Fill Units Left → Firebase Saves ✅</p>
             <div class="header-buttons">
-                <button class="nav-link" onclick="saveAppData()">💾 Save All Data</button>
+                <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
             </div>
         </div>
@@ -325,16 +324,6 @@
                     <input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')">
                     <label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label>
                 </div>
-                <div class="tax-controls">
-                    <div class="tax-control-group">
-                        <input type="checkbox" id="tax-required-wetumpka" class="tax-checkbox" data-sheet="wetumpka">
-                        <label for="tax-required-wetumpka">Sales Tax Required?</label>
-                    </div>
-                    <div class="tax-control-group" id="tax-input-group-wetumpka" style="display: none;">
-                        <label for="tax-rate-wetumpka">Tax Rate (%):</label>
-                        <input type="number" id="tax-rate-wetumpka" class="tax-rate-input" data-sheet="wetumpka" step="0.01" min="0" max="20" placeholder="8.25">
-                    </div>
-                </div>
                 <table>
                     <thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead>
                     <tbody>
@@ -348,7 +337,6 @@
                         <tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td></tr>
                         <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" id="total-units-wetumpka" readonly></td></tr>
                         <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" id="total-revenue-wetumpka" readonly></td></tr>
-                        <tr class="tax-summary-row" id="tax-row-wetumpka" style="display:none;"><td><strong>Subtotal / Tax / Total</strong></td><td colspan="3"><input type="text" class="tax-summary" data-sheet="wetumpka" readonly style="font-weight: bold;"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -672,7 +660,6 @@
         let pendingLockSheet = null;
         let pendingUnlockSheet = null;
 
-        // Track custom sheets for each person
         window.customPopSheets = [];
         window.customAaronSheets = [];
 
@@ -710,27 +697,19 @@
             const rowIndex = parseInt(e.target.getAttribute('data-row'));
             const unitsLeft = parseFloat(e.target.value || 0);
             
-            // Get Units Brought
             const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
             const unitsBrought = parseFloat(unitsBroughtEl?.value || 0);
             
-            // Calculate Units Sold
             const unitsSold = Math.max(0, unitsBrought - unitsLeft);
             
-            // Update Units Sold display
             const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
             if (unitsSoldEl) {
                 unitsSoldEl.textContent = unitsSold;
             }
             
-            // Deplete Show Tub from active sheet's owner inventory
             depleteShowTubFromActiveSheet(sheetId, rowIndex, unitsSold);
-            
-            // Update revenue totals
             updateRevenueTotal(sheetId);
-            
-            // Save to Firebase
-            saveAppData();
+            saveAllDataNow();
         }
 
         // ===== DEPLETE SHOW TUB =====
@@ -742,7 +721,6 @@
                 return;
             }
             
-            // Get the Show Tub element
             const showTubSelector = `.${person}-show-tub[data-product="${productIndex}"]`;
             const showTubEl = document.querySelector(showTubSelector);
             
@@ -751,16 +729,11 @@
                 return;
             }
             
-            // Get current Show Tub value
             const currentShowTub = parseFloat(showTubEl.value || 0);
-            
-            // Deplete by units sold
             const newShowTub = Math.max(0, currentShowTub - unitsSold);
             showTubEl.value = newShowTub;
             
             console.log(`✅ Depleted ${person} Show Tub for product ${productIndex}: ${currentShowTub} → ${newShowTub} (sold: ${unitsSold})`);
-            
-            // Update all inventory displays
             updateAllInventories();
         }
 
@@ -783,65 +756,65 @@
             return null;
         }
 
-        // ===== FIREBASE LOADING =====
-        function loadSheetLockedStates() {
-            if (!window.firebaseDB) { setTimeout(loadSheetLockedStates, 500); return; }
-            
-            sheets.forEach(sheetId => {
-                const sheetRef = window.firebaseRef(window.firebaseDB, `salesSheets/${sheetId}`);
-                window.firebaseOnValue(sheetRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) return;
+        // ===== FIXED SAVE FUNCTION =====
+        function saveAllDataNow() {
+            if (!window.firebaseReady || !window.firebaseDB) {
+                console.log('⏳ Firebase not ready yet...');
+                setTimeout(saveAllDataNow, 1000);
+                return;
+            }
 
-                    if (data.locked === true) {
-                        sheetStates[sheetId] = sheetStates[sheetId] || {};
-                        sheetStates[sheetId].locked = true;
-                        sheetStates[sheetId].completed = true;
-
-                        if (data.totalUnits !== undefined) {
-                            const totalEl = document.getElementById(`total-units-${sheetId}`);
-                            if (totalEl) totalEl.value = data.totalUnits;
-                        }
-                        if (data.totalRevenue !== undefined) {
-                            const revEl = document.getElementById(`total-revenue-${sheetId}`);
-                            if (revEl) revEl.value = data.totalRevenue;
-                        }
-                        if (data.unitsByProduct) {
-                            for (let i = 0; i < 8; i++) {
-                                lifetimeUnits.pop[i] = (lifetimeUnits.pop[i] || 0) + (data.unitsByProduct[i] || 0);
-                            }
-                        }
-
-                        const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                        const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
-                        if (lockBtn) lockBtn.style.display = 'none';
-                        if (unlockBtn) unlockBtn.style.display = 'inline-flex';
-                        updateSheetStatus(sheetId);
-                    }
-                });
-            });
-            
-            updateAllLifetimeUnits();
-        }
-
-        function loadLifetimeFromFirebase() {
-            if (!window.firebaseDB) { setTimeout(loadLifetimeFromFirebase, 500); return; }
-            
-            const lifetimeRef = window.firebaseRef(window.firebaseDB, 'lifetimeUnits');
-            window.firebaseOnValue(lifetimeRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
+            try {
+                console.log('💾 Saving all data to Firebase...');
                 
-                if (data.pop) lifetimeUnits.pop = data.pop;
-                if (data.aaron) lifetimeUnits.aaron = data.aaron;
-                updateAllLifetimeUnits();
-            });
-        }
+                const inventoryData = {
+                    pop: {},
+                    aaron: {},
+                    timestamp: new Date().toISOString()
+                };
 
-        function saveLifetimeToFirebase() {
-            const lifetimeRef = window.firebaseRef(window.firebaseDB, 'lifetimeUnits');
-            window.firebaseSet(lifetimeRef, lifetimeUnits)
-                .catch(err => console.error('Error saving lifetime units:', err));
+                // Collect Pop inventory
+                for (let i = 0; i < 8; i++) {
+                    const price = document.querySelector(`.pop-price[data-product="${i}"]`)?.value || '0';
+                    const storage = document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || '0';
+                    const showTub = document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || '0';
+                    
+                    inventoryData.pop[i] = {
+                        price: parseFloat(price),
+                        storage: parseFloat(storage),
+                        showTub: parseFloat(showTub)
+                    };
+                }
+
+                // Collect Aaron inventory
+                for (let i = 0; i < 8; i++) {
+                    const price = document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || '0';
+                    const storage = document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || '0';
+                    const showTub = document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || '0';
+                    
+                    inventoryData.aaron[i] = {
+                        price: parseFloat(price),
+                        storage: parseFloat(storage),
+                        showTub: parseFloat(showTub)
+                    };
+                }
+
+                // Save to Firebase
+                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+                window.firebaseSet(inventoryRef, inventoryData)
+                    .then(() => {
+                        console.log('✅ All data saved to Firebase successfully!');
+                        alert('✅ Data saved to Firebase!');
+                    })
+                    .catch(err => {
+                        console.error('❌ Firebase save error:', err);
+                        alert('❌ Error saving to Firebase: ' + err.message);
+                    });
+
+            } catch (error) {
+                console.error('❌ Save error:', error);
+                alert('❌ Error: ' + error.message);
+            }
         }
 
         // ===== MODAL FUNCTIONS =====
@@ -936,7 +909,6 @@
             updateSheetStatus(sheetId);
             refreshSheetData(person, sheetId);
             
-            // INITIALIZE UNITS LEFT LISTENERS AFTER ACTIVATION
             initializeUnitsLeftListeners();
             
             alert(`✅ ${sheetId.toUpperCase()} activated! Start entering "Units Left" to auto-deplete Show Tub.`);
@@ -995,7 +967,7 @@
             currentPerson = 'pop';
             currentSheetId = sheetId;
             updateRevenueTotal(sheetId);
-            saveLifetimeToFirebase();
+            saveAllDataNow();
             updateAllInventories();
             closeEventCompletedConfirmModal();
         }
@@ -1020,7 +992,6 @@
         // ===== REVENUE CALCULATIONS =====
         function updateRevenueTotal(sheetId) {
             let totalUnits = 0;
-            let unitsByProduct = [0,0,0,0,0,0,0,0];
             let totalRevenue = 0;
 
             for (let i = 0; i < 8; i++) {
@@ -1029,7 +1000,6 @@
                 const sold = parseFloat(soldEl?.textContent || 0);
                 const price = parseFloat(priceEl?.value || 0);
                 totalUnits += sold;
-                unitsByProduct[i] = sold;
                 totalRevenue += sold * price;
             }
 
@@ -1037,42 +1007,6 @@
             const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
             if (totalUnitsEl) totalUnitsEl.value = totalUnits;
             if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
-
-            const sheetRef = window.firebaseRef(window.firebaseDB, `salesSheets/${sheetId}`);
-            const sheetData = {
-                locked: true,
-                totalUnits: totalUnits,
-                totalRevenue: totalRevenue.toFixed(2),
-                unitsByProduct: unitsByProduct,
-                timestamp: new Date().toISOString()
-            };
-
-            window.firebaseSet(sheetRef, sheetData)
-                .then(() => {
-                    console.log(`✅ ${sheetId} totals saved to Firebase: ${totalUnits} units, $${totalRevenue.toFixed(2)}`);
-                    for (let i = 0; i < 8; i++) {
-                        lifetimeUnits[currentPerson][i] = (lifetimeUnits[currentPerson][i] || 0) + unitsByProduct[i];
-                    }
-                    updateAllLifetimeUnits();
-                    sheetStates[sheetId].locked = true;
-                    sheetStates[sheetId].completed = true;
-                    const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                    const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
-                    if (lockBtn) lockBtn.style.display = 'none';
-                    if (unlockBtn) unlockBtn.style.display = 'inline-flex';
-                    updateSheetStatus(sheetId);
-                })
-                .catch(err => console.error(`Firebase save error for ${sheetId}:`, err));
-        }
-
-        // ===== LIFETIME UNITS =====
-        function updateAllLifetimeUnits() {
-            for (let i = 0; i < 8; i++) {
-                const popEl = document.querySelector(`.pop-lifetime-units[data-product="${i}"]`);
-                const aaronEl = document.querySelector(`.aaron-lifetime-units[data-product="${i}"]`);
-                if (popEl) popEl.value = lifetimeUnits.pop[i];
-                if (aaronEl) aaronEl.value = lifetimeUnits.aaron[i];
-            }
         }
 
         // ===== INVENTORY MANAGEMENT MODALS =====
@@ -1095,7 +1029,7 @@
                 storageEl.value = currentStorage + received;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory added to Pop Storage!');
             closePopInventoryReceivedModal();
         }
@@ -1119,7 +1053,7 @@
                 storageEl.value = currentStorage + received;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory added to Aaron Storage!');
             closeAaronInventoryReceivedModal();
         }
@@ -1156,7 +1090,7 @@
                 showTubEl.value = currentShowTub + moveQty;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory moved to Show Tub!');
             closePopMoveInventoryModal();
         }
@@ -1192,7 +1126,7 @@
                 showTubEl.value = currentShowTub + moveQty;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory moved to Show Tub!');
             closeAaronMoveInventoryModal();
         }
@@ -1225,7 +1159,7 @@
                 storageEl.value = currentStorage - removeQty;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory removed from Storage!');
             closePopRemoveInventoryModal();
         }
@@ -1257,7 +1191,7 @@
                 storageEl.value = currentStorage - removeQty;
             }
             updateAllInventories();
-            saveAppData();
+            saveAllDataNow();
             alert('✅ Inventory removed from Storage!');
             closeAaronRemoveInventoryModal();
         }
@@ -1316,7 +1250,6 @@
         }
 
         function createDynamicSalesSheet(person, sheetId, name, date) {
-            // Add button to navigation
             const navId = person === 'pop' ? 'dynamic-sales-links' : 'dynamic-aaron-sales-links';
             const navContainer = document.getElementById(navId);
             
@@ -1326,7 +1259,6 @@
             btn.onclick = (e) => openTab(e, sheetId);
             navContainer.appendChild(btn);
             
-            // Create sheet content container
             const sheetDiv = document.createElement('div');
             sheetDiv.id = sheetId;
             sheetDiv.className = 'tab-content';
@@ -1518,62 +1450,9 @@
             updateMasterInventory();
         }
 
-        // ===== SAVE & RESET =====
-        function saveAppData() {
-            if (!window.firebaseReady) {
-                console.log('⏳ Firebase is still initializing...');
-                return;
-            }
-
-            try {
-                const inventoryData = {
-                    popInventory: {},
-                    aaronInventory: {},
-                    salesSheets: {},
-                    totals: {}
-                };
-
-                for (let i = 0; i < 8; i++) {
-                    const popPrice = document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0;
-                    const popStorage = document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0;
-                    const popShowTub = document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0;
-                    inventoryData.popInventory[i] = { price: popPrice, storage: popStorage, showTub: popShowTub };
-
-                    const aaronPrice = document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0;
-                    const aaronStorage = document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0;
-                    const aaronShowTub = document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0;
-                    inventoryData.aaronInventory[i] = { price: aaronPrice, storage: aaronStorage, showTub: aaronShowTub };
-                }
-
-                const popTotalOnHand = document.getElementById('pop-total-on-hand')?.value || 0;
-                const aaronTotalOnHand = document.getElementById('aaron-total-on-hand')?.value || 0;
-                inventoryData.totals.popTotalOnHand = popTotalOnHand;
-                inventoryData.totals.aaronTotalOnHand = aaronTotalOnHand;
-
-                sheets.forEach(sheetId => {
-                    inventoryData.salesSheets[sheetId] = {};
-                    for (let i = 0; i < 8; i++) {
-                        const brought = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
-                        const left = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0;
-                        inventoryData.salesSheets[sheetId][i] = { brought: brought, left: left };
-                    }
-                });
-
-                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
-                window.firebaseSet(inventoryRef, inventoryData)
-                    .then(() => {
-                        console.log('✅ All data saved to Firebase!');
-                    })
-                    .catch(err => {
-                        console.error('Firebase error:', err);
-                    });
-            } catch (error) {
-                console.error('Save error:', error);
-            }
-        }
-
+        // ===== RESET DATA =====
         function resetAllData() {
-            if (!window.firebaseReady) {
+            if (!window.firebaseReady || !window.firebaseDB) {
                 alert('⏳ Firebase is still initializing.');
                 return;
             }
@@ -1596,30 +1475,17 @@
                     if (aaronShowTub) aaronShowTub.value = '';
                 }
 
-                for (let i = 0; i < 8; i++) {
-                    lifetimeUnits.pop[i] = 0;
-                    lifetimeUnits.aaron[i] = 0;
-                }
-
-                const db = window.firebaseDB;
-                const inventoryRef = window.firebaseRef(db, 'inventory');
-                const sheetsRef = window.firebaseRef(db, 'salesSheets');
-                const lifetimeRef = window.firebaseRef(db, 'lifetimeUnits');
-
-                Promise.all([
-                    window.firebaseSet(inventoryRef, null),
-                    window.firebaseSet(sheetsRef, null),
-                    window.firebaseSet(lifetimeRef, { pop: lifetimeUnits.pop, aaron: lifetimeUnits.aaron })
-                ])
-                .then(() => {
-                    console.log('✅ All data reset!');
-                    alert('✅ All data has been reset!');
-                    updateAllInventories();
-                })
-                .catch(err => {
-                    console.error('Reset error:', err);
-                    alert('❌ Error resetting data: ' + err.message);
-                });
+                const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
+                window.firebaseSet(inventoryRef, null)
+                    .then(() => {
+                        console.log('✅ All data reset!');
+                        alert('✅ All data has been reset!');
+                        updateAllInventories();
+                    })
+                    .catch(err => {
+                        console.error('Reset error:', err);
+                        alert('❌ Error resetting data: ' + err.message);
+                    });
 
             } catch (err) {
                 console.error('Reset error:', err);
@@ -1646,9 +1512,7 @@
                 if (window.firebaseReady) {
                     initSheetStates();
                     initializeUnitsLeftListeners();
-                    loadSheetLockedStates();
-                    loadLifetimeFromFirebase();
-                    console.log('✅ Knife Inventory Manager v21 ready with Auto-Depletion!');
+                    console.log('✅ Knife Inventory Manager v21 FIXED ready with Auto-Depletion!');
                 }
             }, 1000);
         });
