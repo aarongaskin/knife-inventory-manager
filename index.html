@@ -6,7 +6,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v25 - Final Build</title>
+    <title>Knife Inventory Manager v26 - Dynamic Sheets Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -139,8 +139,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Knife Inventory Manager v25</h1>
-            <p>✅ Final Build - Fully Functional 🎯</p>
+            <h1>Knife Inventory Manager v26</h1>
+            <p>✅ Dynamic Sheets Firebase Persistence Fixed 🎯</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
@@ -434,7 +434,7 @@
             updateAllInventories();
         }
 
-        // ===== FIREBASE SAVE - FIXED =====
+        // ===== FIREBASE SAVE =====
         function saveAllDataNow() {
             if (!window.firebaseReady || !window.firebaseDB) { console.log('⏳ Firebase loading...'); setTimeout(saveAllDataNow, 500); return; }
             try {
@@ -457,7 +457,7 @@
                     inventoryData.aaron[i] = { price, storage, showTub };
                 }
                 
-                // Save all sheets
+                // Save all sheets (BOTH STATIC AND DYNAMIC)
                 const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [], totalUnits: 0, totalRevenue: 0, metadata: sheetMetadata[sheetId] };
@@ -487,7 +487,7 @@
             } catch (error) { console.error('❌ Save error:', error); showSuccess('❌ Error: ' + error.message); }
         }
 
-        // ===== LOAD FROM FIREBASE =====
+        // ===== LOAD FROM FIREBASE - FIXED FOR DYNAMIC SHEETS =====
         function loadDataFromFirebase() {
             if (!window.firebaseReady || !window.firebaseDB) { setTimeout(loadDataFromFirebase, 500); return; }
             const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory');
@@ -495,11 +495,46 @@
                 const data = snapshot.val();
                 if (!data) { console.log('ℹ️ No Firebase data'); return; }
                 console.log('📥 Loading from Firebase');
+                
+                // Restore metadata and states FIRST
                 if (data.sheetMetadata) Object.assign(sheetMetadata, data.sheetMetadata);
                 if (data.sheetStates) Object.assign(sheetStates, data.sheetStates);
+                
+                // RECONSTRUCT DYNAMIC SHEETS FROM METADATA
+                console.log('🔄 Reconstructing dynamic sheets...');
+                Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
+                    if (!staticSheets.includes(sheetId)) {
+                        // Check if DOM already exists
+                        if (!document.getElementById(sheetId)) {
+                            console.log(`  Creating DOM for: ${sheetId}`);
+                            createDynamicSalesSheet(meta.person, sheetId, meta.name, meta.date);
+                        }
+                    }
+                });
+
+                // Load inventory data
                 if (data.pop) { for (let i = 0; i < 8; i++) { const item = data.pop[i] || {}; const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`); const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`); const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`); if (priceEl) priceEl.value = item.price ?? ''; if (storageEl) storageEl.value = item.storage ?? 0; if (showTubEl) showTubEl.value = item.showTub ?? 0; } }
                 if (data.aaron) { for (let i = 0; i < 8; i++) { const item = data.aaron[i] || {}; const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`); const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`); const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`); if (priceEl) priceEl.value = item.price ?? ''; if (storageEl) storageEl.value = item.storage ?? 0; if (showTubEl) showTubEl.value = item.showTub ?? 0; } }
-                if (data.sheets) { Object.entries(data.sheets).forEach(([sheetId, sheetData]) => { if (!sheetData?.rows) return; sheetData.rows.forEach((row, idx) => { const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`); const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`); const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`); if (broughtEl) broughtEl.value = row.brought ?? 0; if (soldEl) soldEl.textContent = row.sold ?? 0; if (leftEl) leftEl.value = row.left ?? 0; }); const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`); const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`); if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0; if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2); }); }
+                
+                // Load all sheet data
+                if (data.sheets) { 
+                    Object.entries(data.sheets).forEach(([sheetId, sheetData]) => { 
+                        if (!sheetData?.rows) return; 
+                        sheetData.rows.forEach((row, idx) => { 
+                            const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`); 
+                            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`); 
+                            const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`); 
+                            if (broughtEl) broughtEl.value = row.brought ?? 0; 
+                            if (soldEl) soldEl.textContent = row.sold ?? 0; 
+                            if (leftEl) leftEl.value = row.left ?? 0; 
+                        }); 
+                        const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`); 
+                        const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`); 
+                        if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0; 
+                        if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2); 
+                    }); 
+                }
+
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 Object.entries(sheetStates).forEach(([sheetId, state]) => { updateSheetStatus(sheetId); });
@@ -620,11 +655,35 @@
         // ===== SALES SHEET CREATION =====
         function openNewSalesSheetModal() { document.getElementById('sheetName').value = ''; document.getElementById('sheetDate').value = ''; document.getElementById('newSalesModal').classList.add('active'); }
         function closeNewSalesSheetModal() { document.getElementById('newSalesModal').classList.remove('active'); }
-        function createNewSalesSheet() { const name = document.getElementById('sheetName').value; const date = document.getElementById('sheetDate').value; if (!name || !date) return alert('Fill fields'); const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, ''); sheetMetadata[sheetId] = { name, date, person: 'pop' }; createDynamicSalesSheet('pop', sheetId, name, date); closeNewSalesSheetModal(); showSuccess(`✅ "${name}" created!`); saveAllDataNow(); }
+        function createNewSalesSheet() { 
+            const name = document.getElementById('sheetName').value; 
+            const date = document.getElementById('sheetDate').value; 
+            if (!name || !date) return alert('Fill fields'); 
+            const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, ''); 
+            sheetMetadata[sheetId] = { name, date, person: 'pop' }; 
+            sheetStates[sheetId] = { active: false, locked: false, completed: false };
+            createDynamicSalesSheet('pop', sheetId, name, date);
+            initializeUnitsLeftListeners();
+            saveAllDataNow(); 
+            closeNewSalesSheetModal(); 
+            showSuccess(`✅ "${name}" created!`); 
+        }
 
         function openNewAaronSalesSheetModal() { document.getElementById('aaronSheetName').value = ''; document.getElementById('aaronSheetDate').value = ''; document.getElementById('newAaronSalesModal').classList.add('active'); }
         function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesModal').classList.remove('active'); }
-        function createNewAaronSalesSheet() { const name = document.getElementById('aaronSheetName').value; const date = document.getElementById('aaronSheetDate').value; if (!name || !date) return alert('Fill fields'); const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, ''); sheetMetadata[sheetId] = { name, date, person: 'aaron' }; createDynamicSalesSheet('aaron', sheetId, name, date); closeNewAaronSalesSheetModal(); showSuccess(`✅ "${name}" created!`); saveAllDataNow(); }
+        function createNewAaronSalesSheet() { 
+            const name = document.getElementById('aaronSheetName').value; 
+            const date = document.getElementById('aaronSheetDate').value; 
+            if (!name || !date) return alert('Fill fields'); 
+            const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, ''); 
+            sheetMetadata[sheetId] = { name, date, person: 'aaron' }; 
+            sheetStates[sheetId] = { active: false, locked: false, completed: false };
+            createDynamicSalesSheet('aaron', sheetId, name, date);
+            initializeUnitsLeftListeners();
+            saveAllDataNow(); 
+            closeNewAaronSalesSheetModal(); 
+            showSuccess(`✅ "${name}" created!`); 
+        }
 
         function createDynamicSalesSheet(person, sheetId, name, date) {
             const navId = person === 'pop' ? 'dynamic-sales-links' : 'dynamic-aaron-sales-links';
@@ -639,18 +698,16 @@
             sheetDiv.className = 'tab-content';
             sheetDiv.innerHTML = `<div class="tab-section"><h2>${name} - ${date}</h2><button class="refresh-btn" onclick="refreshSheetData('${person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('${person}', '${sheetId}')">📋 Activate</button><button class="sheet-btn lock-btn" id="lock-btn-${sheetId}" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock</button><button class="sheet-btn unlock-btn" id="unlock-btn-${sheetId}" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed</label></div><table><thead><tr><th>Product</th><th>Brought</th><th>Sold</th><th>Left</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="0" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="1" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="2" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="3" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="4" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="5" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="6" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="6"></td></tr><tr><td>Clipped Folder</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="7" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="7"></td></tr><tr class="units-sold-row"><td colspan="3"><strong>TOTAL UNITS</strong></td><td><input type="number" class="total-units-sold" data-sheet="${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="3"><strong>TOTAL REVENUE</strong></td><td><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td></tr></tbody></table></div>`;
             document.querySelector('.container').appendChild(sheetDiv);
-            sheetStates[sheetId] = { active: false, locked: false, completed: false };
-            initializeUnitsLeftListeners();
         }
 
         // ===== DELETE SHEETS =====
         function openDeletePopSalesSheetModal() { const select = document.getElementById('popSheetToDelete'); select.innerHTML = '<option>-- Select --</option>'; Object.entries(sheetMetadata).filter(([id, meta]) => meta.person === 'pop' && !staticSheets.includes(id)).forEach(([id, meta]) => { const option = document.createElement('option'); option.value = id; option.textContent = meta.name; select.appendChild(option); }); document.getElementById('deletePopSalesSheetModal').classList.add('active'); }
         function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
-        function deletePopSalesSheet() { const sheetId = document.getElementById('popSheetToDelete').value; if (!sheetId) return alert('Select'); const el = document.getElementById(sheetId); if (el) el.remove(); const navContainer = document.getElementById('dynamic-sales-links'); const btn = Array.from(navContainer.children).find(el => el.textContent.includes(sheetMetadata[sheetId]?.name)); if (btn) btn.remove(); delete sheetMetadata[sheetId]; showSuccess('✅ Deleted!'); saveAllDataNow(); closeDeletePopSalesSheetModal(); }
+        function deletePopSalesSheet() { const sheetId = document.getElementById('popSheetToDelete').value; if (!sheetId) return alert('Select'); const el = document.getElementById(sheetId); if (el) el.remove(); const navContainer = document.getElementById('dynamic-sales-links'); const btn = Array.from(navContainer.children).find(el => el.textContent.includes(sheetMetadata[sheetId]?.name)); if (btn) btn.remove(); delete sheetMetadata[sheetId]; delete sheetStates[sheetId]; showSuccess('✅ Deleted!'); saveAllDataNow(); closeDeletePopSalesSheetModal(); }
 
         function openDeleteAaronSalesSheetModal() { const select = document.getElementById('aaronSheetToDelete'); select.innerHTML = '<option>-- Select --</option>'; Object.entries(sheetMetadata).filter(([id, meta]) => meta.person === 'aaron' && !staticSheets.includes(id)).forEach(([id, meta]) => { const option = document.createElement('option'); option.value = id; option.textContent = meta.name; select.appendChild(option); }); document.getElementById('deleteAaronSalesSheetModal').classList.add('active'); }
         function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
-        function deleteAaronSalesSheet() { const sheetId = document.getElementById('aaronSheetToDelete').value; if (!sheetId) return alert('Select'); const el = document.getElementById(sheetId); if (el) el.remove(); const navContainer = document.getElementById('dynamic-aaron-sales-links'); const btn = Array.from(navContainer.children).find(el => el.textContent.includes(sheetMetadata[sheetId]?.name)); if (btn) btn.remove(); delete sheetMetadata[sheetId]; showSuccess('✅ Deleted!'); saveAllDataNow(); closeDeleteAaronSalesSheetModal(); }
+        function deleteAaronSalesSheet() { const sheetId = document.getElementById('aaronSheetToDelete').value; if (!sheetId) return alert('Select'); const el = document.getElementById(sheetId); if (el) el.remove(); const navContainer = document.getElementById('dynamic-aaron-sales-links'); const btn = Array.from(navContainer.children).find(el => el.textContent.includes(sheetMetadata[sheetId]?.name)); if (btn) btn.remove(); delete sheetMetadata[sheetId]; delete sheetStates[sheetId]; showSuccess('✅ Deleted!'); saveAllDataNow(); closeDeleteAaronSalesSheetModal(); }
 
         // ===== INVENTORY UPDATES =====
         function updatePopInventory() { let total = 0; for (let i = 0; i < 8; i++) { const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0); const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0); const current = storage + showTub; document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = current; total += current; } document.getElementById('pop-total-on-hand').value = total; }
@@ -793,7 +850,7 @@
         function resetAllData() { if (!window.firebaseReady || !window.firebaseDB) { alert('Firebase loading'); return; } if (!confirm('⚠️ Clear ALL data?')) return; for (let i = 0; i < 8; i++) { const els = [`.pop-price[data-product="${i}"]`, `.pop-show-tub[data-product="${i}"]`, `.aaron-price[data-product="${i}"]`, `.aaron-show-tub[data-product="${i}"]`]; els.forEach(sel => { const el = document.querySelector(sel); if (el) el.value = ''; }); } const inventoryRef = window.firebaseRef(window.firebaseDB, 'inventory'); window.firebaseSet(inventoryRef, null).then(() => { showSuccess('✅ Reset!'); updateAllInventories(); updateInventoryAggregatedUnitsSold(); }).catch(err => showSuccess('❌ Error')); }
 
         // ===== INITIALIZATION =====
-        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v25 READY - FINAL BUILD!'); } }, 1000); });
+        window.addEventListener('DOMContentLoaded', function() { setTimeout(() => { if (window.firebaseReady) { initSheetStates(); initializeUnitsLeftListeners(); loadDataFromFirebase(); console.log('✅ v26 READY - DYNAMIC SHEETS PERSISTENT!'); } }, 1000); });
     </script>
 </body>
 </html>
