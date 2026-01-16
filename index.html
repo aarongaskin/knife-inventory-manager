@@ -807,73 +807,94 @@
         function recalculateAllRevenue() { console.log('Revenue recalculated'); }
 
         function restoreFromFirebase() {
-            if (!window.firebaseReady) {
-                alert('Firebase not ready yet. Please try again in a moment.');
+            console.log('🔄 Restore button clicked');
+            
+            // Safety check
+            if (typeof window.firebaseReady === 'undefined' || !window.firebaseReady) {
+                console.log('⚠️ Firebase not ready yet, waiting...');
+                setTimeout(() => restoreFromFirebase(), 1000);
                 return;
             }
 
-            // Query all data to find custom sheets
-            const rootRef = window.firebaseRef(window.firebaseDB, '');
-            
-            window.firebaseOnValue(rootRef, (snapshot) => {
-                if (!snapshot.exists()) {
-                    alert('❌ No data found in Firebase. Nothing to restore.');
-                    console.log('Firebase is empty - no sheets backed up yet');
-                    return;
-                }
+            console.log('✅ Firebase is ready. Fetching data...');
 
-                const allData = snapshot.val();
-                console.log('📊 Firebase data structure:', Object.keys(allData));
-                console.log('Full Firebase content:', allData);
+            try {
+                // Query all data to find custom sheets
+                const rootRef = window.firebaseRef(window.firebaseDB, '');
+                
+                window.firebaseOnValue(rootRef, (snapshot) => {
+                    console.log('📦 Firebase snapshot received');
+                    
+                    if (!snapshot.exists()) {
+                        console.log('❌ Snapshot does not exist - Firebase is empty');
+                        alert('❌ No data found in Firebase. Nothing to restore.');
+                        return;
+                    }
 
-                // Check for sheet data in multiple possible locations
-                let restoredSheets = [];
-                let sheetData = {};
+                    const allData = snapshot.val();
+                    console.log('📊 Firebase data keys:', Object.keys(allData || {}));
+                    console.log('Full Firebase content:', allData);
 
-                // Try common storage locations
-                if (allData.sheetStates) {
-                    restoredSheets = Object.keys(allData.sheetStates).filter(sheetId => 
-                        !staticSheets.includes(sheetId)
-                    );
-                    sheetData = allData.sheetStates;
-                } else if (allData.sheets) {
-                    restoredSheets = Object.keys(allData.sheets).filter(sheetId => 
-                        !staticSheets.includes(sheetId)
-                    );
-                    sheetData = allData.sheets;
-                } else if (allData.customSheets) {
-                    restoredSheets = Object.keys(allData.customSheets).filter(sheetId => 
-                        !staticSheets.includes(sheetId)
-                    );
-                    sheetData = allData.customSheets;
-                } else {
-                    // Check if any top-level keys look like custom sheets
-                    const allKeys = Object.keys(allData);
-                    restoredSheets = allKeys.filter(key => 
-                        !staticSheets.includes(key) && 
-                        !['sheetMetadata', 'productNames', 'shrinkage', 'sheetStates', 'eventData'].includes(key)
-                    );
-                }
+                    // Check for sheet data in multiple possible locations
+                    let restoredSheets = [];
+                    let sheetData = {};
 
-                if (restoredSheets.length === 0) {
-                    const dataKeys = allData ? Object.keys(allData).join(', ') : 'none';
-                    alert(`❌ No custom sheets found in Firebase.\n\n📍 Available data: ${dataKeys}\n\nℹ️ Your custom sheets may not have been saved yet. Make sure to use the "Save All Data" button after creating sales sheets.`);
-                    console.log('Available Firebase keys:', dataKeys);
-                    return;
-                }
+                    // Try common storage locations
+                    if (allData && allData.sheetStates) {
+                        restoredSheets = Object.keys(allData.sheetStates).filter(sheetId => 
+                            !staticSheets.includes(sheetId)
+                        );
+                        sheetData = allData.sheetStates;
+                        console.log('Found sheets in sheetStates:', restoredSheets);
+                    } else if (allData && allData.sheets) {
+                        restoredSheets = Object.keys(allData.sheets).filter(sheetId => 
+                            !staticSheets.includes(sheetId)
+                        );
+                        sheetData = allData.sheets;
+                        console.log('Found sheets in sheets:', restoredSheets);
+                    } else if (allData && allData.customSheets) {
+                        restoredSheets = Object.keys(allData.customSheets).filter(sheetId => 
+                            !staticSheets.includes(sheetId)
+                        );
+                        sheetData = allData.customSheets;
+                        console.log('Found sheets in customSheets:', restoredSheets);
+                    } else {
+                        // Check if any top-level keys look like custom sheets
+                        const allKeys = allData ? Object.keys(allData) : [];
+                        restoredSheets = allKeys.filter(key => 
+                            !staticSheets.includes(key) && 
+                            !['sheetMetadata', 'productNames', 'shrinkage', 'sheetStates', 'eventData'].includes(key)
+                        );
+                        console.log('Found potential custom sheets:', restoredSheets);
+                    }
 
-                // Display restoration preview
-                const sheetsList = document.getElementById('restoreSheetsList');
-                sheetsList.innerHTML = restoredSheets.map(sheetId => {
-                    const metadata = sheetMetadata[sheetId] || { name: sheetId, person: 'unknown' };
-                    return `<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #2196f3;">
-                        <strong>${metadata.name || sheetId}</strong> <span style="color: #666; font-size: 12px;">(${metadata.person === 'pop' ? '👨 Pop' : '🎯 Aaron'})</span>
-                    </div>`;
-                }).join('');
+                    if (restoredSheets.length === 0) {
+                        const dataKeys = allData ? Object.keys(allData).join(', ') : 'none';
+                        console.log('❌ No custom sheets found. Available keys:', dataKeys);
+                        alert(`❌ No custom sheets found in Firebase.\n\n📍 Available data: ${dataKeys}\n\nℹ️ Your custom sheets may not have been saved yet. Make sure to use the "Save All Data" button after creating sales sheets.`);
+                        return;
+                    }
 
-                document.getElementById('restoreSheetCount').textContent = restoredSheets.length;
-                openRestoreFirebaseModal();
-            }, { onlyOnce: true });
+                    // Display restoration preview
+                    const sheetsList = document.getElementById('restoreSheetsList');
+                    sheetsList.innerHTML = restoredSheets.map(sheetId => {
+                        const metadata = sheetMetadata[sheetId] || { name: sheetId, person: 'unknown' };
+                        return `<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #2196f3;">
+                            <strong>${metadata.name || sheetId}</strong> <span style="color: #666; font-size: 12px;">(${metadata.person === 'pop' ? '👨 Pop' : '🎯 Aaron'})</span>
+                        </div>`;
+                    }).join('');
+
+                    document.getElementById('restoreSheetCount').textContent = restoredSheets.length;
+                    console.log('📂 Opening restore modal with', restoredSheets.length, 'sheets');
+                    openRestoreFirebaseModal();
+                }, (error) => {
+                    console.error('🔥 Firebase error:', error);
+                    alert('❌ Firebase error: ' + error.message);
+                });
+            } catch (error) {
+                console.error('💥 Unexpected error:', error);
+                alert('❌ Error: ' + error.message);
+            }
         }
 
         function confirmRestoreFromFirebase() {
