@@ -154,6 +154,7 @@
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
                 <button class="nav-link import-btn" onclick="openImportExcelModal()">📥 Import from Excel</button>
+                <button class="nav-link" onclick="restoreFromFirebase()" style="background: #2196f3; color: white; border-color: #2196f3;">🔄 Restore from Firebase</button>
                 <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
             </div>
         </div>
@@ -395,6 +396,9 @@
         <!-- Import Excel Modal -->
         <div id="importExcelModal" class="modal"><div class="modal-content"><h3>📥 Import from Excel</h3><div class="form-group"><label>Select Excel File</label><input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv"></div><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #1565c0;"><p style="margin: 0;"><strong>ℹ️ How to Import:</strong></p><p style="margin: 5px 0 0 0;">1. Your Excel file should have a "Master Inventory" sheet<br>2. Columns: Product Name, Pop Total, Aaron Total, Combined Total<br>3. Click Import and your data will be loaded</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button><button type="button" class="btn-import" onclick="confirmImportExcel()">📥 Import</button></div></div></div>
 
+        <!-- Restore from Firebase Modal -->
+        <div id="restoreFirebaseModal" class="modal"><div class="modal-content"><h3>🔄 Restore from Firebase</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Custom Sheets Found: <span id="restoreSheetCount">0</span></p><div id="restoreSheetsList" style="margin-top: 10px; max-height: 300px; overflow-y: auto;"></div></div><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #856404;"><p style="margin: 0;"><strong>⚠️ This will restore:</strong></p><p style="margin: 5px 0 0 0;">✓ All custom sales sheets<br>✓ Sheet names and owners<br>✓ Sheet states (active, locked, completed)<br>✓ Navigation links</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeRestoreFirebaseModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmRestoreFromFirebase()" style="background: #2196f3;">✓ Restore Now</button></div></div></div>
+
         <!-- More modals would follow (Move Inventory, Remove Inventory, Sales Sheets, etc.) - keeping minimal for display -->
 
     </div>
@@ -546,6 +550,8 @@
         }
         function openImportExcelModal() { document.getElementById('importExcelModal').classList.add('active'); }
         function closeImportExcelModal() { document.getElementById('importExcelModal').classList.remove('active'); }
+        function openRestoreFirebaseModal() { document.getElementById('restoreFirebaseModal').classList.add('active'); }
+        function closeRestoreFirebaseModal() { document.getElementById('restoreFirebaseModal').classList.remove('active'); }
         function confirmImportExcel() {
             const fileInput = document.getElementById('excelFileInput');
             const file = fileInput.files[0];
@@ -799,6 +805,119 @@
         function confirmEventCompleted() { alert('Event completed functionality would be implemented here'); closeEventCompletedConfirmModal(); }
         function refreshAnalytics() { console.log('Analytics refreshed'); }
         function recalculateAllRevenue() { console.log('Revenue recalculated'); }
+
+        function restoreFromFirebase() {
+            if (!window.firebaseReady) {
+                alert('Firebase not ready yet. Please try again in a moment.');
+                return;
+            }
+
+            // Query Firebase for sheetStates and sheetMetadata
+            const sheetStatesRef = window.firebaseRef(window.firebaseDB, 'sheetStates');
+            const sheetMetadataRef = window.firebaseRef(window.firebaseDB, 'sheetMetadata');
+
+            let restoredSheets = [];
+
+            window.firebaseOnValue(sheetStatesRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const allSheets = snapshot.val();
+                    
+                    // Filter out static sheets
+                    restoredSheets = Object.keys(allSheets).filter(sheetId => 
+                        !staticSheets.includes(sheetId)
+                    );
+
+                    if (restoredSheets.length === 0) {
+                        alert('No custom sheets found in Firebase to restore.');
+                        return;
+                    }
+
+                    // Display restoration preview
+                    const sheetsList = document.getElementById('restoreSheetsList');
+                    sheetsList.innerHTML = restoredSheets.map(sheetId => {
+                        const metadata = sheetMetadata[sheetId] || { name: sheetId, person: 'unknown' };
+                        return `<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #2196f3;">
+                            <strong>${metadata.name || sheetId}</strong> <span style="color: #666; font-size: 12px;">(${metadata.person === 'pop' ? '👨 Pop' : '🎯 Aaron'})</span>
+                        </div>`;
+                    }).join('');
+
+                    document.getElementById('restoreSheetCount').textContent = restoredSheets.length;
+                    openRestoreFirebaseModal();
+                } else {
+                    alert('No sheet data found in Firebase.');
+                }
+            }, { onlyOnce: true });
+        }
+
+        function confirmRestoreFromFirebase() {
+            const sheetStatesRef = window.firebaseRef(window.firebaseDB, 'sheetStates');
+
+            window.firebaseOnValue(sheetStatesRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const allSheets = snapshot.val();
+                    
+                    // Restore custom sheets
+                    let restoredCount = 0;
+                    Object.entries(allSheets).forEach(([sheetId, state]) => {
+                        if (!staticSheets.includes(sheetId)) {
+                            sheetStates[sheetId] = state;
+                            restoredCount++;
+                        }
+                    });
+
+                    // Restore metadata
+                    const metadataRef = window.firebaseRef(window.firebaseDB, 'sheetMetadata');
+                    window.firebaseOnValue(metadataRef, (metaSnapshot) => {
+                        if (metaSnapshot.exists()) {
+                            const allMetadata = metaSnapshot.val();
+                            Object.entries(allMetadata).forEach(([sheetId, meta]) => {
+                                if (!staticSheets.includes(sheetId)) {
+                                    sheetMetadata[sheetId] = meta;
+                                }
+                            });
+                        }
+
+                        // Rebuild navigation links
+                        rebuildDynamicNavLinks();
+                        
+                        showSuccess(`✅ Restored ${restoredCount} custom sheet(s) from Firebase!`);
+                        closeRestoreFirebaseModal();
+                    }, { onlyOnce: true });
+                }
+            }, { onlyOnce: true });
+        }
+
+        function rebuildDynamicNavLinks() {
+            // Rebuild Pop's custom sheets
+            const popLinksContainer = document.getElementById('dynamic-sales-links');
+            popLinksContainer.innerHTML = '';
+            Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
+                if (meta.person === 'pop' && !staticSheets.includes(sheetId)) {
+                    const link = document.createElement('button');
+                    link.className = 'nav-link';
+                    link.textContent = meta.name || sheetId;
+                    link.style.cssText = 'margin: 0;';
+                    link.onclick = () => openTab(event, sheetId);
+                    popLinksContainer.appendChild(link);
+                }
+            });
+
+            // Rebuild Aaron's custom sheets
+            const aaronLinksContainer = document.getElementById('dynamic-aaron-sales-links');
+            aaronLinksContainer.innerHTML = '';
+            Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
+                if (meta.person === 'aaron' && !staticSheets.includes(sheetId)) {
+                    const link = document.createElement('button');
+                    link.className = 'nav-link';
+                    link.textContent = meta.name || sheetId;
+                    link.style.cssText = 'margin: 0;';
+                    link.onclick = () => openTab(event, sheetId);
+                    aaronLinksContainer.appendChild(link);
+                }
+            });
+
+            console.log('✅ Dynamic navigation links rebuilt');
+        }
 
         // Initialize
         initSheetStates();
