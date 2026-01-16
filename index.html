@@ -812,78 +812,117 @@
                 return;
             }
 
-            // Query Firebase for sheetStates and sheetMetadata
-            const sheetStatesRef = window.firebaseRef(window.firebaseDB, 'sheetStates');
-            const sheetMetadataRef = window.firebaseRef(window.firebaseDB, 'sheetMetadata');
+            // Query all data to find custom sheets
+            const rootRef = window.firebaseRef(window.firebaseDB, '');
+            
+            window.firebaseOnValue(rootRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    alert('❌ No data found in Firebase. Nothing to restore.');
+                    console.log('Firebase is empty - no sheets backed up yet');
+                    return;
+                }
 
-            let restoredSheets = [];
+                const allData = snapshot.val();
+                console.log('📊 Firebase data structure:', Object.keys(allData));
+                console.log('Full Firebase content:', allData);
 
-            window.firebaseOnValue(sheetStatesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const allSheets = snapshot.val();
-                    
-                    // Filter out static sheets
-                    restoredSheets = Object.keys(allSheets).filter(sheetId => 
+                // Check for sheet data in multiple possible locations
+                let restoredSheets = [];
+                let sheetData = {};
+
+                // Try common storage locations
+                if (allData.sheetStates) {
+                    restoredSheets = Object.keys(allData.sheetStates).filter(sheetId => 
                         !staticSheets.includes(sheetId)
                     );
-
-                    if (restoredSheets.length === 0) {
-                        alert('No custom sheets found in Firebase to restore.');
-                        return;
-                    }
-
-                    // Display restoration preview
-                    const sheetsList = document.getElementById('restoreSheetsList');
-                    sheetsList.innerHTML = restoredSheets.map(sheetId => {
-                        const metadata = sheetMetadata[sheetId] || { name: sheetId, person: 'unknown' };
-                        return `<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #2196f3;">
-                            <strong>${metadata.name || sheetId}</strong> <span style="color: #666; font-size: 12px;">(${metadata.person === 'pop' ? '👨 Pop' : '🎯 Aaron'})</span>
-                        </div>`;
-                    }).join('');
-
-                    document.getElementById('restoreSheetCount').textContent = restoredSheets.length;
-                    openRestoreFirebaseModal();
+                    sheetData = allData.sheetStates;
+                } else if (allData.sheets) {
+                    restoredSheets = Object.keys(allData.sheets).filter(sheetId => 
+                        !staticSheets.includes(sheetId)
+                    );
+                    sheetData = allData.sheets;
+                } else if (allData.customSheets) {
+                    restoredSheets = Object.keys(allData.customSheets).filter(sheetId => 
+                        !staticSheets.includes(sheetId)
+                    );
+                    sheetData = allData.customSheets;
                 } else {
-                    alert('No sheet data found in Firebase.');
+                    // Check if any top-level keys look like custom sheets
+                    const allKeys = Object.keys(allData);
+                    restoredSheets = allKeys.filter(key => 
+                        !staticSheets.includes(key) && 
+                        !['sheetMetadata', 'productNames', 'shrinkage', 'sheetStates', 'eventData'].includes(key)
+                    );
                 }
+
+                if (restoredSheets.length === 0) {
+                    const dataKeys = allData ? Object.keys(allData).join(', ') : 'none';
+                    alert(`❌ No custom sheets found in Firebase.\n\n📍 Available data: ${dataKeys}\n\nℹ️ Your custom sheets may not have been saved yet. Make sure to use the "Save All Data" button after creating sales sheets.`);
+                    console.log('Available Firebase keys:', dataKeys);
+                    return;
+                }
+
+                // Display restoration preview
+                const sheetsList = document.getElementById('restoreSheetsList');
+                sheetsList.innerHTML = restoredSheets.map(sheetId => {
+                    const metadata = sheetMetadata[sheetId] || { name: sheetId, person: 'unknown' };
+                    return `<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #2196f3;">
+                        <strong>${metadata.name || sheetId}</strong> <span style="color: #666; font-size: 12px;">(${metadata.person === 'pop' ? '👨 Pop' : '🎯 Aaron'})</span>
+                    </div>`;
+                }).join('');
+
+                document.getElementById('restoreSheetCount').textContent = restoredSheets.length;
+                openRestoreFirebaseModal();
             }, { onlyOnce: true });
         }
 
         function confirmRestoreFromFirebase() {
-            const sheetStatesRef = window.firebaseRef(window.firebaseDB, 'sheetStates');
+            const rootRef = window.firebaseRef(window.firebaseDB, '');
 
-            window.firebaseOnValue(sheetStatesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const allSheets = snapshot.val();
-                    
-                    // Restore custom sheets
-                    let restoredCount = 0;
-                    Object.entries(allSheets).forEach(([sheetId, state]) => {
+            window.firebaseOnValue(rootRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    alert('No Firebase data available to restore.');
+                    return;
+                }
+
+                const allData = snapshot.val();
+                let restoredCount = 0;
+
+                // Try to restore from multiple locations
+                if (allData.sheetStates) {
+                    Object.entries(allData.sheetStates).forEach(([sheetId, state]) => {
                         if (!staticSheets.includes(sheetId)) {
                             sheetStates[sheetId] = state;
                             restoredCount++;
                         }
                     });
-
-                    // Restore metadata
-                    const metadataRef = window.firebaseRef(window.firebaseDB, 'sheetMetadata');
-                    window.firebaseOnValue(metadataRef, (metaSnapshot) => {
-                        if (metaSnapshot.exists()) {
-                            const allMetadata = metaSnapshot.val();
-                            Object.entries(allMetadata).forEach(([sheetId, meta]) => {
-                                if (!staticSheets.includes(sheetId)) {
-                                    sheetMetadata[sheetId] = meta;
-                                }
-                            });
+                } else if (allData.sheets) {
+                    Object.entries(allData.sheets).forEach(([sheetId, state]) => {
+                        if (!staticSheets.includes(sheetId)) {
+                            sheetStates[sheetId] = state;
+                            restoredCount++;
                         }
-
-                        // Rebuild navigation links
-                        rebuildDynamicNavLinks();
-                        
-                        showSuccess(`✅ Restored ${restoredCount} custom sheet(s) from Firebase!`);
-                        closeRestoreFirebaseModal();
-                    }, { onlyOnce: true });
+                    });
                 }
+
+                // Restore metadata
+                if (allData.sheetMetadata) {
+                    Object.entries(allData.sheetMetadata).forEach(([sheetId, meta]) => {
+                        if (!staticSheets.includes(sheetId)) {
+                            sheetMetadata[sheetId] = meta;
+                        }
+                    });
+                }
+
+                // Rebuild navigation links
+                rebuildDynamicNavLinks();
+                
+                if (restoredCount > 0) {
+                    showSuccess(`✅ Restored ${restoredCount} custom sheet(s) from Firebase!`);
+                } else {
+                    alert('No custom sheets were restored.');
+                }
+                closeRestoreFirebaseModal();
             }, { onlyOnce: true });
         }
 
