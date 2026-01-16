@@ -898,53 +898,84 @@
         }
 
         function confirmRestoreFromFirebase() {
-            const rootRef = window.firebaseRef(window.firebaseDB, '');
+            console.log('🔄 Starting restore process...');
+            const rootRef = window.firebaseRef(window.firebaseDB, '/');
 
             window.firebaseOnValue(rootRef, (snapshot) => {
+                console.log('✅ Firebase restore snapshot received');
+                
                 if (!snapshot.exists()) {
-                    alert('No Firebase data available to restore.');
+                    console.log('❌ No data in Firebase');
+                    alert('❌ No Firebase data available to restore.');
+                    closeRestoreFirebaseModal();
                     return;
                 }
 
                 const allData = snapshot.val();
+                console.log('📊 Restoring data, keys:', Object.keys(allData || {}));
                 let restoredCount = 0;
 
                 // Try to restore from multiple locations
                 if (allData.sheetStates) {
+                    console.log('📂 Restoring from sheetStates...');
                     Object.entries(allData.sheetStates).forEach(([sheetId, state]) => {
                         if (!staticSheets.includes(sheetId)) {
                             sheetStates[sheetId] = state;
                             restoredCount++;
+                            console.log(`  ✓ Restored sheet: ${sheetId}`);
                         }
                     });
                 } else if (allData.sheets) {
+                    console.log('📂 Restoring from sheets...');
                     Object.entries(allData.sheets).forEach(([sheetId, state]) => {
                         if (!staticSheets.includes(sheetId)) {
                             sheetStates[sheetId] = state;
                             restoredCount++;
+                            console.log(`  ✓ Restored sheet: ${sheetId}`);
                         }
                     });
                 }
 
                 // Restore metadata
                 if (allData.sheetMetadata) {
+                    console.log('📋 Restoring metadata...');
                     Object.entries(allData.sheetMetadata).forEach(([sheetId, meta]) => {
                         if (!staticSheets.includes(sheetId)) {
                             sheetMetadata[sheetId] = meta;
+                            console.log(`  ✓ Restored metadata for: ${sheetId}`);
                         }
                     });
+                }
+
+                // Restore shrinkage log if available
+                if (allData.shrinkage) {
+                    console.log('📦 Restoring shrinkage log...');
+                    shrinkageLog = allData.shrinkage;
+                    updateShrinkageDisplay();
+                }
+
+                // Restore product names if available
+                if (allData.productNames && Array.isArray(allData.productNames)) {
+                    console.log('🔪 Restoring product names...');
+                    productNames = allData.productNames;
+                    NUM_PRODUCTS = productNames.length;
                 }
 
                 // Rebuild navigation links
                 rebuildDynamicNavLinks();
                 
+                console.log(`✅ Restore complete: ${restoredCount} sheet(s) restored`);
                 if (restoredCount > 0) {
                     showSuccess(`✅ Restored ${restoredCount} custom sheet(s) from Firebase!`);
                 } else {
-                    alert('No custom sheets were restored.');
+                    alert('⚠️ No custom sheets were found to restore. Your static sheets (Wetumpka, Trussville, Columbia, Hattiesburg) are always available.');
                 }
                 closeRestoreFirebaseModal();
-            }, { onlyOnce: true });
+            }, (error) => {
+                console.error('🔥 Firebase restore error:', error);
+                alert('❌ Firebase error during restore:\n\n' + error.message);
+                closeRestoreFirebaseModal();
+            });
         }
 
         function rebuildDynamicNavLinks() {
