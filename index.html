@@ -392,6 +392,9 @@
         <!-- Add Shrinkage Modal -->
         <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>➕ Log Broken Item</h3><div class="form-group"><label>Date</label><input type="date" id="shrinkageDate"></div><div class="form-group"><label>Person</label><select id="shrinkagePerson"><option value="">Select person...</option><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product</label><select id="shrinkageProduct"><option value="">Select product...</option></select></div><div class="form-group"><label>Quantity Broken</label><input type="number" id="shrinkageQty" placeholder="1" value="1" min="1"></div><div class="form-group"><label>Source (Storage/Show Tub)</label><select id="shrinkageSource"><option value="">Select source...</option><option value="Storage">Storage Tub</option><option value="Show Tub">Show Tub</option></select></div><div class="form-group"><label>Notes (optional)</label><input type="text" id="shrinkageNotes" placeholder="e.g., Dropped during event"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAddShrinkageModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmAddShrinkage()" style="background: #ff6b6b;">🗑️ Log Shrinkage</button></div></div></div>
 
+        <!-- Import Excel Modal -->
+        <div id="importExcelModal" class="modal"><div class="modal-content"><h3>📥 Import from Excel</h3><div class="form-group"><label>Select Excel File</label><input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv"></div><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #1565c0;"><p style="margin: 0;"><strong>ℹ️ How to Import:</strong></p><p style="margin: 5px 0 0 0;">1. Your Excel file should have a "Master Inventory" sheet<br>2. Columns: Product Name, Pop Total, Aaron Total, Combined Total<br>3. Click Import and your data will be loaded</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button><button type="button" class="btn-import" onclick="confirmImportExcel()">📥 Import</button></div></div></div>
+
         <!-- More modals would follow (Move Inventory, Remove Inventory, Sales Sheets, etc.) - keeping minimal for display -->
 
     </div>
@@ -472,8 +475,120 @@
 
         function saveAllDataNow() { console.log('✅ Data saved!'); updateAllInventories(); }
         function resetAllData() { if (confirm('Reset all data? This cannot be undone!')) { location.reload(); } }
-        function exportToExcel() { alert('Export to Excel feature would be implemented here'); }
-        function openImportExcelModal() { alert('Import Excel feature would be implemented here'); }
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            // Master Inventory Sheet
+            const masterData = [];
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const popVal = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
+                const aaronVal = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
+                masterData.push({
+                    'Product Name': productNames[i],
+                    'Pop Total': popVal,
+                    'Aaron Total': aaronVal,
+                    'Combined Total': popVal + aaronVal
+                });
+            }
+            const masterWs = XLSX.utils.json_to_sheet(masterData);
+            XLSX.utils.book_append_sheet(wb, masterWs, 'Master Inventory');
+            
+            // Pop Inventory Sheet
+            const popData = [];
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
+                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                popData.push({
+                    'Product': productNames[i],
+                    'Price': price,
+                    'Storage': storage,
+                    'Show Tub': showTub,
+                    'Total': storage + showTub
+                });
+            }
+            const popWs = XLSX.utils.json_to_sheet(popData);
+            XLSX.utils.book_append_sheet(wb, popWs, 'Pop Inventory');
+            
+            // Aaron Inventory Sheet
+            const aaronData = [];
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const price = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                const showTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                aaronData.push({
+                    'Product': productNames[i],
+                    'Price': price,
+                    'Storage': storage,
+                    'Show Tub': showTub,
+                    'Total': storage + showTub
+                });
+            }
+            const aaronWs = XLSX.utils.json_to_sheet(aaronData);
+            XLSX.utils.book_append_sheet(wb, aaronWs, 'Aaron Inventory');
+            
+            // Shrinkage Sheet
+            const shrinkageData = shrinkageLog.map(entry => ({
+                'Date': entry.date,
+                'Person': entry.person === 'pop' ? 'Pop' : 'Aaron',
+                'Product': entry.product,
+                'Qty': entry.qty,
+                'Source': entry.source,
+                'Notes': entry.notes
+            }));
+            if (shrinkageData.length > 0) {
+                const shrinkageWs = XLSX.utils.json_to_sheet(shrinkageData);
+                XLSX.utils.book_append_sheet(wb, shrinkageWs, 'Shrinkage Log');
+            }
+            
+            XLSX.writeFile(wb, 'Knife_Inventory_' + new Date().toISOString().split('T')[0] + '.xlsx');
+            showSuccess('✅ Data exported to Excel!');
+        }
+        function openImportExcelModal() { document.getElementById('importExcelModal').classList.add('active'); }
+        function closeImportExcelModal() { document.getElementById('importExcelModal').classList.remove('active'); }
+        function confirmImportExcel() {
+            const fileInput = document.getElementById('excelFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an Excel file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Read Master Inventory sheet
+                    if (workbook.SheetNames.includes('Master Inventory')) {
+                        const sheet = workbook.Sheets['Master Inventory'];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet);
+                        
+                        jsonData.forEach((row, idx) => {
+                            if (idx < NUM_PRODUCTS) {
+                                const popVal = parseInt(row['Pop Total']) || 0;
+                                const aaronVal = parseInt(row['Aaron Total']) || 0;
+                                
+                                document.querySelector(`.pop-storage[data-product="${idx}"]`).value = popVal;
+                                document.querySelector(`.aaron-storage[data-product="${idx}"]`).value = aaronVal;
+                            }
+                        });
+                    }
+                    
+                    updateAllInventories();
+                    saveAllDataNow();
+                    showSuccess('✅ Excel data imported successfully!');
+                    closeImportExcelModal();
+                    fileInput.value = '';
+                } catch (error) {
+                    alert('Error reading Excel file: ' + error.message);
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
         function openNewProductModal() { document.getElementById('addNewProductModal').classList.add('active'); }
         function closeNewProductModal() { document.getElementById('addNewProductModal').classList.remove('active'); }
         function confirmAddNewProduct() {
