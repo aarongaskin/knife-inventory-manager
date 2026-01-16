@@ -819,8 +819,8 @@
             console.log('✅ Firebase is ready. Fetching data...');
 
             try {
-                // Query all data to find custom sheets
-                const rootRef = window.firebaseRef(window.firebaseDB, '');
+                // Query all data to find custom sheets - use root path '/' instead of empty string
+                const rootRef = window.firebaseRef(window.firebaseDB, '/');
                 
                 window.firebaseOnValue(rootRef, (snapshot) => {
                     console.log('📦 Firebase snapshot received');
