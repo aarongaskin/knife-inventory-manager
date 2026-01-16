@@ -210,6 +210,7 @@
                     <h2 style="margin: 0;">Aaron's Inventory Management</h2>
                     <div style="display: flex; gap: 10px;">
                         <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openNewProductModal()" style="margin: 0; background: #667eea; color: white; border-color: #667eea;">➕ Add New Product</button>
                         <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
                     </div>
                 </div>
@@ -227,6 +228,7 @@
                     <h2 style="margin: 0;">Pop's Inventory Management</h2>
                     <div style="display: flex; gap: 10px;">
                         <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openNewProductModal()" style="margin: 0; background: #667eea; color: white; border-color: #667eea;">➕ Add New Product</button>
                         <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
                     </div>
                 </div>
@@ -275,6 +277,7 @@
                         <tr><td>Horizontal Sheaths</td><td><input type="number" placeholder="0" class="aaron-price" data-product="9" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="9" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="9"></td><td><input type="number" class="aaron-units-sold-agg" data-product="9" readonly></td><td><input type="number" class="aaron-current-stock" data-product="9" readonly value="0"></td></tr>
                         <tr><td>Bowies</td><td><input type="number" placeholder="0" class="aaron-price" data-product="10" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="10" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="10"></td><td><input type="number" class="aaron-units-sold-agg" data-product="10" readonly></td><td><input type="number" class="aaron-current-stock" data-product="10" readonly value="0"></td></tr>
                         <tr><td>Mini Folders</td><td><input type="number" placeholder="0" class="aaron-price" data-product="11" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="11" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="11"></td><td><input type="number" class="aaron-units-sold-agg" data-product="11" readonly></td><td><input type="number" class="aaron-current-stock" data-product="11" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="3">Storage Total</td><td><input type="number" id="aaron-storage-total" readonly value="0"></td><td><input type="number" id="aaron-showtub-total" readonly value="0"></td></tr>
                         <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -315,6 +318,7 @@
                         <tr><td>Horizontal Sheaths</td><td><input type="number" placeholder="0" class="pop-price" data-product="9" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="9" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="9"></td><td><input type="number" class="pop-units-sold-agg" data-product="9" readonly></td><td><input type="number" class="pop-current-stock" data-product="9" readonly value="0"></td></tr>
                         <tr><td>Bowies</td><td><input type="number" placeholder="0" class="pop-price" data-product="10" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="10" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="10"></td><td><input type="number" class="pop-units-sold-agg" data-product="10" readonly></td><td><input type="number" class="pop-current-stock" data-product="10" readonly value="0"></td></tr>
                         <tr><td>Mini Folders</td><td><input type="number" placeholder="0" class="pop-price" data-product="11" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="11" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="11"></td><td><input type="number" class="pop-units-sold-agg" data-product="11" readonly></td><td><input type="number" class="pop-current-stock" data-product="11" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="3">Storage Total</td><td><input type="number" id="pop-storage-total" readonly value="0"></td><td><input type="number" id="pop-showtub-total" readonly value="0"></td></tr>
                         <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
@@ -351,10 +355,10 @@
                 </div>
                 <table class="shrinkage-table">
                     <thead>
-                        <tr><th>Date</th><th>Person</th><th>Product</th><th>Qty</th><th>Notes</th><th>Action</th></tr>
+                        <tr><th>Date</th><th>Person</th><th>Product</th><th>Qty</th><th>Source</th><th>Notes</th><th>Action</th></tr>
                     </thead>
                     <tbody id="shrinkage-log">
-                        <tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>
+                        <tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -410,11 +414,13 @@
 
         <div id="newAaronSalesModal" class="modal"><div class="modal-content"><h3>Create New Aaron Sales Sheet</h3><form onsubmit="event.preventDefault(); createNewAaronSalesSheet()"><div class="form-group"><label for="aaronSheetName">Sheet Name</label><input type="text" id="aaronSheetName" placeholder="e.g., Denver, Colorado" required></div><div class="form-group"><label for="aaronSheetDate">Date</label><input type="text" id="aaronSheetDate" placeholder="e.g., 2/14-15" required></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button><button type="submit" class="btn-create">Create</button></div></form></div></div>
 
-        <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>📦 Log Broken Item</h3><div class="form-group"><label>Person</label><select id="shrinkage-person"><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product</label><select id="shrinkage-product"><option value="0">Full Tang</option><option value="1">8" Rat</option><option value="2">6" Rat</option><option value="3">8" Stag</option><option value="4">6" Stag</option><option value="5">Grooved</option><option value="6">Folders</option><option value="7">Clipped Folder</option><option value="8">Bull Cutters</option><option value="9">Horizontal Sheaths</option><option value="10">Bowies</option><option value="11">Mini Folders</option></select></div><div class="form-group"><label>Quantity Broken</label><input type="number" id="shrinkage-qty" min="1" value="1"></div><div class="form-group"><label>Notes (Optional)</label><input type="text" id="shrinkage-notes" placeholder="e.g., Handle cracked, Blade chipped"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button class="btn-create" onclick="addShrinkageEntry()" style="background: #ff6b6b;">📦 Log</button></div></div></div>
+        <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>📦 Log Broken Item</h3><div class="form-group"><label>Person</label><select id="shrinkage-person"><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product</label><select id="shrinkage-product"><option value="0">Full Tang</option><option value="1">8" Rat</option><option value="2">6" Rat</option><option value="3">8" Stag</option><option value="4">6" Stag</option><option value="5">Grooved</option><option value="6">Folders</option><option value="7">Clipped Folder</option><option value="8">Bull Cutters</option><option value="9">Horizontal Sheaths</option><option value="10">Bowies</option><option value="11">Mini Folders</option></select></div><div class="form-group"><label>Quantity Broken</label><input type="number" id="shrinkage-qty" min="1" value="1"></div><div class="form-group"><label>Deplete From</label><select id="shrinkage-source"><option value="storage">Storage Tub</option><option value="showtub">Show Tub</option><option value="auto">Auto (Show First, then Storage)</option></select></div><div class="form-group"><label>Notes (Optional)</label><input type="text" id="shrinkage-notes" placeholder="e.g., Handle cracked, Blade chipped"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button class="btn-create" onclick="addShrinkageEntry()" style="background: #ff6b6b;">📦 Log</button></div></div></div>
 
         <div id="deletePopSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Pop Sales Sheet</h3><div class="form-group"><select id="popSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deletePopSalesSheet()">Delete</button></div></div></div>
 
         <div id="deleteAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Aaron Sales Sheet</h3><div class="form-group"><select id="aaronSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deleteAaronSalesSheet()">Delete</button></div></div></div>
+
+        <div id="newProductModal" class="modal"><div class="modal-content"><h3>➕ Add New Product</h3><form onsubmit="event.preventDefault(); addNewProduct()"><div class="form-group"><label for="newProductName">Product Name</label><input type="text" id="newProductName" placeholder="e.g., Damascus Blades" required></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewProductModal()">Cancel</button><button type="submit" class="btn-create">Add Product</button></div></form></div></div>
 
         <div id="importExcelModal" class="modal"><div class="modal-content"><h3>📥 Import from Excel</h3><p style="color: #666; margin-bottom: 15px; font-size: 13px;">Select a previously exported Excel file to restore your data. This will REPLACE all current data.</p><div class="form-group"><label for="excelFileInput">Choose Excel File:</label><input type="file" id="excelFileInput" accept=".xlsx,.xls" style="padding: 10px;"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button><button class="btn-import" onclick="importExcelFile()">📥 Import</button></div></div></div>
     </div>
@@ -423,8 +429,8 @@
         const staticSheets = ['wetumpka', 'trussville', 'columbia', 'hattiesburg'];
         const sheetStates = {};
         const sheetMetadata = {};
-        const productNames = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder', 'Bull Cutters', 'Horizontal Sheaths', 'Bowies', 'Mini Folders'];
-        const NUM_PRODUCTS = 12;
+        let productNames = ['Full Tang', '8" Rat', '6" Rat', '8" Stag', '6" Stag', 'Grooved', 'Folders', 'Clipped Folder', 'Bull Cutters', 'Horizontal Sheaths', 'Bowies', 'Mini Folders'];
+        let NUM_PRODUCTS = 12;
         let shrinkageLog = [];
         let topSellersChartInstance = null, revenueChartInstance = null, trendChartInstance = null;
         let currentPerson = null, currentSheetId = null, pendingEventCompletedSheet = null, pendingActivateSheet = null, pendingActivatePerson = null, pendingLockSheet = null, pendingUnlockSheet = null;
@@ -492,19 +498,31 @@
                 if (masterCombinedEl) masterCombinedEl.value = (popStorage + popShowTub) + (aaronStorage + aaronShowTub);
             }
 
-            let popTotal = 0, aaronTotal = 0, grandTotal = 0;
+            let popTotal = 0, aaronTotal = 0, grandTotal = 0, popStorageTotal = 0, popShowTubTotal = 0, aaronStorageTotal = 0, aaronShowTubTotal = 0;
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const popStock = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
                 const aaronStock = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
+                const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                const popShowTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                const aaronStorage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                const aaronShowTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
                 popTotal += popStock;
                 aaronTotal += aaronStock;
                 grandTotal += popStock + aaronStock;
+                popStorageTotal += popStorage;
+                popShowTubTotal += popShowTub;
+                aaronStorageTotal += aaronStorage;
+                aaronShowTubTotal += aaronShowTub;
             }
             document.getElementById('master-pop-total').value = popTotal;
             document.getElementById('master-aaron-total').value = aaronTotal;
             document.getElementById('master-grand-total').value = grandTotal;
             document.getElementById('pop-total-on-hand').value = popTotal;
             document.getElementById('aaron-total-on-hand').value = aaronTotal;
+            document.getElementById('pop-storage-total').value = popStorageTotal;
+            document.getElementById('pop-showtub-total').value = popShowTubTotal;
+            document.getElementById('aaron-storage-total').value = aaronStorageTotal;
+            document.getElementById('aaron-showtub-total').value = aaronShowTubTotal;
         }
 
         function handleUnitsLeftChange(e) {
@@ -538,7 +556,7 @@
         function recalculateRevenueForSheet(sheetId) {
             const person = sheetMetadata[sheetId]?.person;
             if (!person) return;
-            let totalUnits = 0, totalRevenue = 0;
+            let totalUnits = 0, totalRevenue = 0, aaronCut = 0, popCut = 0;
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                 const priceEl = document.querySelector(`.${person}-price[data-product="${i}"]`);
@@ -546,11 +564,21 @@
                 const price = parseFloat(priceEl?.value || 0);
                 totalUnits += unitsSold;
                 totalRevenue += unitsSold * price;
+                if (person === 'aaron') {
+                    aaronCut += unitsSold * 10;
+                    popCut += unitsSold * (price - 10);
+                }
             }
             const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
             const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
             if (totalUnitsEl) totalUnitsEl.value = totalUnits;
             if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
+            if (person === 'aaron') {
+                const aaronCutEl = document.querySelector(`.aaron-cut[data-sheet="${sheetId}"]`);
+                const popCutEl = document.querySelector(`.pop-cut[data-sheet="${sheetId}"]`);
+                if (aaronCutEl) aaronCutEl.value = aaronCut.toFixed(2);
+                if (popCutEl) popCutEl.value = popCut.toFixed(2);
+            }
         }
 
         function recalculateAllRevenue() {
@@ -660,23 +688,50 @@
 
         // SHRINKAGE FUNCTIONS
         function openAddShrinkageModal() { document.getElementById('addShrinkageModal').classList.add('active'); }
-        function closeShrinkageModal() { document.getElementById('addShrinkageModal').classList.remove('active'); document.getElementById('shrinkage-qty').value = '1'; document.getElementById('shrinkage-notes').value = ''; }
+        function closeShrinkageModal() { document.getElementById('addShrinkageModal').classList.remove('active'); document.getElementById('shrinkage-qty').value = '1'; document.getElementById('shrinkage-source').value = 'storage'; document.getElementById('shrinkage-notes').value = ''; }
 
         function addShrinkageEntry() {
             const person = document.getElementById('shrinkage-person').value;
             const productIdx = parseInt(document.getElementById('shrinkage-product').value);
             const qty = parseInt(document.getElementById('shrinkage-qty').value);
+            const source = document.getElementById('shrinkage-source').value;
             const notes = document.getElementById('shrinkage-notes').value;
             
             if (qty <= 0) return alert('Qty must be > 0');
 
-            shrinkageLog.push({ date: new Date().toLocaleDateString(), person, productIdx, qty, notes });
+            shrinkageLog.push({ date: new Date().toLocaleDateString(), person, productIdx, qty, source, notes });
 
-            // Remove from inventory
             const storageEl = document.querySelector(`.${person}-storage[data-product="${productIdx}"]`);
-            if (storageEl) {
-                const current = parseFloat(storageEl.value || 0);
-                storageEl.value = Math.max(0, current - qty);
+            const showTubEl = document.querySelector(`.${person}-show-tub[data-product="${productIdx}"]`);
+            
+            if (source === 'storage') {
+                // Deplete from Storage only
+                if (storageEl) {
+                    const current = parseFloat(storageEl.value || 0);
+                    const depleted = Math.min(current, qty);
+                    storageEl.value = Math.max(0, current - depleted);
+                }
+            } else if (source === 'showtub') {
+                // Deplete from Show Tub only
+                if (showTubEl) {
+                    const current = parseFloat(showTubEl.value || 0);
+                    const depleted = Math.min(current, qty);
+                    showTubEl.value = Math.max(0, current - depleted);
+                }
+            } else if (source === 'auto') {
+                // Auto: Try Show Tub first, then Storage
+                let remaining = qty;
+                if (showTubEl) {
+                    const showCurrent = parseFloat(showTubEl.value || 0);
+                    const showDepleted = Math.min(showCurrent, remaining);
+                    showTubEl.value = Math.max(0, showCurrent - showDepleted);
+                    remaining -= showDepleted;
+                }
+                if (remaining > 0 && storageEl) {
+                    const storageCurrent = parseFloat(storageEl.value || 0);
+                    const storageDepleted = Math.min(storageCurrent, remaining);
+                    storageEl.value = Math.max(0, storageCurrent - storageDepleted);
+                }
             }
 
             updateAllInventories();
@@ -689,7 +744,7 @@
         function updateShrinkageDisplay() {
             if (shrinkageLog.length === 0) {
                 document.getElementById('shrinkage-summary').style.display = 'none';
-                document.getElementById('shrinkage-log').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>';
+                document.getElementById('shrinkage-log').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>';
                 return;
             }
 
@@ -713,8 +768,9 @@
             const logTbody = document.getElementById('shrinkage-log');
             logTbody.innerHTML = '';
             shrinkageLog.slice().reverse().forEach(entry => {
+                const sourceLabel = entry.source === 'storage' ? '🏪 Storage' : entry.source === 'showtub' ? '📺 Show Tub' : '🔄 Auto';
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${entry.date}</td><td>${entry.person}</td><td>${productNames[entry.productIdx]}</td><td>${entry.qty}</td><td>${entry.notes || '--'}</td><td><button class="remove-btn" onclick="deleteShrinkageEntry(${shrinkageLog.indexOf(entry)})" style="margin: 0; padding: 5px 10px; font-size: 12px;">Delete</button></td>`;
+                row.innerHTML = `<td>${entry.date}</td><td>${entry.person}</td><td>${productNames[entry.productIdx]}</td><td>${entry.qty}</td><td>${sourceLabel}</td><td>${entry.notes || '--'}</td><td><button class="remove-btn" onclick="deleteShrinkageEntry(${shrinkageLog.indexOf(entry)})" style="margin: 0; padding: 5px 10px; font-size: 12px;">Delete</button></td>`;
                 logTbody.appendChild(row);
             });
         }
@@ -1024,7 +1080,13 @@
                 tableRows += `<tr><td>${productNames[i]}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td></tr>`;
             }
 
-            sheetDiv.innerHTML = `<div class="tab-section"><h2>${name} - ${date}</h2><button class="refresh-btn" onclick="refreshSheetData('${person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('${person}', '${sheetId}')">📋 Activate</button><button class="sheet-btn lock-btn" id="lock-btn-${sheetId}" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock</button><button class="sheet-btn unlock-btn" id="unlock-btn-${sheetId}" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed</label></div><table><thead><tr><th>Product</th><th>Brought</th><th>Sold</th><th>Left</th></tr></thead><tbody>${tableRows}<tr class="units-sold-row"><td colspan="3"><strong>TOTAL UNITS</strong></td><td><input type="number" class="total-units-sold" data-sheet="${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="3"><strong>TOTAL REVENUE</strong></td><td><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td></tr></tbody></table></div>`;
+            let revenueRows = `<tr class="units-sold-row"><td colspan="3"><strong>TOTAL UNITS</strong></td><td><input type="number" class="total-units-sold" data-sheet="${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="3"><strong>TOTAL REVENUE</strong></td><td><input type="number" class="revenue-total" data-sheet="${sheetId}" readonly></td></tr>`;
+            
+            if (person === 'aaron') {
+                revenueRows += `<tr class="revenue-row"><td colspan="3"><strong>AARON'S CUT (@$10/knife)</strong></td><td><input type="number" class="aaron-cut" data-sheet="${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="3"><strong>POP'S CUT</strong></td><td><input type="number" class="pop-cut" data-sheet="${sheetId}" readonly></td></tr>`;
+            }
+
+            sheetDiv.innerHTML = `<div class="tab-section"><h2>${name} - ${date}</h2><button class="refresh-btn" onclick="refreshSheetData('${person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('${person}', '${sheetId}')">📋 Activate</button><button class="sheet-btn lock-btn" id="lock-btn-${sheetId}" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock</button><button class="sheet-btn unlock-btn" id="unlock-btn-${sheetId}" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed</label></div><table><thead><tr><th>Product</th><th>Brought</th><th>Sold</th><th>Left</th></tr></thead><tbody>${tableRows}${revenueRows}</tbody></table></div>`;
             document.querySelector('.container').appendChild(sheetDiv);
         }
 
@@ -1103,6 +1165,58 @@
         function importExcelFile() { alert('Excel import feature coming soon! Manually restore from Firebase backup.'); closeImportExcelModal(); }
 
         function resetAllData() { if (!confirm('⚠️ Reset ALL data? This cannot be undone!')) return; location.reload(); }
+
+        function openNewProductModal() { document.getElementById('newProductName').value = ''; document.getElementById('newProductModal').classList.add('active'); }
+        function closeNewProductModal() { document.getElementById('newProductModal').classList.remove('active'); }
+        
+        function addNewProduct() {
+            const productName = document.getElementById('newProductName').value.trim();
+            if (!productName) return alert('Enter product name');
+            
+            console.log(`✨ Adding new product: ${productName}`);
+            productNames.push(productName);
+            NUM_PRODUCTS++;
+            
+            const masterTable = document.querySelector('#master-inv table tbody');
+            const newRow = document.createElement('tr');
+            const productIdx = NUM_PRODUCTS - 1;
+            newRow.innerHTML = `<td>${productName}</td><td><input type="number" class="master-pop-stock" data-product="${productIdx}" readonly></td><td><input type="number" class="master-aaron-stock" data-product="${productIdx}" readonly></td><td><input type="number" class="master-combined" data-product="${productIdx}" readonly style="font-weight: bold;"></td>`;
+            masterTable.insertBefore(newRow, masterTable.querySelector('.total-row'));
+            
+            const aaronTable = document.querySelector('#aaron-inv table tbody');
+            const aaronNewRow = document.createElement('tr');
+            aaronNewRow.innerHTML = `<td>${productName}</td><td><input type="number" placeholder="0" class="aaron-price" data-product="${productIdx}" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="${productIdx}" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="${productIdx}"></td><td><input type="number" class="aaron-units-sold-agg" data-product="${productIdx}" readonly></td><td><input type="number" class="aaron-current-stock" data-product="${productIdx}" readonly value="0"></td></tr>`;
+            aaronTable.insertBefore(aaronNewRow, aaronTable.querySelector('.total-row'));
+            
+            const popTable = document.querySelector('#pop-inv table tbody');
+            const popNewRow = document.createElement('tr');
+            popNewRow.innerHTML = `<td>${productName}</td><td><input type="number" placeholder="0" class="pop-price" data-product="${productIdx}" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="${productIdx}" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="${productIdx}"></td><td><input type="number" class="pop-units-sold-agg" data-product="${productIdx}" readonly></td><td><input type="number" class="pop-current-stock" data-product="${productIdx}" readonly value="0"></td></tr>`;
+            popTable.insertBefore(popNewRow, popTable.querySelector('.total-row'));
+            
+            const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
+            allSheetIds.forEach(sheetId => {
+                const sheetTable = document.querySelector(`#${sheetId} table tbody`);
+                if (!sheetTable) return;
+                const newSheetRow = document.createElement('tr');
+                newSheetRow.innerHTML = `<td>${productName}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${productIdx}" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${productIdx}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${productIdx}"></td>`;
+                const person = sheetMetadata[sheetId]?.person;
+                const revenueRow = sheetTable.querySelector('.revenue-row');
+                if (revenueRow) sheetTable.insertBefore(newSheetRow, revenueRow);
+            });
+            
+            const shrinkageSelect = document.getElementById('shrinkage-product');
+            const option = document.createElement('option');
+            option.value = productIdx;
+            option.text = productName;
+            shrinkageSelect.appendChild(option);
+            
+            initializeUnitsLeftListeners();
+            updateAllInventories();
+            recalculateAllRevenue();
+            saveAllDataNow();
+            closeNewProductModal();
+            showSuccess(`✅ "${productName}" added to all sheets!`);
+        }
 
         initSheetStates();
         loadDataFromFirebase();
