@@ -1354,14 +1354,192 @@
         
         function resetAllData() { if (!confirm('⚠️ Reset ALL data? This cannot be undone!')) return; location.reload(); }
 
+        // ================================
+        // DATA RECOVERY & BACKUP SYSTEM
+        // ================================
+        
+        function setupAutoBackup() {
+            setInterval(() => {
+                const backup = createBackupSnapshot();
+                const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+                backups.unshift(backup);
+                if (backups.length > 10) backups.pop();
+                localStorage.setItem('backups', JSON.stringify(backups));
+                console.log('✅ Auto-backup created:', backup.timestamp);
+            }, 5 * 60 * 1000);
+        }
+
+        function createBackupSnapshot() {
+            const popData = {}, aaronData = {};
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                popData[i] = {
+                    storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
+                    show: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0),
+                    price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0)
+                };
+                aaronData[i] = {
+                    storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
+                    show: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0),
+                    price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0)
+                };
+            }
+            const sheetsData = {};
+            Object.keys(sheetMetadata).forEach(sheetId => {
+                sheetsData[sheetId] = { status: sheetStates[sheetId], data: [] };
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    sheetsData[sheetId].data.push({
+                        brought: parseInt(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0),
+                        sold: parseInt(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.textContent || 0),
+                        left: parseInt(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0)
+                    });
+                }
+            });
+            return {
+                timestamp: new Date().toLocaleString(),
+                pop: popData,
+                aaron: aaronData,
+                sheets: sheetsData,
+                metadata: { ...sheetMetadata },
+                shrinkageLog: [...shrinkageLog],
+                exportHistory: [...exportHistory]
+            };
+        }
+
+        function restoreFromBackup(backupIndex) {
+            const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+            if (!backups[backupIndex]) { alert('❌ Backup not found!'); return; }
+            const backup = backups[backupIndex];
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                document.querySelector(`.pop-storage[data-product="${i}"]`).value = backup.pop[i]?.storage || 0;
+                document.querySelector(`.pop-show-tub[data-product="${i}"]`).value = backup.pop[i]?.show || 0;
+                document.querySelector(`.pop-price[data-product="${i}"]`).value = backup.pop[i]?.price || 0;
+                document.querySelector(`.aaron-storage[data-product="${i}"]`).value = backup.aaron[i]?.storage || 0;
+                document.querySelector(`.aaron-show-tub[data-product="${i}"]`).value = backup.aaron[i]?.show || 0;
+                document.querySelector(`.aaron-price[data-product="${i}"]`).value = backup.aaron[i]?.price || 0;
+            }
+            Object.entries(backup.sheets).forEach(([sheetId, sheetInfo]) => {
+                sheetStates[sheetId] = sheetInfo.status || 'inactive';
+                sheetInfo.data.forEach((item, idx) => {
+                    if (idx < NUM_PRODUCTS) {
+                        const broughtInput = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                        const soldSpan = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                        const leftInput = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                        if (broughtInput) broughtInput.value = item.brought || 0;
+                        if (soldSpan) soldSpan.textContent = item.sold || 0;
+                        if (leftInput) leftInput.value = item.left || 0;
+                    }
+                });
+                updateSheetUI(sheetId);
+            });
+            shrinkageLog = backup.shrinkageLog || [];
+            exportHistory = backup.exportHistory || [];
+            sheetMetadata = backup.metadata || {};
+            updateAllInventories();
+            updateShrinkageUI();
+            updateExportHistory();
+            saveAllDataNow();
+            alert(`✅ Restored from backup: ${backup.timestamp}`);
+        }
+
+        function openBackupRecoveryModal() {
+            const backups = JSON.parse(localStorage.getItem('backups') || '[]');
+            if (backups.length === 0) {
+                alert('❌ No backups available yet. Automatic backups start after 5 minutes of use.');
+                return;
+            }
+            let html = '<div id="backupList">';
+            backups.forEach((backup, idx) => {
+                html += `
+                    <div class="export-item">
+                        <div>
+                            <div class="export-item-name">Backup #${idx + 1}</div>
+                            <div class="export-item-date">${backup.timestamp}</div>
+                        </div>
+                        <button class="export-item-btn" onclick="restoreFromBackup(${idx})">Restore</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>📋 Restore from Backup</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Select a backup to restore your data:</p>
+                    ${html}
+                    <div class="modal-buttons">
+                        <button class="btn-cancel" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function forceSyncWithFirebase() {
+            if (!window.firebaseReady) {
+                alert('⚠️ Firebase not initialized. Using local storage only.');
+                return;
+            }
+            try {
+                const allData = {
+                    pop: {},
+                    aaron: {},
+                    sheets: {},
+                    metadata: sheetMetadata,
+                    shrinkageLog: shrinkageLog,
+                    exportHistory: exportHistory,
+                    lastSyncTime: new Date().toISOString(),
+                    syncStatus: 'SYNCED'
+                };
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    allData.pop[i] = {
+                        storage: parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0),
+                        show: parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0),
+                        price: parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0),
+                        unitsSoldAgg: parseInt(document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`)?.value || 0)
+                    };
+                    allData.aaron[i] = {
+                        storage: parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0),
+                        show: parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0),
+                        price: parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0),
+                        unitsSoldAgg: parseInt(document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`)?.value || 0)
+                    };
+                }
+                Object.keys(sheetMetadata).forEach(sheetId => {
+                    allData.sheets[sheetId] = { status: sheetStates[sheetId], data: [] };
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        allData.sheets[sheetId].data.push({
+                            brought: parseInt(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0),
+                            sold: parseInt(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.textContent || 0),
+                            left: parseInt(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0)
+                        });
+                    }
+                });
+                await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'knifeinventory'), allData);
+                localStorage.setItem('knifeinventory', JSON.stringify(allData));
+                showSuccess('✅ Data synced with Firebase!');
+                console.log('✅ Firebase sync complete');
+            } catch (error) {
+                console.error('❌ Firebase sync error:', error);
+                showSuccess('⚠️ Local save only (Firebase unavailable)');
+            }
+        }
+
+        // Enhanced initialization with recovery
+        async function initializeApp() {
+            initSheetStates();
+            loadDataFromFirebase();
+            updateAllInventories();
+            updateShrinkageUI();
+            updateExportHistory();
+            refreshAnalytics();
+            setupAutoBackup();
+            window.addEventListener('beforeunload', saveAllDataNow);
+            console.log('✅ App initialized with auto-backup enabled');
+        }
+
         // Initialize
-        initSheetStates();
-        loadDataFromFirebase();
-        updateAllInventories();
-        updateShrinkageUI();
-        updateExportHistory();
-        refreshAnalytics();
-        window.addEventListener('beforeunload', saveAllDataNow);
+        initializeApp();
     </script>
 </body>
 </html>
