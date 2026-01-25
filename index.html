@@ -1315,19 +1315,221 @@
         // ================================
         function openNewSalesSheetModal() { document.getElementById('newPopSalesSheetModal').classList.add('active'); }
         function closeNewPopSalesSheetModal() { document.getElementById('newPopSalesSheetModal').classList.remove('active'); }
-        function createNewPopSalesSheet() { alert('Coming soon!'); closeNewPopSalesSheetModal(); }
+        function createNewPopSalesSheet() {
+            const name = document.getElementById('popNewSheetName').value.trim();
+            const date = document.getElementById('popNewSheetDate').value.trim();
+            
+            if (!name || !date) { alert('❌ Please fill in all fields!'); return; }
+            
+            const sheetId = name.toLowerCase().replace(/\s+/g, '-');
+            
+            // Check if sheet already exists
+            if (sheetMetadata[sheetId]) { alert('❌ Sheet already exists!'); return; }
+            
+            // Create metadata
+            sheetMetadata[sheetId] = { name: name, date: date, person: 'pop' };
+            sheetStates[sheetId] = 'inactive';
+            
+            // Create tab and content
+            createSalesSheetTab(sheetId, name, date, 'pop');
+            
+            // Add link to navigation
+            const link = document.createElement('button');
+            link.className = 'nav-link';
+            link.textContent = name;
+            link.onclick = (e) => openTab(e, sheetId);
+            document.getElementById('dynamic-sales-links').appendChild(link);
+            
+            // Update delete select
+            const deleteSelect = document.getElementById('popSheetToDelete');
+            const option = document.createElement('option');
+            option.value = sheetId;
+            option.textContent = name;
+            deleteSelect.appendChild(option);
+            
+            saveAllDataNow();
+            closeNewPopSalesSheetModal();
+            showSuccess(`✅ Created sheet: ${name}`);
+            document.getElementById('popNewSheetName').value = '';
+            document.getElementById('popNewSheetDate').value = '';
+        }
         
         function openNewAaronSalesSheetModal() { document.getElementById('newAaronSalesSheetModal').classList.add('active'); }
         function closeNewAaronSalesSheetModal() { document.getElementById('newAaronSalesSheetModal').classList.remove('active'); }
-        function createNewAaronSalesSheet() { alert('Coming soon!'); closeNewAaronSalesSheetModal(); }
+        function createNewAaronSalesSheet() {
+            const name = document.getElementById('aaronNewSheetName').value.trim();
+            const date = document.getElementById('aaronNewSheetDate').value.trim();
+            
+            if (!name || !date) { alert('❌ Please fill in all fields!'); return; }
+            
+            const sheetId = 'aaron-' + name.toLowerCase().replace(/\s+/g, '-');
+            
+            // Check if sheet already exists
+            if (sheetMetadata[sheetId]) { alert('❌ Sheet already exists!'); return; }
+            
+            // Create metadata
+            sheetMetadata[sheetId] = { name: name, date: date, person: 'aaron' };
+            sheetStates[sheetId] = 'inactive';
+            
+            // Create tab and content
+            createSalesSheetTab(sheetId, name, date, 'aaron');
+            
+            // Add link to navigation
+            const link = document.createElement('button');
+            link.className = 'nav-link';
+            link.textContent = name;
+            link.onclick = (e) => openTab(e, sheetId);
+            document.getElementById('dynamic-aaron-sales-links').appendChild(link);
+            
+            // Update delete select
+            const deleteSelect = document.getElementById('aaronSheetToDelete');
+            const option = document.createElement('option');
+            option.value = sheetId;
+            option.textContent = name;
+            deleteSelect.appendChild(option);
+            
+            saveAllDataNow();
+            closeNewAaronSalesSheetModal();
+            showSuccess(`✅ Created sheet: ${name}`);
+            document.getElementById('aaronNewSheetName').value = '';
+            document.getElementById('aaronNewSheetDate').value = '';
+        }
         
-        function openDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.add('active'); }
+        function createSalesSheetTab(sheetId, name, date, person) {
+            const container = document.querySelector('.nav-tabs').parentElement;
+            const tabDiv = document.createElement('div');
+            tabDiv.id = sheetId;
+            tabDiv.className = 'tab-content';
+            
+            let tableRows = '';
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                tableRows += `
+                    <tr>
+                        <td>${productNames[i]}</td>
+                        <td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" readonly></td>
+                        <td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td>
+                        <td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td>
+                    </tr>
+                `;
+            }
+            
+            tabDiv.innerHTML = `
+                <div class="tab-section">
+                    <h2>${name} - ${date}</h2>
+                    <button class="refresh-btn" onclick="refreshSheetData('${person}', '${sheetId}')">Refresh Units Brought</button>
+                    <div class="sheet-controls">
+                        <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
+                        <button class="sheet-btn" onclick="openActivateSheetModal('${person}', '${sheetId}')">📋 Activate Sheet</button>
+                        <button class="sheet-btn lock-btn" id="lock-btn-${sheetId}" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button>
+                        <button class="sheet-btn reset-btn" id="reset-btn-${sheetId}" style="display:none;" onclick="resetShowTub('${sheetId}')">↺ Reset Show Tub</button>
+                        <button class="sheet-btn unlock-btn" id="unlock-btn-${sheetId}" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button>
+                    </div>
+                    <div class="event-checkbox" id="${sheetId}-event-box" style="display: none;">
+                        <input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')">
+                        <label for="event-completed-${sheetId}">✅ Event Completed (Locks Data)</label>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                            <tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" id="total-units-${sheetId}" readonly></td></tr>
+                            <tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" id="total-revenue-${sheetId}" readonly></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.appendChild(tabDiv);
+            
+            // Add tab button
+            const tabBtn = document.createElement('button');
+            tabBtn.className = 'tab-btn';
+            tabBtn.textContent = name;
+            tabBtn.onclick = (e) => openTab(e, sheetId);
+            document.querySelector('.nav-tabs').appendChild(tabBtn);
+        }
+        
+        function openDeletePopSalesSheetModal() {
+            const deleteSelect = document.getElementById('popSheetToDelete');
+            deleteSelect.innerHTML = '<option>-- Select --</option>';
+            Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
+                if (meta.person === 'pop' && !staticSheets.includes(sheetId)) {
+                    const option = document.createElement('option');
+                    option.value = sheetId;
+                    option.textContent = meta.name;
+                    deleteSelect.appendChild(option);
+                }
+            });
+            document.getElementById('deletePopSalesSheetModal').classList.add('active');
+        }
         function closeDeletePopSalesSheetModal() { document.getElementById('deletePopSalesSheetModal').classList.remove('active'); }
-        function deletePopSalesSheet() { alert('Coming soon!'); closeDeletePopSalesSheetModal(); }
+        function deletePopSalesSheet() {
+            const sheetId = document.getElementById('popSheetToDelete').value;
+            if (!sheetId || sheetId === '-- Select --') { alert('❌ Please select a sheet!'); return; }
+            if (!confirm(`Delete "${sheetMetadata[sheetId]?.name}"?`)) return;
+            
+            // Remove tab
+            const tabDiv = document.getElementById(sheetId);
+            if (tabDiv) tabDiv.remove();
+            
+            // Remove tab button
+            const tabBtn = Array.from(document.querySelectorAll('.nav-tabs button')).find(b => b.textContent === sheetMetadata[sheetId]?.name);
+            if (tabBtn) tabBtn.remove();
+            
+            // Remove from navigation links
+            const navLink = Array.from(document.querySelectorAll('#dynamic-sales-links button')).find(b => b.textContent === sheetMetadata[sheetId]?.name);
+            if (navLink) navLink.remove();
+            
+            // Clean up
+            delete sheetMetadata[sheetId];
+            delete sheetStates[sheetId];
+            
+            saveAllDataNow();
+            closeDeletePopSalesSheetModal();
+            showSuccess(`✅ Deleted sheet!`);
+        }
         
-        function openDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.add('active'); }
+        function openDeleteAaronSalesSheetModal() {
+            const deleteSelect = document.getElementById('aaronSheetToDelete');
+            deleteSelect.innerHTML = '<option>-- Select --</option>';
+            Object.entries(sheetMetadata).forEach(([sheetId, meta]) => {
+                if (meta.person === 'aaron') {
+                    const option = document.createElement('option');
+                    option.value = sheetId;
+                    option.textContent = meta.name;
+                    deleteSelect.appendChild(option);
+                }
+            });
+            document.getElementById('deleteAaronSalesSheetModal').classList.add('active');
+        }
         function closeDeleteAaronSalesSheetModal() { document.getElementById('deleteAaronSalesSheetModal').classList.remove('active'); }
-        function deleteAaronSalesSheet() { alert('Coming soon!'); closeDeleteAaronSalesSheetModal(); }
+        function deleteAaronSalesSheet() {
+            const sheetId = document.getElementById('aaronSheetToDelete').value;
+            if (!sheetId || sheetId === '-- Select --') { alert('❌ Please select a sheet!'); return; }
+            if (!confirm(`Delete "${sheetMetadata[sheetId]?.name}"?`)) return;
+            
+            // Remove tab
+            const tabDiv = document.getElementById(sheetId);
+            if (tabDiv) tabDiv.remove();
+            
+            // Remove tab button
+            const tabBtn = Array.from(document.querySelectorAll('.nav-tabs button')).find(b => b.textContent === sheetMetadata[sheetId]?.name);
+            if (tabBtn) tabBtn.remove();
+            
+            // Remove from navigation links
+            const navLink = Array.from(document.querySelectorAll('#dynamic-aaron-sales-links button')).find(b => b.textContent === sheetMetadata[sheetId]?.name);
+            if (navLink) navLink.remove();
+            
+            // Clean up
+            delete sheetMetadata[sheetId];
+            delete sheetStates[sheetId];
+            
+            saveAllDataNow();
+            closeDeleteAaronSalesSheetModal();
+            showSuccess(`✅ Deleted sheet!`);
+        }
         
         function openActivateSheetModal(person, sheetId) {
             currentActivatingSheet = { person, sheetId };
@@ -1520,7 +1722,65 @@
         
         function openImportExcelModal() { document.getElementById('importExcelModal').classList.add('active'); }
         function closeImportExcelModal() { document.getElementById('importExcelModal').classList.remove('active'); document.getElementById('excelFileInput').value = ''; }
-        function importExcelFile() { alert('Excel import feature coming soon!'); closeImportExcelModal(); }
+        function importExcelFile() {
+            const file = document.getElementById('excelFileInput').files[0];
+            if (!file) { alert('❌ Please select a file!'); return; }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (rows.length < 2) { alert('❌ Invalid Excel format!'); return; }
+                    
+                    const headers = rows[0].map(h => String(h).toLowerCase().trim());
+                    const popStorageIdx = headers.findIndex(h => h.includes('pop') && h.includes('storage'));
+                    const popShowIdx = headers.findIndex(h => h.includes('pop') && h.includes('show'));
+                    const aaronStorageIdx = headers.findIndex(h => h.includes('aaron') && h.includes('storage'));
+                    const aaronShowIdx = headers.findIndex(h => h.includes('aaron') && h.includes('show'));
+                    
+                    if (popStorageIdx === -1 || popShowIdx === -1 || aaronStorageIdx === -1 || aaronShowIdx === -1) {
+                        alert('❌ Excel must have columns: Pop Storage, Pop Show, Aaron Storage, Aaron Show');
+                        return;
+                    }
+                    
+                    let importedCount = 0;
+                    for (let rowIdx = 1; rowIdx < rows.length && rowIdx <= NUM_PRODUCTS; rowIdx++) {
+                        const row = rows[rowIdx];
+                        const popStorage = parseInt(row[popStorageIdx]) || 0;
+                        const popShow = parseInt(row[popShowIdx]) || 0;
+                        const aaronStorage = parseInt(row[aaronStorageIdx]) || 0;
+                        const aaronShow = parseInt(row[aaronShowIdx]) || 0;
+                        
+                        if (popStorage > 0 || popShow > 0 || aaronStorage > 0 || aaronShow > 0) {
+                            const popStorageInput = document.querySelector(`.pop-storage[data-product="${rowIdx - 1}"]`);
+                            const popShowInput = document.querySelector(`.pop-show-tub[data-product="${rowIdx - 1}"]`);
+                            const aaronStorageInput = document.querySelector(`.aaron-storage[data-product="${rowIdx - 1}"]`);
+                            const aaronShowInput = document.querySelector(`.aaron-show-tub[data-product="${rowIdx - 1}"]`);
+                            
+                            if (popStorageInput) popStorageInput.value = popStorage;
+                            if (popShowInput) popShowInput.value = popShow;
+                            if (aaronStorageInput) aaronStorageInput.value = aaronStorage;
+                            if (aaronShowInput) aaronShowInput.value = aaronShow;
+                            importedCount++;
+                        }
+                    }
+                    
+                    updateAllInventories();
+                    saveAllDataNow();
+                    closeImportExcelModal();
+                    showSuccess(`✅ Imported ${importedCount} products!`);
+                } catch (error) {
+                    console.error('Excel import error:', error);
+                    alert('❌ Error importing Excel file: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
         
         function resetAllData() { if (!confirm('⚠️ Reset ALL data? This cannot be undone!')) return; location.reload(); }
 
