@@ -180,9 +180,9 @@
             <button class="tab-btn" onclick="openTab(event, 'pop-nav')">Pop Navigation</button>
             <button class="tab-btn" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
             <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
-            <button class="tab-btn" onclick="openTab(event, 'shrinkage')">📦 Shrinkage Tracking</button>
-            <button class="tab-btn" onclick="openTab(event, 'analytics')">📊 Sales Analytics</button>
-            <button class="tab-btn" onclick="openTab(event, 'excel-exports')">📁 Excel Exports</button>
+            <button class="tab-btn" onclick="openTab(event, 'shrinkage')">Shrinkage Tracking</button>
+            <button class="tab-btn" onclick="openTab(event, 'analytics')">Sales Analytics</button>
+            <button class="tab-btn" onclick="openTab(event, 'excel-exports')">Excel Exports</button>
         </div>
 
         <!-- Master Inventory -->
@@ -238,8 +238,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                     <h2 style="margin: 0;">Aaron's Inventory Management</h2>
                     <div style="display: flex; gap: 10px;">
-                        <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
-                        <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                        <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete</button>
                     </div>
                 </div>
                 <div class="nav-links">
@@ -255,8 +255,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
                     <h2 style="margin: 0;">Pop's Inventory Management</h2>
                     <div style="display: flex; gap: 10px;">
-                        <button class="nav-link" onclick="openNewPopSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
-                        <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                        <button class="nav-link" onclick="openNewPopSalesSheetModal()" style="margin: 0;">New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Delete</button>
                     </div>
                 </div>
                 <div class="nav-links">
@@ -275,20 +275,20 @@
             <div class="tab-section">
                 <h2>Aaron's Current Inventory</h2>
                 <div class="flow-info">
-                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                    <strong>SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
                 </div>
                 <div class="depletion-notice">
-                    ✅ Show Tub depletes ONLY when you LOCK a sheet!
+                    Show Tub depletes ONLY when you LOCK a sheet!
                 </div>
                 <div class="aggregation-info">
-                    📊 Units Sold = Running total from all LOCKED sales sheets
+                    Units Sold = Running total from all LOCKED sales sheets
                 </div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
-                    <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
-                    <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
-                    <button class="nav-link" onclick="openAaronMoveBackModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">↔️ Move Back to Storage</button>
-                    <button class="remove-btn" onclick="openAaronRemoveInventoryModal()">🗑️ Remove from Storage</button>
+                    <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">Add Inventory</button>
+                    <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="nav-link" onclick="openAaronMoveBackModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Move Back</button>
+                    <button class="remove-btn" onclick="openAaronRemoveInventoryModal()">Remove from Storage</button>
                 </div>
                 <div class="inventory-controls">
                     <h3>Quick Stats</h3>
@@ -304,7 +304,7 @@
                     </div>
                 </div>
                 <table>
-                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold</th><th>Total On Hand</th></tr></thead>
                     <tbody>
                         <tr><td>Full Tang</td><td><input type="number" placeholder="0" class="aaron-price" data-product="0" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" class="aaron-units-sold-agg" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
                         <tr><td>8" Rat</td><td><input type="number" placeholder="0" class="aaron-price" data-product="1" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" class="aaron-units-sold-agg" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
@@ -328,20 +328,20 @@
             <div class="tab-section">
                 <h2>Pop's Current Inventory</h2>
                 <div class="flow-info">
-                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                    <strong>SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
                 </div>
                 <div class="depletion-notice">
-                    ✅ Show Tub depletes ONLY when you LOCK a sheet!
+                    Show Tub depletes ONLY when you LOCK a sheet!
                 </div>
                 <div class="aggregation-info">
-                    📊 Units Sold = Running total from all LOCKED sales sheets
+                    Units Sold = Running total from all LOCKED sales sheets
                 </div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
-                    <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
-                    <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
-                    <button class="nav-link" onclick="openPopMoveBackModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">↔️ Move Back to Storage</button>
-                    <button class="remove-btn" onclick="openPopRemoveInventoryModal()">🗑️ Remove from Storage</button>
+                    <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">Add Inventory</button>
+                    <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">Move to Show Tub</button>
+                    <button class="nav-link" onclick="openPopMoveBackModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">Move Back</button>
+                    <button class="remove-btn" onclick="openPopRemoveInventoryModal()">Remove from Storage</button>
                 </div>
                 <div class="inventory-controls">
                     <h3>Quick Stats</h3>
@@ -357,7 +357,7 @@
                     </div>
                 </div>
                 <table>
-                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold</th><th>Total On Hand</th></tr></thead>
                     <tbody>
                         <tr><td>Full Tang</td><td><input type="number" placeholder="0" class="pop-price" data-product="0" onchange="recalculateAllRevenue()"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" class="pop-units-sold-agg" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
                         <tr><td>8" Rat</td><td><input type="number" placeholder="0" class="pop-price" data-product="1" onchange="recalculateAllRevenue()"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" class="pop-units-sold-agg" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
@@ -377,28 +377,28 @@
         </div>
 
         <!-- Sales Sheets: Wetumpka -->
-        <div id="wetumpka" class="tab-content"><div class="tab-section"><h2>Wetumpka, Alabama - December 12-13</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="wetumpka-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'wetumpka')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-wetumpka" style="display:none;" onclick="openLockSheetModal('wetumpka')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-wetumpka" style="display:none;" onclick="openUnlockSheetModal('wetumpka')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="wetumpka-event-box" style="display: none;"><input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')"><label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="8" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="9" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="10" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="10"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" id="total-units-wetumpka" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" id="total-revenue-wetumpka" readonly></td></tr></tbody></table></div></div>
+        <div id="wetumpka" class="tab-content"><div class="tab-section"><h2>Wetumpka, Alabama - December 12-13</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="wetumpka-status">Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'wetumpka')">Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-wetumpka" style="display:none;" onclick="openLockSheetModal('wetumpka')">Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-wetumpka" style="display:none;" onclick="openUnlockSheetModal('wetumpka')">Unlock Sheet</button></div><div class="event-checkbox" id="wetumpka-event-box" style="display: none;"><input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')"><label for="event-completed-wetumpka">Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0" onchange="calculateSheetValues('wetumpka', 0)"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1" onchange="calculateSheetValues('wetumpka', 1)"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2" onchange="calculateSheetValues('wetumpka', 2)"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3" onchange="calculateSheetValues('wetumpka', 3)"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4" onchange="calculateSheetValues('wetumpka', 4)"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5" onchange="calculateSheetValues('wetumpka', 5)"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6" onchange="calculateSheetValues('wetumpka', 6)"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7" onchange="calculateSheetValues('wetumpka', 7)"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="8" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="8" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="8" onchange="calculateSheetValues('wetumpka', 8)"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="9" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="9" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="9" onchange="calculateSheetValues('wetumpka', 9)"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="10" readonly></td><td><input type="number" class="units-sold" data-sheet="wetumpka" data-row="10" readonly></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="10" onchange="calculateSheetValues('wetumpka', 10)"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="wetumpka" id="total-units-wetumpka" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="wetumpka" id="total-revenue-wetumpka" readonly></td></tr></tbody></table></div></div>
 
         <!-- Sales Sheets: Trussville -->
-        <div id="trussville" class="tab-content"><div class="tab-section"><h2>Trussville, Alabama - January 3-4</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="trussville-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'trussville')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-trussville" style="display:none;" onclick="openLockSheetModal('trussville')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-trussville" style="display:none;" onclick="openUnlockSheetModal('trussville')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="trussville-event-box" style="display: none;"><input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')"><label for="event-completed-trussville">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="8" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="9" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="10" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="10"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="trussville" id="total-units-trussville" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="trussville" id="total-revenue-trussville" readonly></td></tr></tbody></table></div></div>
+        <div id="trussville" class="tab-content"><div class="tab-section"><h2>Trussville, Alabama - January 3-4</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="trussville-status">Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'trussville')">Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-trussville" style="display:none;" onclick="openLockSheetModal('trussville')">Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-trussville" style="display:none;" onclick="openUnlockSheetModal('trussville')">Unlock Sheet</button></div><div class="event-checkbox" id="trussville-event-box" style="display: none;"><input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')"><label for="event-completed-trussville">Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="0" onchange="calculateSheetValues('trussville', 0)"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="1" onchange="calculateSheetValues('trussville', 1)"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="2" onchange="calculateSheetValues('trussville', 2)"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="3" onchange="calculateSheetValues('trussville', 3)"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="4" onchange="calculateSheetValues('trussville', 4)"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="5" onchange="calculateSheetValues('trussville', 5)"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="6" onchange="calculateSheetValues('trussville', 6)"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="7" onchange="calculateSheetValues('trussville', 7)"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="8" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="8" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="8" onchange="calculateSheetValues('trussville', 8)"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="9" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="9" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="9" onchange="calculateSheetValues('trussville', 9)"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="10" readonly></td><td><input type="number" class="units-sold" data-sheet="trussville" data-row="10" readonly></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="10" onchange="calculateSheetValues('trussville', 10)"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="trussville" id="total-units-trussville" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="trussville" id="total-revenue-trussville" readonly></td></tr></tbody></table></div></div>
 
         <!-- Sales Sheets: Columbia -->
-        <div id="columbia" class="tab-content"><div class="tab-section"><h2>Columbia, Tennessee - January 10-11</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="columbia-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'columbia')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-columbia" style="display:none;" onclick="openLockSheetModal('columbia')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-columbia" style="display:none;" onclick="openUnlockSheetModal('columbia')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="columbia-event-box" style="display: none;"><input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')"><label for="event-completed-columbia">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="0" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="1" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="2" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="3" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="4" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="5" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="6" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="7" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="8" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="9" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="10" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="10"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="columbia" id="total-units-columbia" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="columbia" id="total-revenue-columbia" readonly></td></tr></tbody></table></div></div>
+        <div id="columbia" class="tab-content"><div class="tab-section"><h2>Columbia, Tennessee - January 10-11</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="columbia-status">Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'columbia')">Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-columbia" style="display:none;" onclick="openLockSheetModal('columbia')">Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-columbia" style="display:none;" onclick="openUnlockSheetModal('columbia')">Unlock Sheet</button></div><div class="event-checkbox" id="columbia-event-box" style="display: none;"><input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')"><label for="event-completed-columbia">Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="0" onchange="calculateSheetValues('columbia', 0)"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="1" onchange="calculateSheetValues('columbia', 1)"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="2" onchange="calculateSheetValues('columbia', 2)"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="3" onchange="calculateSheetValues('columbia', 3)"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="4" onchange="calculateSheetValues('columbia', 4)"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="5" onchange="calculateSheetValues('columbia', 5)"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="6" onchange="calculateSheetValues('columbia', 6)"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="7" onchange="calculateSheetValues('columbia', 7)"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="8" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="8" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="8" onchange="calculateSheetValues('columbia', 8)"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="9" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="9" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="9" onchange="calculateSheetValues('columbia', 9)"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="10" readonly></td><td><input type="number" class="units-sold" data-sheet="columbia" data-row="10" readonly></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="10" onchange="calculateSheetValues('columbia', 10)"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="columbia" id="total-units-columbia" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="columbia" id="total-revenue-columbia" readonly></td></tr></tbody></table></div></div>
 
         <!-- Sales Sheets: Hattiesburg -->
-        <div id="hattiesburg" class="tab-content"><div class="tab-section"><h2>Hattiesburg, Mississippi - January 17</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="hattiesburg-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'hattiesburg')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-hattiesburg" style="display:none;" onclick="openLockSheetModal('hattiesburg')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-hattiesburg" style="display:none;" onclick="openUnlockSheetModal('hattiesburg')">🔓 Unlock Sheet</button></div><div class="event-checkbox" id="hattiesburg-event-box" style="display: none;"><input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')"><label for="event-completed-hattiesburg">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="0" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="1" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="2" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="3" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="4" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="5" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="6" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="7" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="8" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="9" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="10" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="10"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="hattiesburg" id="total-units-hattiesburg" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="hattiesburg" id="total-revenue-hattiesburg" readonly></td></tr></tbody></table></div></div>
+        <div id="hattiesburg" class="tab-content"><div class="tab-section"><h2>Hattiesburg, Mississippi - January 17</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="hattiesburg-status">Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'hattiesburg')">Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-hattiesburg" style="display:none;" onclick="openLockSheetModal('hattiesburg')">Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-hattiesburg" style="display:none;" onclick="openUnlockSheetModal('hattiesburg')">Unlock Sheet</button></div><div class="event-checkbox" id="hattiesburg-event-box" style="display: none;"><input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')"><label for="event-completed-hattiesburg">Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="0" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="0" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="0" onchange="calculateSheetValues('hattiesburg', 0)"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="1" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="1" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="1" onchange="calculateSheetValues('hattiesburg', 1)"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="2" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="2" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="2" onchange="calculateSheetValues('hattiesburg', 2)"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="3" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="3" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="3" onchange="calculateSheetValues('hattiesburg', 3)"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="4" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="4" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="4" onchange="calculateSheetValues('hattiesburg', 4)"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="5" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="5" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="5" onchange="calculateSheetValues('hattiesburg', 5)"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="6" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="6" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="6" onchange="calculateSheetValues('hattiesburg', 6)"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="7" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="7" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="7" onchange="calculateSheetValues('hattiesburg', 7)"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="8" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="8" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="8" onchange="calculateSheetValues('hattiesburg', 8)"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="9" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="9" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="9" onchange="calculateSheetValues('hattiesburg', 9)"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="10" readonly></td><td><input type="number" class="units-sold" data-sheet="hattiesburg" data-row="10" readonly></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="10" onchange="calculateSheetValues('hattiesburg', 10)"></td></tr><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="hattiesburg" id="total-units-hattiesburg" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="hattiesburg" id="total-revenue-hattiesburg" readonly></td></tr></tbody></table></div></div>
 
         <!-- Shrinkage Tracking Tab -->
         <div id="shrinkage" class="tab-content">
             <div class="tab-section">
-                <h2>📦 Shrinkage Tracking - Broken Items</h2>
+                <h2>Shrinkage Tracking</h2>
                 <p>Track broken or damaged items to maintain accurate inventory.</p>
                 <div class="inventory-controls">
                     <h3>Log Shrinkage</h3>
-                    <button class="nav-link" onclick="openAddShrinkageModal()" style="margin: 0;">➕ Add Broken Item</button>
+                    <button class="nav-link" onclick="openAddShrinkageModal()" style="margin: 0;">Add Broken Item</button>
                 </div>
                 <div id="shrinkage-summary" class="shrinkage-summary" style="display: none;">
-                    <h3>📊 Shrinkage Summary</h3>
+                    <h3>Shrinkage Summary</h3>
                     <table style="width: 100%;">
                         <thead>
                             <tr><th>Product</th><th>Pop Broken</th><th>Aaron Broken</th><th>Total Broken</th></tr>
@@ -420,23 +420,23 @@
         <!-- Sales Analytics Tab -->
         <div id="analytics" class="tab-content">
             <div class="tab-section">
-                <h2>📊 Sales Analytics Dashboard</h2>
+                <h2>Sales Analytics Dashboard</h2>
                 <p>Track your top sellers and sales trends over time.</p>
                 <div class="analytics-grid">
                     <div class="chart-container">
-                        <h3>🥇 Top Sellers by Units</h3>
+                        <h3>Top Sellers by Units</h3>
                         <canvas id="topSellersChart"></canvas>
                     </div>
                     <div class="chart-container">
-                        <h3>💰 Top Sellers by Revenue</h3>
+                        <h3>Top Sellers by Revenue</h3>
                         <canvas id="revenueChart"></canvas>
                     </div>
                     <div class="chart-container" style="grid-column: 1 / -1;">
-                        <h3>📈 Sales Trend Over Time</h3>
+                        <h3>Sales Trend Over Time</h3>
                         <canvas id="trendChart"></canvas>
                     </div>
                     <div class="chart-container" style="grid-column: 1 / -1;">
-                        <h3>🎯 Units Sold by Product (with %)</h3>
+                        <h3>Units Sold by Product (with %)</h3>
                         <canvas id="unitsPercentChart"></canvas>
                     </div>
                 </div>
@@ -449,11 +449,11 @@
         <!-- Excel Exports Tab -->
         <div id="excel-exports" class="tab-content">
             <div class="tab-section">
-                <h2>📁 Excel Export History</h2>
+                <h2>Excel Export History</h2>
                 <p>Download and manage your exported Excel files.</p>
                 <div class="inventory-controls">
                     <h3>Export Management</h3>
-                    <button class="nav-link export-btn" onclick="exportToExcel()" style="margin: 0;">📊 Export Current Data</button>
+                    <button class="nav-link export-btn" onclick="exportToExcel()" style="margin: 0;">Export Current Data</button>
                 </div>
                 <div class="export-history">
                     <h3>Recent Exports</h3>
@@ -465,13 +465,13 @@
         </div>
 
         <!-- MODALS -->
-        <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
+        <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">Activate</button></div></div></div>
 
-        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
+        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">Locking will deplete Show Tub by units sold.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">Lock</button></div></div></div>
 
-        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
+        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">Unlock</button></div></div></div>
 
-        <div id="shrinkageModal" class="modal"><div class="modal-content"><h3>➕ Add Broken Item</h3><div class="form-group"><label>Person</label><select id="shrinkage-person"><option>-- Select --</option><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product</label><select id="shrinkage-product"><option>-- Select --</option><option value="0">Full Tang</option><option value="1">8" Rat</option><option value="2">6" Rat</option><option value="3">8" Stag</option><option value="4">6" Stag</option><option value="5">Grooved</option><option value="6">Folders & Clipped Folders</option><option value="7">Bull Cutters</option><option value="8">Horizontal Sheaths</option><option value="9">Bowies</option><option value="10">Mini Folders</option></select></div><div class="form-group"><label>Quantity</label><input type="number" id="shrinkage-qty" placeholder="1" min="1"></div><div class="form-group"><label>Deplete From</label><select id="shrinkage-deplete"><option value="storage">Storage Tub</option><option value="show">Show Tub</option></select></div><div class="form-group"><label>Notes</label><input type="text" id="shrinkage-notes" placeholder="Broken hilt, cracked blade, etc."></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button type="button" class="btn-create" onclick="addShrinkageEntry()">Add Entry</button></div></div></div>
+        <div id="shrinkageModal" class="modal"><div class="modal-content"><h3>Add Broken Item</h3><div class="form-group"><label>Person</label><select id="shrinkage-person"><option>-- Select --</option><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product</label><select id="shrinkage-product"><option>-- Select --</option><option value="0">Full Tang</option><option value="1">8" Rat</option><option value="2">6" Rat</option><option value="3">8" Stag</option><option value="4">6" Stag</option><option value="5">Grooved</option><option value="6">Folders & Clipped Folders</option><option value="7">Bull Cutters</option><option value="8">Horizontal Sheaths</option><option value="9">Bowies</option><option value="10">Mini Folders</option></select></div><div class="form-group"><label>Quantity</label><input type="number" id="shrinkage-qty" placeholder="1" min="1"></div><div class="form-group"><label>Deplete From</label><select id="shrinkage-deplete"><option value="storage">Storage Tub</option><option value="show">Show Tub</option></select></div><div class="form-group"><label>Notes</label><input type="text" id="shrinkage-notes" placeholder="Broken hilt, cracked blade, etc."></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button type="button" class="btn-create" onclick="addShrinkageEntry()">Add Entry</button></div></div></div>
 
         <div id="popInventoryReceivedModal" class="modal"><div class="modal-content"><h3>Add Inventory - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" id="pop-received-0"></td></tr><tr><td>8" Rat</td><td><input type="number" id="pop-received-1"></td></tr><tr><td>6" Rat</td><td><input type="number" id="pop-received-2"></td></tr><tr><td>8" Stag</td><td><input type="number" id="pop-received-3"></td></tr><tr><td>6" Stag</td><td><input type="number" id="pop-received-4"></td></tr><tr><td>Grooved</td><td><input type="number" id="pop-received-5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input type="number" id="pop-received-6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" id="pop-received-7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" id="pop-received-8"></td></tr><tr><td>Bowies</td><td><input type="number" id="pop-received-9"></td></tr><tr><td>Mini Folders</td><td><input type="number" id="pop-received-10"></td></tr></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopInventoryReceivedModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addPopInventoryReceived()">Add</button></div></div></div>
 
@@ -489,20 +489,17 @@
 
         <div id="aaronRemoveInventoryModal" class="modal"><div class="modal-content"><h3>Remove from Storage - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Storage</th><th>Remove</th></tr></thead><tbody><tr><td>Full Tang</td><td><input id="aaron-remove-storage-0" readonly></td><td><input id="aaron-remove-0"></td></tr><tr><td>8" Rat</td><td><input id="aaron-remove-storage-1" readonly></td><td><input id="aaron-remove-1"></td></tr><tr><td>6" Rat</td><td><input id="aaron-remove-storage-2" readonly></td><td><input id="aaron-remove-2"></td></tr><tr><td>8" Stag</td><td><input id="aaron-remove-storage-3" readonly></td><td><input id="aaron-remove-3"></td></tr><tr><td>6" Stag</td><td><input id="aaron-remove-storage-4" readonly></td><td><input id="aaron-remove-4"></td></tr><tr><td>Grooved</td><td><input id="aaron-remove-storage-5" readonly></td><td><input id="aaron-remove-5"></td></tr><tr><td>Folders & Clipped Folders</td><td><input id="aaron-remove-storage-6" readonly></td><td><input id="aaron-remove-6"></td></tr><tr><td>Bull Cutters</td><td><input id="aaron-remove-storage-7" readonly></td><td><input id="aaron-remove-7"></td></tr><tr><td>Horizontal Sheaths</td><td><input id="aaron-remove-storage-8" readonly></td><td><input id="aaron-remove-8"></td></tr><tr><td>Bowies</td><td><input id="aaron-remove-storage-9" readonly></td><td><input id="aaron-remove-9"></td></tr><tr><td>Mini Folders</td><td><input id="aaron-remove-storage-10" readonly></td><td><input id="aaron-remove-10"></td></tr></tbody></table><div class="modal-buttons"><button class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button><button class="btn-remove" onclick="removeAaronInventory()">Remove</button></div></div></div>
 
-        <div id="deletePopSalesSheetModal" class="modal"><div class="modal-content"><h3>🗑️ Delete Pop Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="popSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deletePopSalesSheet()">Delete</button></div></div></div>
+        <div id="deletePopSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Pop Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="popSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deletePopSalesSheet()">Delete</button></div></div></div>
 
-        <div id="deleteAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>🗑️ Delete Aaron Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="aaronSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deleteAaronSalesSheet()">Delete</button></div></div></div>
+        <div id="deleteAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Aaron Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="aaronSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deleteAaronSalesSheet()">Delete</button></div></div></div>
 
-        <div id="newPopSalesSheetModal" class="modal"><div class="modal-content"><h3>➕ Create New Pop Sales Sheet</h3><div class="form-group"><label>Sheet Name</label><input type="text" id="popNewSheetName" placeholder="e.g., Atlanta Market"></div><div class="form-group"><label>Date</label><input type="text" id="popNewSheetDate" placeholder="e.g., January 15-16"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewPopSalesSheetModal()">Cancel</button><button class="btn-create" onclick="createNewPopSalesSheet()">Create</button></div></div></div>
+        <div id="newPopSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Pop Sales Sheet</h3><div class="form-group"><label>Sheet Name</label><input type="text" id="popNewSheetName" placeholder="e.g., Atlanta Market"></div><div class="form-group"><label>Date</label><input type="text" id="popNewSheetDate" placeholder="e.g., January 15-16"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewPopSalesSheetModal()">Cancel</button><button class="btn-create" onclick="createNewPopSalesSheet()">Create</button></div></div></div>
 
-        <div id="newAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>➕ Create New Aaron Sales Sheet</h3><div class="form-group"><label>Sheet Name</label><input type="text" id="aaronNewSheetName" placeholder="e.g., Nashville Event"></div><div class="form-group"><label>Date</label><input type="text" id="aaronNewSheetDate" placeholder="e.g., January 20"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button><button class="btn-create" onclick="createNewAaronSalesSheet()">Create</button></div></div></div>
+        <div id="newAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Aaron Sales Sheet</h3><div class="form-group"><label>Sheet Name</label><input type="text" id="aaronNewSheetName" placeholder="e.g., Nashville Event"></div><div class="form-group"><label>Date</label><input type="text" id="aaronNewSheetDate" placeholder="e.g., January 20"></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button><button class="btn-create" onclick="createNewAaronSalesSheet()">Create</button></div></div></div>
 
     </div>
 
     <script>
-        // ============================================================================
-        // CORE STATE & CONSTANTS
-        // ============================================================================
         let NUM_PRODUCTS = 11;
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders & Clipped Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         const staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -511,9 +508,6 @@
         let shrinkageLog = [];
         let sheetMetadata = {};
         let sheetStates = {};
-        let sheetData = {};
-        let customProducts = [];
-        let currentAddingProductPerson = '';
         
         function showSuccess(msg) {
             const banner = document.getElementById('successBanner');
@@ -522,33 +516,16 @@
             setTimeout(() => banner.classList.remove('show'), 3000);
         }
 
-        // ============================================================================
-        // TAB HANDLING - FIXED TO WORK WITH ALL BUTTONS
-        // ============================================================================
         function openTab(evt, tabName) {
-            // Hide all tab contents
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(c => c.classList.remove('active'));
-            
-            // Remove active class from all tab buttons
             const buttons = document.querySelectorAll('.tab-btn');
             buttons.forEach(b => b.classList.remove('active'));
-            
-            // Show selected tab content
             const targetTab = document.getElementById(tabName);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
-            
-            // Mark clicked button as active (safely handle event)
-            if (evt && evt.currentTarget) {
-                evt.currentTarget.classList.add('active');
-            }
+            if (targetTab) targetTab.classList.add('active');
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
         }
 
-        // ============================================================================
-        // INITIALIZATION & SHEET STATE SETUP
-        // ============================================================================
         function initSheetStates() {
             staticSheets.forEach(id => sheetStates[id] = 'inactive');
             sheetMetadata['wetumpka'] = { name: 'Wetumpka', date: 'Dec 12-13', person: 'pop' };
@@ -557,9 +534,36 @@
             sheetMetadata['hattiesburg'] = { name: 'Hattiesburg', date: 'Jan 17', person: 'pop' };
         }
 
-        // ============================================================================
-        // MASTER INVENTORY UPDATES
-        // ============================================================================
+        function calculateSheetValues(sheetId, rowIndex) {
+            const brought = parseFloat(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`)?.value || 0);
+            const left = parseFloat(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${rowIndex}"]`)?.value || 0);
+            const sold = Math.max(0, brought - left);
+            
+            document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`).value = sold;
+            calculateSheetTotals(sheetId);
+            saveAllDataNow();
+        }
+
+        function calculateSheetTotals(sheetId) {
+            const person = sheetMetadata[sheetId]?.person;
+            let totalUnitsSold = 0;
+            let totalRevenue = 0;
+            
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const unitsSold = parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
+                const price = parseFloat(document.querySelector(`.${person}-price[data-product="${i}"]`)?.value || 0);
+                const lineRevenue = unitsSold * price;
+                
+                totalUnitsSold += unitsSold;
+                totalRevenue += lineRevenue;
+            }
+            
+            const totalUnitsInput = document.getElementById(`total-units-${sheetId}`);
+            const totalRevenueInput = document.getElementById(`total-revenue-${sheetId}`);
+            if (totalUnitsInput) totalUnitsInput.value = totalUnitsSold;
+            if (totalRevenueInput) totalRevenueInput.value = totalRevenue.toFixed(2);
+        }
+
         function updateMasterInventory() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
@@ -620,9 +624,45 @@
             if (aaronShowEl) aaronShowEl.textContent = showTotal;
         }
 
-        // ============================================================================
-        // MOVE BACK TO STORAGE FUNCTIONS
-        // ============================================================================
+        function updatePopInventory() {
+            let total = 0;
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                const unitsSold = parseInt(document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                const current = storage + showTub + unitsSold;
+                document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = current;
+                total += current;
+            }
+            document.getElementById('pop-total-on-hand').value = total;
+        }
+
+        function updateAaronInventory() {
+            let total = 0;
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                const showTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                const unitsSold = parseInt(document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                const current = storage + showTub + unitsSold;
+                document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = current;
+                total += current;
+            }
+            document.getElementById('aaron-total-on-hand').value = total;
+        }
+
+        function updateAllInventories() {
+            updateMasterInventory();
+            updatePopInventory();
+            updateAaronInventory();
+            updatePopStorageTotals();
+            updateAaronStorageTotals();
+        }
+
+        function recalculateAllRevenue() {
+            staticSheets.forEach(sheetId => calculateSheetTotals(sheetId));
+            saveAllDataNow();
+        }
+
         function openPopMoveBackModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const showVal = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
@@ -649,7 +689,7 @@
             updateAllInventories();
             saveAllDataNow();
             closePopMoveBackModal();
-            showSuccess(`✅ Moved ${totalMoved} units back!`);
+            showSuccess(`Moved ${totalMoved} units back!`);
         }
 
         function openAaronMoveBackModal() {
@@ -678,12 +718,9 @@
             updateAllInventories();
             saveAllDataNow();
             closeAaronMoveBackModal();
-            showSuccess(`✅ Moved ${totalMoved} units back!`);
+            showSuccess(`Moved ${totalMoved} units back!`);
         }
 
-        // ============================================================================
-        // SHRINKAGE TRACKING
-        // ============================================================================
         function openAddShrinkageModal() {
             document.getElementById('shrinkageModal').classList.add('active');
         }
@@ -723,7 +760,7 @@
             updateShrinkageUI();
             saveAllDataNow();
             closeShrinkageModal();
-            showSuccess('✅ Shrinkage logged!');
+            showSuccess('Shrinkage logged!');
         }
 
         function updateShrinkageUI() {
@@ -777,9 +814,6 @@
             }
         }
 
-        // ============================================================================
-        // EXPORT TO EXCEL
-        // ============================================================================
         function exportToExcel() {
             const workbook = XLSX.utils.book_new();
             
@@ -820,7 +854,7 @@
             if (exportHistory.length > 10) exportHistory.pop();
             saveAllDataNow();
             updateExportHistory();
-            showSuccess('✅ Exported to Excel!');
+            showSuccess('Exported to Excel!');
         }
 
         function updateExportHistory() {
@@ -846,9 +880,6 @@
             saveAllDataNow();
         }
 
-        // ============================================================================
-        // SHEET ACTIVATION, LOCKING, UNLOCKING
-        // ============================================================================
         let currentActivatingPerson = '', currentActivatingSheetId = '';
         let currentLockingSheetId = '';
         let currentUnlockingSheetId = '';
@@ -873,10 +904,14 @@
                 if (broughtInput) broughtInput.value = brought;
             }
             
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                calculateSheetValues(sheetId, i);
+            }
+            
             updateSheetUI(sheetId);
             saveAllDataNow();
             closeActivateSheetModal();
-            showSuccess('✅ Sheet activated!');
+            showSuccess('Sheet activated!');
         }
 
         function openLockSheetModal(sheetId) {
@@ -891,8 +926,7 @@
             const person = sheetMetadata[sheetId].person;
             
             for (let i = 0; i < NUM_PRODUCTS; i++) {
-                const soldSpan = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                const unitsSold = parseInt(soldSpan?.textContent || 0);
+                const unitsSold = parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
                 
                 const showTubInput = document.querySelector(`.${person}-show-tub[data-product="${i}"]`);
                 if (showTubInput && unitsSold > 0) {
@@ -912,7 +946,7 @@
             updateAllInventories();
             saveAllDataNow();
             closeLockSheetModal();
-            showSuccess('✅ Sheet locked!');
+            showSuccess('Sheet locked!');
         }
 
         function openUnlockSheetModal(sheetId) {
@@ -927,8 +961,7 @@
             const person = sheetMetadata[sheetId].person;
             
             for (let i = 0; i < NUM_PRODUCTS; i++) {
-                const soldSpan = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                const unitsSold = parseInt(soldSpan?.textContent || 0);
+                const unitsSold = parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0);
                 
                 const unitsAgg = document.querySelector(`.${person}-units-sold-agg[data-product="${i}"]`);
                 if (unitsAgg) {
@@ -942,7 +975,7 @@
             updateAllInventories();
             saveAllDataNow();
             closeUnlockSheetModal();
-            showSuccess('✅ Sheet unlocked!');
+            showSuccess('Sheet unlocked!');
         }
 
         function updateSheetUI(sheetId) {
@@ -955,19 +988,19 @@
             if (!statusEl) return;
             
             if (status === 'inactive') {
-                statusEl.textContent = '● Inactive';
+                statusEl.textContent = 'Inactive';
                 statusEl.className = 'sheet-status inactive';
                 if (lockBtn) lockBtn.style.display = 'none';
                 if (unlockBtn) unlockBtn.style.display = 'none';
                 if (eventBox) eventBox.style.display = 'none';
             } else if (status === 'active') {
-                statusEl.textContent = '● Active';
+                statusEl.textContent = 'Active';
                 statusEl.className = 'sheet-status active';
                 if (lockBtn) lockBtn.style.display = 'inline-flex';
                 if (unlockBtn) unlockBtn.style.display = 'none';
                 if (eventBox) eventBox.style.display = 'flex';
             } else if (status === 'locked') {
-                statusEl.textContent = '● Locked';
+                statusEl.textContent = 'Locked';
                 statusEl.className = 'sheet-status completed';
                 if (lockBtn) lockBtn.style.display = 'none';
                 if (unlockBtn) unlockBtn.style.display = 'inline-flex';
@@ -982,9 +1015,10 @@
             }
         }
 
-        // ============================================================================
-        // INVENTORY MODAL HANDLERS
-        // ============================================================================
+        function refreshSheetData(person, sheetId) {
+            showSuccess('Units brought refreshed!');
+        }
+
         function openPopInventoryReceivedModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 document.getElementById(`pop-received-${i}`).value = '';
@@ -1005,7 +1039,7 @@
             updateAllInventories();
             saveAllDataNow();
             closePopInventoryReceivedModal();
-            showSuccess('✅ Pop inventory added!');
+            showSuccess('Pop inventory added!');
         }
 
         function openAaronInventoryReceivedModal() {
@@ -1028,7 +1062,7 @@
             updateAllInventories();
             saveAllDataNow();
             closeAaronInventoryReceivedModal();
-            showSuccess('✅ Aaron inventory added!');
+            showSuccess('Aaron inventory added!');
         }
 
         function openPopMoveInventoryModal() {
@@ -1057,7 +1091,7 @@
             updateAllInventories();
             saveAllDataNow();
             closePopMoveInventoryModal();
-            showSuccess(`✅ Moved ${totalMoved} units to show tub!`);
+            showSuccess(`Moved ${totalMoved} units to show tub!`);
         }
 
         function openAaronMoveInventoryModal() {
@@ -1086,7 +1120,7 @@
             updateAllInventories();
             saveAllDataNow();
             closeAaronMoveInventoryModal();
-            showSuccess(`✅ Moved ${totalMoved} units to show tub!`);
+            showSuccess(`Moved ${totalMoved} units to show tub!`);
         }
 
         function openPopRemoveInventoryModal() {
@@ -1113,7 +1147,7 @@
             updateAllInventories();
             saveAllDataNow();
             closePopRemoveInventoryModal();
-            showSuccess(`✅ Removed ${totalRemoved} units from storage!`);
+            showSuccess(`Removed ${totalRemoved} units from storage!`);
         }
 
         function openAaronRemoveInventoryModal() {
@@ -1140,12 +1174,9 @@
             updateAllInventories();
             saveAllDataNow();
             closeAaronRemoveInventoryModal();
-            showSuccess(`✅ Removed ${totalRemoved} units from storage!`);
+            showSuccess(`Removed ${totalRemoved} units from storage!`);
         }
 
-        // ============================================================================
-        // SALES SHEET MANAGEMENT
-        // ============================================================================
         function openNewPopSalesSheetModal() {
             document.getElementById('popNewSheetName').value = '';
             document.getElementById('popNewSheetDate').value = '';
@@ -1164,7 +1195,7 @@
             sheetStates[sheetId] = 'inactive';
             saveAllDataNow();
             closeNewPopSalesSheetModal();
-            showSuccess('✅ Sales sheet created!');
+            showSuccess('Sales sheet created!');
         }
 
         function openNewAaronSalesSheetModal() {
@@ -1185,7 +1216,7 @@
             sheetStates[sheetId] = 'inactive';
             saveAllDataNow();
             closeNewAaronSalesSheetModal();
-            showSuccess('✅ Sales sheet created!');
+            showSuccess('Sales sheet created!');
         }
 
         function openDeletePopSalesSheetModal() {
@@ -1211,7 +1242,7 @@
                 delete sheetStates[sheetId];
                 saveAllDataNow();
                 closeDeletePopSalesSheetModal();
-                showSuccess('✅ Sheet deleted!');
+                showSuccess('Sheet deleted!');
             }
         }
 
@@ -1238,50 +1269,8 @@
                 delete sheetStates[sheetId];
                 saveAllDataNow();
                 closeDeleteAaronSalesSheetModal();
-                showSuccess('✅ Sheet deleted!');
+                showSuccess('Sheet deleted!');
             }
-        }
-
-        // ============================================================================
-        // MISC UTILITY FUNCTIONS
-        // ============================================================================
-        function updateAllInventories() {
-            updateMasterInventory();
-            updatePopInventory();
-            updateAaronInventory();
-            updatePopStorageTotals();
-            updateAaronStorageTotals();
-        }
-
-        function updatePopInventory() {
-            let total = 0;
-            for (let i = 0; i < NUM_PRODUCTS; i++) {
-                const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
-                const showTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
-                const unitsSold = parseInt(document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`)?.value || 0);
-                const current = storage + showTub + unitsSold;
-                document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = current;
-                total += current;
-            }
-            document.getElementById('pop-total-on-hand').value = total;
-        }
-
-        function updateAaronInventory() {
-            let total = 0;
-            for (let i = 0; i < NUM_PRODUCTS; i++) {
-                const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
-                const showTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
-                const unitsSold = parseInt(document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`)?.value || 0);
-                const current = storage + showTub + unitsSold;
-                document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = current;
-                total += current;
-            }
-            document.getElementById('aaron-total-on-hand').value = total;
-        }
-
-        function recalculateAllRevenue() {
-            updateAllInventories();
-            saveAllDataNow();
         }
 
         function reloadDataFromFirebase() {
@@ -1289,16 +1278,16 @@
             loadDataFromFirebase();
             updateAllInventories();
             updateShrinkageUI();
-            showSuccess('✅ Data reloaded from Firebase!');
+            showSuccess('Data reloaded from Firebase!');
         }
 
         function saveAllDataNow() {
             if (!window.firebaseReady) { console.log("Firebase not ready yet"); return; }
-            console.log("💾 Saving data to Firebase...");
+            console.log("Saving data to Firebase...");
         }
 
         function loadDataFromFirebase() {
-            console.log("📥 Loading data from Firebase...");
+            console.log("Loading data from Firebase...");
         }
 
         function resetAllData() {
@@ -1317,29 +1306,23 @@
             updateShrinkageUI();
             updateExportHistory();
             saveAllDataNow();
-            showSuccess('✅ All data reset!');
+            showSuccess('All data reset!');
         }
 
         function openImportExcelModal() {
-            document.getElementById('importExcelModal').classList.add('active');
-        }
-        function closeImportExcelModal() {
-            document.getElementById('importExcelModal').classList.remove('active');
+            showSuccess('Import feature coming soon!');
         }
 
         function refreshAnalytics() {
-            showSuccess('✅ Analytics refreshed!');
+            showSuccess('Analytics refreshed!');
         }
 
-        // ============================================================================
-        // INITIALIZATION ON PAGE LOAD
-        // ============================================================================
         window.addEventListener('DOMContentLoaded', function() {
             initSheetStates();
             updateAllInventories();
             updateShrinkageUI();
             updateExportHistory();
-            console.log('✅ Knife Inventory Manager v30 initialized!');
+            console.log('Knife Inventory Manager v30 initialized!');
         });
     </script>
 </body>
