@@ -497,6 +497,8 @@
 
         <div id="importExcelModal" class="modal"><div class="modal-content"><h3>📥 Import from Excel</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px;">Upload an Excel file to import inventory data. Your existing data will be preserved.</p></div><div class="form-group"><label>Select Excel File</label><input type="file" id="excelFileInput" accept=".xlsx, .xls"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button><button type="button" class="btn-import" onclick="importExcelFile()">Import</button></div></div></div>
 
+        <div id="importPreviewModal" class="modal"><div class="modal-content" style="max-width: 800px;"><h3>📊 Map Excel Columns</h3><p style="color: #666; margin-bottom: 20px; font-size: 13px;">Select which Excel columns contain your inventory data:</p><div id="columnMappingContainer" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;"></div><div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><h4 style="color: #2e7d32; margin-top: 0;">📋 Data Preview</h4><table style="width: 100%; font-size: 12px;"><thead><tr id="previewHeaderRow" style="background: #667eea; color: white;"></tr></thead><tbody id="previewDataRows"></tbody></table></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeImportPreviewModal()">Cancel</button><button type="button" class="btn-import" onclick="confirmImportWithMapping()">✓ Import</button></div></div></div>
+
         <div id="deletePopSalesSheetModal" class="modal"><div class="modal-content"><h3>🗑️ Delete Pop Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="popSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeletePopSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deletePopSalesSheet()">Delete</button></div></div></div>
 
         <div id="deleteAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>🗑️ Delete Aaron Sales Sheet</h3><div class="form-group"><label>Select Sheet</label><select id="aaronSheetToDelete"><option>-- Select --</option></select></div><div class="modal-buttons"><button class="btn-cancel" onclick="closeDeleteAaronSalesSheetModal()">Cancel</button><button class="btn-remove" onclick="deleteAaronSalesSheet()">Delete</button></div></div></div>
@@ -1722,6 +1724,11 @@
         
         function openImportExcelModal() { document.getElementById('importExcelModal').classList.add('active'); }
         function closeImportExcelModal() { document.getElementById('importExcelModal').classList.remove('active'); document.getElementById('excelFileInput').value = ''; }
+        function closeImportPreviewModal() { document.getElementById('importPreviewModal').classList.remove('active'); }
+        
+        let currentExcelData = null;
+        let columnMapping = {};
+        
         function importExcelFile() {
             const file = document.getElementById('excelFileInput').files[0];
             if (!file) { alert('❌ Please select a file!'); return; }
@@ -1735,51 +1742,142 @@
                     const worksheet = workbook.Sheets[sheetName];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
-                    if (rows.length < 2) { alert('❌ Invalid Excel format!'); return; }
+                    if (rows.length < 2) { alert('❌ Invalid Excel format! No data found.'); return; }
                     
-                    const headers = rows[0].map(h => String(h).toLowerCase().trim());
-                    const popStorageIdx = headers.findIndex(h => h.includes('pop') && h.includes('storage'));
-                    const popShowIdx = headers.findIndex(h => h.includes('pop') && h.includes('show'));
-                    const aaronStorageIdx = headers.findIndex(h => h.includes('aaron') && h.includes('storage'));
-                    const aaronShowIdx = headers.findIndex(h => h.includes('aaron') && h.includes('show'));
-                    
-                    if (popStorageIdx === -1 || popShowIdx === -1 || aaronStorageIdx === -1 || aaronShowIdx === -1) {
-                        alert('❌ Excel must have columns: Pop Storage, Pop Show, Aaron Storage, Aaron Show');
-                        return;
-                    }
-                    
-                    let importedCount = 0;
-                    for (let rowIdx = 1; rowIdx < rows.length && rowIdx <= NUM_PRODUCTS; rowIdx++) {
-                        const row = rows[rowIdx];
-                        const popStorage = parseInt(row[popStorageIdx]) || 0;
-                        const popShow = parseInt(row[popShowIdx]) || 0;
-                        const aaronStorage = parseInt(row[aaronStorageIdx]) || 0;
-                        const aaronShow = parseInt(row[aaronShowIdx]) || 0;
-                        
-                        if (popStorage > 0 || popShow > 0 || aaronStorage > 0 || aaronShow > 0) {
-                            const popStorageInput = document.querySelector(`.pop-storage[data-product="${rowIdx - 1}"]`);
-                            const popShowInput = document.querySelector(`.pop-show-tub[data-product="${rowIdx - 1}"]`);
-                            const aaronStorageInput = document.querySelector(`.aaron-storage[data-product="${rowIdx - 1}"]`);
-                            const aaronShowInput = document.querySelector(`.aaron-show-tub[data-product="${rowIdx - 1}"]`);
-                            
-                            if (popStorageInput) popStorageInput.value = popStorage;
-                            if (popShowInput) popShowInput.value = popShow;
-                            if (aaronStorageInput) aaronStorageInput.value = aaronStorage;
-                            if (aaronShowInput) aaronShowInput.value = aaronShow;
-                            importedCount++;
-                        }
-                    }
-                    
-                    updateAllInventories();
-                    saveAllDataNow();
-                    closeImportExcelModal();
-                    showSuccess(`✅ Imported ${importedCount} products!`);
+                    currentExcelData = rows;
+                    showImportPreviewModal();
                 } catch (error) {
-                    console.error('Excel import error:', error);
-                    alert('❌ Error importing Excel file: ' + error.message);
+                    console.error('Excel read error:', error);
+                    alert('❌ Error reading Excel file: ' + error.message);
                 }
             };
             reader.readAsArrayBuffer(file);
+        }
+        
+        function showImportPreviewModal() {
+            const headers = currentExcelData[0];
+            const container = document.getElementById('columnMappingContainer');
+            const fields = [
+                { key: 'popStorage', label: 'Pop Storage', color: '#e3f2fd' },
+                { key: 'popShow', label: 'Pop Show Tub', color: '#e8f5e9' },
+                { key: 'aaronStorage', label: 'Aaron Storage', color: '#fff3cd' },
+                { key: 'aaronShow', label: 'Aaron Show Tub', color: '#f3e5f5' }
+            ];
+            
+            let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">';
+            fields.forEach(field => {
+                html += `
+                    <div style="background: ${field.color}; padding: 15px; border-radius: 8px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">${field.label}</label>
+                        <select id="map-${field.key}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">-- Not Used --</option>
+                            ${headers.map((h, idx) => `<option value="${idx}">${h || `Column ${idx + 1}`}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            
+            // Auto-map if possible
+            autoMapColumns(headers);
+            updateImportPreview();
+            
+            document.getElementById('importExcelModal').classList.remove('active');
+            document.getElementById('importPreviewModal').classList.add('active');
+        }
+        
+        function autoMapColumns(headers) {
+            const headerLower = headers.map(h => String(h).toLowerCase().trim());
+            const mapping = {
+                popStorage: headerLower.findIndex(h => h.includes('pop') && h.includes('storage')),
+                popShow: headerLower.findIndex(h => h.includes('pop') && (h.includes('show') || h.includes('tub'))),
+                aaronStorage: headerLower.findIndex(h => h.includes('aaron') && h.includes('storage')),
+                aaronShow: headerLower.findIndex(h => h.includes('aaron') && (h.includes('show') || h.includes('tub')))
+            };
+            
+            Object.entries(mapping).forEach(([key, idx]) => {
+                if (idx !== -1) {
+                    document.getElementById(`map-${key}`).value = idx;
+                }
+            });
+        }
+        
+        function updateImportPreview() {
+            const headers = currentExcelData[0];
+            const mapping = {
+                popStorage: parseInt(document.getElementById('map-popStorage').value) || -1,
+                popShow: parseInt(document.getElementById('map-popShow').value) || -1,
+                aaronStorage: parseInt(document.getElementById('map-aaronStorage').value) || -1,
+                aaronShow: parseInt(document.getElementById('map-aaronShow').value) || -1
+            };
+            
+            let headerHtml = '<tr>';
+            if (mapping.popStorage !== -1) headerHtml += `<th>${headers[mapping.popStorage]}</th>`;
+            if (mapping.popShow !== -1) headerHtml += `<th>${headers[mapping.popShow]}</th>`;
+            if (mapping.aaronStorage !== -1) headerHtml += `<th>${headers[mapping.aaronStorage]}</th>`;
+            if (mapping.aaronShow !== -1) headerHtml += `<th>${headers[mapping.aaronShow]}</th>`;
+            headerHtml += '</tr>';
+            document.getElementById('previewHeaderRow').innerHTML = headerHtml;
+            
+            let dataHtml = '';
+            for (let i = 1; i < Math.min(6, currentExcelData.length); i++) {
+                const row = currentExcelData[i];
+                dataHtml += '<tr>';
+                if (mapping.popStorage !== -1) dataHtml += `<td>${row[mapping.popStorage] || '—'}</td>`;
+                if (mapping.popShow !== -1) dataHtml += `<td>${row[mapping.popShow] || '—'}</td>`;
+                if (mapping.aaronStorage !== -1) dataHtml += `<td>${row[mapping.aaronStorage] || '—'}</td>`;
+                if (mapping.aaronShow !== -1) dataHtml += `<td>${row[mapping.aaronShow] || '—'}</td>`;
+                dataHtml += '</tr>';
+            }
+            if (currentExcelData.length > 6) dataHtml += '<tr><td colspan="4" style="text-align: center; color: #999;">... and ' + (currentExcelData.length - 6) + ' more rows</td></tr>';
+            document.getElementById('previewDataRows').innerHTML = dataHtml;
+        }
+        
+        function confirmImportWithMapping() {
+            const mapping = {
+                popStorage: parseInt(document.getElementById('map-popStorage').value) || -1,
+                popShow: parseInt(document.getElementById('map-popShow').value) || -1,
+                aaronStorage: parseInt(document.getElementById('map-aaronStorage').value) || -1,
+                aaronShow: parseInt(document.getElementById('map-aaronShow').value) || -1
+            };
+            
+            if (Object.values(mapping).every(v => v === -1)) { alert('❌ Please select at least one column to import!'); return; }
+            
+            let importedCount = 0;
+            for (let rowIdx = 1; rowIdx < currentExcelData.length && rowIdx <= NUM_PRODUCTS; rowIdx++) {
+                const row = currentExcelData[rowIdx];
+                const popStorage = mapping.popStorage !== -1 ? (parseInt(row[mapping.popStorage]) || 0) : null;
+                const popShow = mapping.popShow !== -1 ? (parseInt(row[mapping.popShow]) || 0) : null;
+                const aaronStorage = mapping.aaronStorage !== -1 ? (parseInt(row[mapping.aaronStorage]) || 0) : null;
+                const aaronShow = mapping.aaronShow !== -1 ? (parseInt(row[mapping.aaronShow]) || 0) : null;
+                
+                const productIdx = rowIdx - 1;
+                if (popStorage !== null && popStorage > 0) {
+                    const input = document.querySelector(`.pop-storage[data-product="${productIdx}"]`);
+                    if (input) input.value = popStorage;
+                    importedCount++;
+                }
+                if (popShow !== null && popShow > 0) {
+                    const input = document.querySelector(`.pop-show-tub[data-product="${productIdx}"]`);
+                    if (input) input.value = popShow;
+                }
+                if (aaronStorage !== null && aaronStorage > 0) {
+                    const input = document.querySelector(`.aaron-storage[data-product="${productIdx}"]`);
+                    if (input) input.value = aaronStorage;
+                }
+                if (aaronShow !== null && aaronShow > 0) {
+                    const input = document.querySelector(`.aaron-show-tub[data-product="${productIdx}"]`);
+                    if (input) input.value = aaronShow;
+                }
+            }
+            
+            updateAllInventories();
+            saveAllDataNow();
+            currentExcelData = null;
+            closeImportPreviewModal();
+            closeImportExcelModal();
+            showSuccess(`✅ Imported ${importedCount} products!`);
         }
         
         function resetAllData() { if (!confirm('⚠️ Reset ALL data? This cannot be undone!')) return; location.reload(); }
