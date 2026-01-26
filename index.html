@@ -425,6 +425,8 @@
         let saveDataTimer = null;
         let updateInventoriesTimer = null;
         let importedSheetMapping = {};
+        let lastFirebaseTimestamp = 0;
+        let localDataChangedTime = 0;
 
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
@@ -822,11 +824,6 @@
                 return;
             }
 
-            if (isLoadingFromFirebase) {
-                console.log('⏳ Currently loading from Firebase, skipping save');
-                return;
-            }
-
             try {
                 console.log('💾 Saving ALL data to Firebase...');
 
@@ -920,6 +917,7 @@
 
         function handleUnitsLeftChange(e) {
             try {
+                localDataChangedTime = Date.now();
                 e.stopPropagation();
                 
                 const sheetId = e.target.getAttribute('data-sheet');
@@ -942,10 +940,8 @@
 
                 clearTimeout(updateInventoriesTimer);
                 updateInventoriesTimer = setTimeout(() => {
-                    if (!isLoadingFromFirebase) {
-                        updateAllInventories();
-                        updateInventoryAggregatedUnitsSold();
-                    }
+                    updateAllInventories();
+                    updateInventoryAggregatedUnitsSold();
                 }, 500);
 
                 clearTimeout(saveDataTimer);
@@ -966,27 +962,30 @@
 
             try {
                 console.log('🔄 Setting up Firebase listener...');
-                let isFirstLoad = true;
 
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
                     const data = snapshot.val();
+                    const firebaseTimestamp = data?.timestamp ? new Date(data.timestamp).getTime() : 0;
 
                     if (!data) {
                         console.log('📭 No existing Firebase data');
-                        if (isFirstLoad) {
-                            isFirstLoad = false;
-                            firebaseLoadComplete = true;
-                        }
+                        firebaseLoadComplete = true;
                         return;
                     }
 
-                    // Only load from Firebase on FIRST load, not on every change
-                    if (!isFirstLoad) {
-                        console.log('⏭️ Skipping Firebase update (user may be typing)');
+                    // Only reload if:
+                    // 1. First load (firebaseLoadComplete = false), OR
+                    // 2. Firebase data is newer than when user last made changes locally (2 second grace period)
+                    const timeSinceLocalChange = Date.now() - localDataChangedTime;
+                    const shouldLoad = !firebaseLoadComplete || (timeSinceLocalChange > 2000 && firebaseTimestamp > lastFirebaseTimestamp);
+
+                    if (!shouldLoad) {
+                        console.log('⏭️ Skipping Firebase update (user actively editing)');
                         return;
                     }
 
                     console.log('📥 Loading data from Firebase...');
+                    lastFirebaseTimestamp = firebaseTimestamp;
 
                     if (data.pop && Array.isArray(data.pop)) {
                         for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
@@ -1056,7 +1055,6 @@
                     });
 
                     console.log('✅ Firebase load COMPLETE!');
-                    isFirstLoad = false;
                     firebaseLoadComplete = true;
                 });
             } catch (err) {
@@ -1393,7 +1391,6 @@
         }
 
         function recalculateRevenueForSheet(sheetId) {
-            if (isLoadingFromFirebase) return;
             try {
                 const meta = sheetMetadata[sheetId];
                 if (!meta) return;
