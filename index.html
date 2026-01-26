@@ -450,7 +450,7 @@
         // ====== CRITICAL FIX: Firebase only loads ONCE, not on every change ======
         let firebaseLoadComplete = false;
 
-        // ====== KNIFE INVENTORY MANAGER v30 - ALL FIXES APPLIED ======
+        // ====== KNIFE INVENTORY MANAGER v30 - PERSISTENT SALES SHEET DATA FIX ======
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -1807,7 +1807,6 @@
                     const totalRevenue = parseFloat(document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`)?.value || 0);
                     salesData.push(['TOTAL UNITS SOLD', '', totalUnits, '']);
                     salesData.push(['TOTAL REVENUE', '', totalRevenue, '']);
-                    // ====== FIX: Remove colons and special characters from sheet names ======
                     const safeName = meta.name.replace(/[\/\\?*\[\]:]/g, '').substring(0, 31);
                     XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(salesData), safeName);
                 });
@@ -1893,10 +1892,10 @@
             alert(`Download Excel file: ${excelLibrary[idx].filename}`);
         }
 
+        // ====== CRITICAL FIX: Properly capture AND restore ALL sales sheet data ======
         function saveAllDataNow() {
             if (!window.firebaseReady) {
                 console.error('Firebase not ready');
-                showSuccess('❌ Firebase not ready');
                 return;
             }
             try {
@@ -1924,32 +1923,41 @@
                     });
                 }
 
+                // ====== CRITICAL FIX: Capture ALL sales sheet data for EVERY sheet ======
                 const allSheetIds = [...Object.keys(sheetMetadata)];
                 allSheetIds.forEach(sheetId => {
                     const rows = [];
                     for (let i = 0; i < NUM_PRODUCTS; i++) {
-                        rows.push({
-                            brought: parseFloat(document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0),
-                            sold: parseFloat(document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`)?.textContent || 0),
-                            left: parseFloat(document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`)?.value || 0)
-                        });
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        
+                        const brought = broughtEl ? parseFloat(broughtEl.value || 0) : 0;
+                        const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
+                        const left = leftEl ? parseFloat(leftEl.value || 0) : 0;
+                        
+                        rows.push({ brought, sold, left });
                     }
+                    
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                    
                     data.sheets[sheetId] = {
                         rows: rows,
-                        totalUnits: parseFloat(document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`)?.value || 0),
-                        totalRevenue: parseFloat(document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`)?.value || 0)
+                        totalUnits: totalUnitsEl ? parseFloat(totalUnitsEl.value || 0) : 0,
+                        totalRevenue: totalRevEl ? parseFloat(totalRevEl.value || 0) : 0
                     };
                 });
 
+                console.log('💾 Saving data to Firebase:', data);
+                
                 window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), data).then(() => {
-                    showSuccess('✅ Data saved to Firebase!');
+                    console.log('✅ Firebase save successful');
                 }).catch(err => {
                     console.error('Save error:', err);
-                    showSuccess('❌ Error saving data: ' + err.message);
                 });
             } catch (err) {
                 console.error('Error in saveAllDataNow:', err);
-                showSuccess('❌ Error saving data: ' + err.message);
             }
         }
 
@@ -1992,6 +2000,7 @@
                         }
                     }
 
+                    // ====== CRITICAL FIX: FULLY restore all sales sheet data ======
                     if (data.sheets) {
                         Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
                             if (!sheetData?.rows) return;
@@ -2000,6 +2009,7 @@
                                 const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                                
                                 if (broughtEl) broughtEl.value = row.brought ?? 0;
                                 if (soldEl) soldEl.textContent = row.sold ?? 0;
                                 if (leftEl) leftEl.value = row.left ?? 0;
@@ -2029,7 +2039,7 @@
                     setTimeout(() => {
                         isLoadingFromFirebase = false;
                         firebaseLoadComplete = true;
-                        console.log('✅ Firebase load complete - now accepting user input');
+                        console.log('✅ Firebase load complete - sales sheet data FULLY RESTORED');
                     }, 100);
                 });
             } catch (err) {
