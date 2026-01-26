@@ -37,6 +37,8 @@
         .sheet-btn.lock-btn:hover { background: #fb8c00; }
         .sheet-btn.unlock-btn { background: #4caf50; }
         .sheet-btn.unlock-btn:hover { background: #45a049; }
+        .sheet-btn.reset-btn { background: #ff6b6b; }
+        .sheet-btn.reset-btn:hover { background: #ff5252; }
         .event-checkbox { display: flex; align-items: center; gap: 10px; }
         .event-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
         .event-checkbox label { font-weight: 500; color: #333; cursor: pointer; }
@@ -546,6 +548,8 @@
                 div.className = 'tab-content';
                 div.innerHTML = generateSheetHTML(sheetId);
                 container.appendChild(div);
+                // Initialize button visibility based on state
+                setTimeout(() => initializeSheetButtonVisibility(sheetId), 0);
             });
         }
 
@@ -562,10 +566,10 @@
                     <button class="refresh-btn" onclick="refreshSheetData('${meta.person}', '${sheetId}')">Refresh Units Brought</button>
                     <div class="sheet-controls">
                         <div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div>
-                        <button class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button>
-                        <button class="sheet-btn lock-btn" id="lock-btn-${sheetId}" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button>
-                        <button class="sheet-btn unlock-btn" id="unlock-btn-${sheetId}" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button>
-                        <button class="sheet-btn" id="reset-btn-${sheetId}" style="display:none; background: #ff6b6b;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button>
+                        <button id="activate-btn-${sheetId}" class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button>
+                        <button id="lock-btn-${sheetId}" class="sheet-btn lock-btn" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button>
+                        <button id="unlock-btn-${sheetId}" class="sheet-btn unlock-btn" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button>
+                        <button id="reset-btn-${sheetId}" class="sheet-btn reset-btn" style="display:none;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button>
                     </div>
                     <div class="event-checkbox" id="${sheetId}-event-box" style="display: none;">
                         <input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')">
@@ -583,6 +587,30 @@
                     </table>
                 </div>
             `;
+        }
+
+        function initializeSheetButtonVisibility(sheetId) {
+            const state = sheetStates[sheetId];
+            const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+            const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+            const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+            const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
+            const eventBox = document.getElementById(`${sheetId}-event-box`);
+
+            if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) return;
+
+            if (state.active) {
+                activateBtn.style.display = 'none';
+                lockBtn.style.display = 'inline-flex';
+                resetBtn.style.display = 'inline-flex';
+                if (eventBox) eventBox.style.display = 'flex';
+            }
+
+            if (state.locked) {
+                lockBtn.style.display = 'none';
+                unlockBtn.style.display = 'inline-flex';
+                activateBtn.style.display = 'none';
+            }
         }
 
         function renderShrinkageModal() {
@@ -788,9 +816,18 @@
         function confirmActivateSheet() {
             const { person, sheetId } = pendingActivateSheet;
             sheetStates[sheetId].active = true;
+            
+            const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+            const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+            const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
+            const eventBox = document.getElementById(`${sheetId}-event-box`);
+
+            if (activateBtn) activateBtn.style.display = 'none';
+            if (lockBtn) lockBtn.style.display = 'inline-flex';
+            if (resetBtn) resetBtn.style.display = 'inline-flex';
+            if (eventBox) eventBox.style.display = 'flex';
+
             updateSheetStatus(sheetId);
-            document.getElementById(`${sheetId}-event-box`).style.display = 'flex';
-            document.querySelector(`button[onclick="openActivateSheetModal('${person}', '${sheetId}')"]`).style.display = 'none';
             initializeUnitsLeftListeners(sheetId);
             saveAllDataNow();
             showSuccess('✅ Sheet activated!');
@@ -811,6 +848,7 @@
             const sheetId = pendingLockSheet;
             const meta = sheetMetadata[sheetId];
             sheetStates[sheetId].locked = true;
+            
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                 const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
@@ -819,11 +857,18 @@
                     showTubEl.value = Math.max(0, parseFloat(showTubEl.value || 0) - unitsSold);
                 }
             }
+            
             document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(el => el.disabled = true);
+            
+            const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+            const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+            const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+            
+            if (lockBtn) lockBtn.style.display = 'none';
+            if (unlockBtn) unlockBtn.style.display = 'inline-flex';
+            if (activateBtn) activateBtn.style.display = 'none';
+
             updateSheetStatus(sheetId);
-            document.getElementById(`lock-btn-${sheetId}`).style.display = 'none';
-            document.getElementById(`unlock-btn-${sheetId}`).style.display = 'inline-flex';
-            document.getElementById(`reset-btn-${sheetId}`).style.display = 'inline-flex';
             updateAllInventories();
             updateInventoryAggregatedUnitsSold();
             recalculateRevenueForSheet(sheetId);
@@ -846,6 +891,7 @@
             const sheetId = pendingUnlockSheet;
             const meta = sheetMetadata[sheetId];
             sheetStates[sheetId].locked = false;
+            
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                 const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
@@ -854,11 +900,16 @@
                     showTubEl.value = parseFloat(showTubEl.value || 0) + unitsSold;
                 }
             }
+            
             document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(el => el.disabled = false);
+            
+            const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+            const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+            
+            if (unlockBtn) unlockBtn.style.display = 'none';
+            if (lockBtn) lockBtn.style.display = 'inline-flex';
+
             updateSheetStatus(sheetId);
-            document.getElementById(`unlock-btn-${sheetId}`).style.display = 'none';
-            document.getElementById(`lock-btn-${sheetId}`).style.display = 'inline-flex';
-            document.getElementById(`reset-btn-${sheetId}`).style.display = 'none';
             updateAllInventories();
             updateInventoryAggregatedUnitsSold();
             recalculateRevenueForSheet(sheetId);
@@ -1410,6 +1461,15 @@
                 }
             }
             document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(input => { input.disabled = true; });
+            
+            const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+            const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+            const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+            
+            if (lockBtn) lockBtn.style.display = 'none';
+            if (unlockBtn) unlockBtn.style.display = 'inline-flex';
+            if (activateBtn) activateBtn.style.display = 'none';
+
             updateSheetStatus(sheetId);
             updateAllInventories();
             updateInventoryAggregatedUnitsSold();
@@ -1806,7 +1866,10 @@
 
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
-                Object.keys(sheetStates).forEach(sheetId => updateSheetStatus(sheetId));
+                Object.keys(sheetStates).forEach(sheetId => {
+                    initializeSheetButtonVisibility(sheetId);
+                    updateSheetStatus(sheetId);
+                });
                 updateShrinkageDisplay();
                 console.log('✅ Firebase load complete');
             });
