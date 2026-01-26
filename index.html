@@ -447,7 +447,10 @@
     </div>
 
     <script>
-        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH PERSISTENCE FIX ======
+        // ====== CRITICAL FIX: Firebase only loads ONCE, not on every change ======
+        let firebaseLoadComplete = false;
+
+        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH PERSISTENCE & NO INPUT BLANKING ======
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -540,17 +543,15 @@
                     attachUnitsLeftListeners(sheetId);
                 }, 100);
             });
-            // ====== CRITICAL FIX: Re-render navigation links from sheetMetadata ======
             renderDynamicNavLinks();
         }
 
         function renderDynamicNavLinks() {
-            // Clear and rebuild Pop navigation
             const popNavContainer = document.getElementById('dynamic-sales-links');
             if (popNavContainer) {
                 popNavContainer.innerHTML = '';
                 Object.keys(sheetMetadata).forEach(sheetId => {
-                    if (staticSheets.includes(sheetId)) return; // Skip static sheets
+                    if (staticSheets.includes(sheetId)) return;
                     const meta = sheetMetadata[sheetId];
                     if (meta?.person === 'pop') {
                         const navLink = document.createElement('button');
@@ -562,12 +563,11 @@
                 });
             }
 
-            // Clear and rebuild Aaron navigation
             const aaronNavContainer = document.getElementById('dynamic-aaron-sales-links');
             if (aaronNavContainer) {
                 aaronNavContainer.innerHTML = '';
                 Object.keys(sheetMetadata).forEach(sheetId => {
-                    if (staticSheets.includes(sheetId)) return; // Skip static sheets
+                    if (staticSheets.includes(sheetId)) return;
                     const meta = sheetMetadata[sheetId];
                     if (meta?.person === 'aaron') {
                         const navLink = document.createElement('button');
@@ -1476,7 +1476,7 @@
                     attachUnitsLeftListeners(sheetId);
                 }, 100);
                 
-                renderDynamicNavLinks(); // ====== CRITICAL: Re-render nav links ======
+                renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewSalesSheetModal();
@@ -1517,7 +1517,7 @@
                     attachUnitsLeftListeners(sheetId);
                 }, 100);
                 
-                renderDynamicNavLinks(); // ====== CRITICAL: Re-render nav links ======
+                renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewAaronSalesSheetModal();
@@ -1550,7 +1550,7 @@
                 delete sheetStates[sheetId];
                 const el = document.getElementById(sheetId);
                 if (el) el.remove();
-                renderDynamicNavLinks(); // ====== CRITICAL: Re-render nav links ======
+                renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet deleted!');
                 closeDeleteSalesSheetModal();
@@ -1946,10 +1946,14 @@
             if (!window.firebaseReady) return;
             try {
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
+                    // ====== CRITICAL FIX: ONLY load on initial page load, NOT on every Firebase change ======
+                    if (firebaseLoadComplete) return;
+                    
                     isLoadingFromFirebase = true;
                     const data = snapshot.val();
                     if (!data) {
                         isLoadingFromFirebase = false;
+                        firebaseLoadComplete = true;
                         return;
                     }
 
@@ -2001,9 +2005,7 @@
                     if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
                     if (data.excelLibrary) excelLibrary = data.excelLibrary;
 
-                    // ====== CRITICAL: Re-render sheets and nav links from loaded data ======
                     renderSalesSheets();
-                    
                     updateAllInventories();
                     updateInventoryAggregatedUnitsSold();
                     Object.keys(sheetStates).forEach(sheetId => {
@@ -2015,12 +2017,14 @@
                     
                     setTimeout(() => {
                         isLoadingFromFirebase = false;
-                        console.log('✅ Firebase load complete');
+                        firebaseLoadComplete = true;
+                        console.log('✅ Firebase load complete - now accepting user input');
                     }, 100);
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
                 isLoadingFromFirebase = false;
+                firebaseLoadComplete = true;
             }
         }
 
