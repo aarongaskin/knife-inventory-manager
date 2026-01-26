@@ -468,6 +468,10 @@
         let pendingDeleteSheet = null;
         let chartsInstances = {};
 
+        // DEBOUNCE TIMERS
+        let updateInventoriesTimer = null;
+        let saveDataTimer = null;
+
         // INITIALIZATION
         function initializeApp() {
             initSheetStates();
@@ -598,13 +602,8 @@
         function attachUnitsLeftListeners(sheetId) {
             const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
             inputs.forEach(input => {
-                // Remove old listeners
-                input.removeEventListener('change', handleUnitsLeftChange);
                 input.removeEventListener('input', handleUnitsLeftChange);
-                
-                // Add new listeners - 'input' for real-time, 'change' for final
                 input.addEventListener('input', handleUnitsLeftChange);
-                input.addEventListener('change', handleUnitsLeftChange);
             });
         }
 
@@ -613,40 +612,35 @@
                 const sheetId = e.target.getAttribute('data-sheet');
                 const rowIndex = parseInt(e.target.getAttribute('data-row'));
                 
-                if (!sheetId || isNaN(rowIndex)) {
-                    console.warn('Invalid sheet or row:', sheetId, rowIndex);
-                    return;
-                }
+                if (!sheetId || isNaN(rowIndex)) return;
 
-                // Get the elements for this row
                 const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
                 const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
                 
-                if (!unitsBroughtEl || !unitsSoldEl) {
-                    console.warn('Missing elements for', sheetId, rowIndex);
-                    return;
-                }
+                if (!unitsBroughtEl || !unitsSoldEl) return;
 
-                // Get values
                 const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
                 const unitsLeft = parseFloat(e.target.value || 0);
-                
-                // Calculate units sold: brought - left
                 const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
 
-                // Update the span with the calculated value
+                // Update units sold immediately (no debounce)
                 unitsSoldEl.textContent = newUnitsSold;
 
-                // Recalculate revenue for this sheet
+                // Recalculate revenue immediately (lightweight)
                 recalculateRevenueForSheet(sheetId);
-                
-                // Update inventory aggregations
-                updateAllInventories();
-                
-                // Save data
-                saveAllDataNow();
-                
-                console.log(`✅ Units sold calculated: ${unitsBrought} - ${unitsLeft} = ${newUnitsSold}`);
+
+                // Debounce the heavy operations
+                clearTimeout(updateInventoriesTimer);
+                clearTimeout(saveDataTimer);
+
+                updateInventoriesTimer = setTimeout(() => {
+                    updateAllInventories();
+                }, 500);
+
+                saveDataTimer = setTimeout(() => {
+                    saveAllDataNow();
+                }, 1000);
+
             } catch (err) {
                 console.error('Error in handleUnitsLeftChange:', err);
             }
@@ -663,10 +657,7 @@
                 const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
                 const eventBox = document.getElementById(`${sheetId}-event-box`);
 
-                if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) {
-                    console.warn('Missing buttons for', sheetId);
-                    return;
-                }
+                if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) return;
 
                 if (state.locked) {
                     activateBtn.style.display = 'none';
@@ -787,7 +778,6 @@
         // INVENTORY CALCULATIONS
         function updateAllInventories() {
             try {
-                // Update current stock (storage + show tub)
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     ['pop', 'aaron'].forEach(person => {
                         const storage = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
@@ -803,7 +793,6 @@
                     if (masterCombined) masterCombined.value = popStock + aaronStock;
                 }
 
-                // Update totals
                 let popStorageTotal = 0, popShowTotal = 0, popCombined = 0;
                 let aaronStorageTotal = 0, aaronShowTotal = 0, aaronCombined = 0;
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -844,7 +833,6 @@
                 if (popTotHand) popTotHand.value = popCombined;
                 if (aaronTotHand) aaronTotHand.value = aaronCombined;
 
-                // Update aggregated units sold from locked sheets
                 updateInventoryAggregatedUnitsSold();
             } catch (err) {
                 console.error('Error in updateAllInventories:', err);
@@ -859,7 +847,6 @@
                         const allSheetIds = [...Object.keys(sheetMetadata)];
                         allSheetIds.forEach(sheetId => {
                             const meta = sheetMetadata[sheetId];
-                            // Only count from locked sheets for this person
                             if (meta?.person !== person || !sheetStates[sheetId]?.locked) return;
                             const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                             if (soldEl) total += parseFloat(soldEl.textContent || 0);
@@ -923,10 +910,7 @@
                 
                 initializeSheetButtonVisibility(sheetId);
                 attachUnitsLeftListeners(sheetId);
-                
-                // Set units brought from show tub
                 refreshSheetData(person, sheetId);
-                
                 updateSheetStatus(sheetId);
                 saveAllDataNow();
                 showSuccess('✅ Sheet activated!');
@@ -952,7 +936,6 @@
                 const sheetId = pendingLockSheet;
                 const meta = sheetMetadata[sheetId];
                 
-                // Step 1: Update show tub by depleting units sold
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
@@ -963,23 +946,16 @@
                     }
                 }
 
-                // Step 2: Update sheet state to locked
                 sheetStates[sheetId].locked = true;
 
-                // Step 3: Disable inputs for units left
                 const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
                 unitsLeftInputs.forEach(el => el.disabled = true);
 
-                // Step 4: Update button visibility
                 initializeSheetButtonVisibility(sheetId);
-                
-                // Step 5: Update displays
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 recalculateRevenueForSheet(sheetId);
-                
-                // Step 6: Save
                 saveAllDataNow();
                 
                 showSuccess('✅ Sheet locked!');
@@ -1005,7 +981,6 @@
                 const sheetId = pendingUnlockSheet;
                 const meta = sheetMetadata[sheetId];
                 
-                // Reverse the show tub depletion
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
@@ -1015,14 +990,11 @@
                     }
                 }
 
-                // Update state
                 sheetStates[sheetId].locked = false;
 
-                // Enable inputs
                 const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
                 unitsLeftInputs.forEach(el => el.disabled = false);
 
-                // Update buttons and displays
                 initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
