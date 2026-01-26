@@ -3,914 +3,2126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="-1">
+    <title>Knife Inventory Manager v30 - Advanced Edition COMPLETE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .control-panel {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-success {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #38a169;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
-        }
-        
-        .btn-danger {
-            background: #f56565;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #e53e3e;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(245, 101, 101, 0.4);
-        }
-        
-        .btn-warning {
-            background: #ed8936;
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background: #dd6b20;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(237, 137, 54, 0.4);
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .tab-button {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            color: #718096;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-button.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-        
-        .tab-button:hover {
-            color: #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-        
-        input[type="text"],
-        input[type="number"],
-        select {
-            flex: 1;
-            min-width: 150px;
-            padding: 10px 15px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-        }
-        
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        
-        thead {
-            background: #f7fafc;
-        }
-        
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #2d3748;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        tr:hover {
-            background: #f7fafc;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 0.85em;
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .alert.show {
-            display: block;
-        }
-        
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border-left: 4px solid #48bb78;
-        }
-        
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border-left: 4px solid #f56565;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-card h3 {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-        
-        .stat-card .value {
-            font-size: 2.5em;
-            font-weight: bold;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.show {
-            display: block;
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .close-modal {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close-modal:hover {
-            color: black;
-        }
-
-        .divider {
-            margin: 30px 0;
-            border-top: 2px solid #e2e8f0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+        .nav-tabs { display: flex; flex-wrap: wrap; background: #f8f9fa; border-bottom: 2px solid #e0e0e0; overflow-x: auto; }
+        .nav-tabs button { background: none; border: none; padding: 15px 20px; font-size: 14px; font-weight: 500; cursor: pointer; color: #666; transition: all 0.3s ease; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .nav-tabs button:hover { background: #e8e8e8; color: #667eea; }
+        .nav-tabs button.active { color: #667eea; border-bottom-color: #667eea; }
+        .tab-content { padding: 30px; display: none; }
+        .tab-content.active { display: block; }
+        .tab-section h2 { color: #333; margin-bottom: 20px; font-size: 1.8em; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .tab-section p { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .inventory-controls h3 { width: 100%; color: #2e7d32; margin-bottom: 15px; }
+        .sheet-controls { background: #f0f4ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .sheet-status { display: inline-flex; align-items: center; gap: 8px; padding: 12px 15px; border-radius: 6px; font-weight: 500; }
+        .sheet-status.inactive { background: #f5f5f5; color: #666; }
+        .sheet-status.active { background: #c8e6c9; color: #2e7d32; }
+        .sheet-status.completed { background: #bbdefb; color: #1565c0; }
+        .sheet-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px; }
+        .sheet-btn:hover { background: #5568d3; }
+        .sheet-btn.lock-btn { background: #ff9800; }
+        .sheet-btn.lock-btn:hover { background: #fb8c00; }
+        .sheet-btn.unlock-btn { background: #4caf50; }
+        .sheet-btn.unlock-btn:hover { background: #45a049; }
+        .sheet-btn.reset-btn { background: #ff6b6b; }
+        .sheet-btn.reset-btn:hover { background: #ff5252; }
+        .event-checkbox { display: flex; align-items: center; gap: 10px; }
+        .event-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .event-checkbox label { font-weight: 500; color: #333; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        thead { background: #667eea; color: white; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { font-weight: 600; }
+        tbody tr:hover { background: #f8f9fa; }
+        tbody tr:nth-child(even) { background: #f8f9fa; }
+        input { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        input[readonly] { background-color: #f8f9fa; color: #666; cursor: not-allowed; }
+        input:disabled { background-color: #f5f5f5; color: #999; cursor: not-allowed; }
+        select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        .revenue-row { font-weight: 700; background: #fffacd; border-top: 2px solid #667eea; }
+        .units-sold-row { font-weight: 700; background: #e8f5e9; }
+        .total-row { font-weight: 700; background: #eef2ff; }
+        .summary-row { font-weight: 600; background: #f5e6cc; }
+        .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .nav-link:hover { background: #667eea; color: white; }
+        .nav-link.reset-btn { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+        .nav-link.export-btn { background: #4caf50; color: white; border-color: #4caf50; }
+        .nav-link.export-btn:hover { background: #45a049; }
+        .nav-link.import-btn { background: #2196f3; color: white; border-color: #2196f3; }
+        .nav-link.import-btn:hover { background: #1976d2; }
+        .refresh-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .refresh-btn:hover { background: #1976d2; }
+        .refresh-btn::before { content: '↻'; font-size: 16px; }
+        .remove-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .remove-btn:hover { background: #ff5252; }
+        .units-info { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196f3; font-size: 12px; color: #1565c0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-content h3 { margin-top: 0; color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .modal-buttons button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .modal-buttons .btn-cancel { background: #e0e0e0; color: #333; }
+        .modal-buttons .btn-cancel:hover { background: #d0d0d0; }
+        .modal-buttons .btn-create { background: #667eea; color: white; }
+        .modal-buttons .btn-create:hover { background: #5568d3; }
+        .modal-buttons .btn-add-inventory { background: #4caf50; color: white; }
+        .modal-buttons .btn-add-inventory:hover { background: #45a049; }
+        .modal-buttons .btn-remove { background: #ff6b6b; color: white; }
+        .modal-buttons .btn-remove:hover { background: #ff5252; }
+        .modal-buttons .btn-import { background: #2196f3; color: white; }
+        .modal-buttons .btn-import:hover { background: #1976d2; }
+        .inventory-table { width: 100%; border-collapse: collapse; }
+        .inventory-table thead { background: #4caf50; }
+        .inventory-table th, .inventory-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .inventory-table input { margin: 0; padding: 5px; }
+        .flow-info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3; font-size: 13px; color: #1565c0; line-height: 1.6; }
+        .depletion-notice { background: #c8e6c9; padding: 10px 15px; border-radius: 5px; margin-bottom: 15px; color: #2e7d32; font-size: 12px; font-weight: 500; border-left: 4px solid #4caf50; }
+        .success-banner { background: #4caf50; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; text-align: center; font-weight: 500; }
+        .success-banner.show { display: block; }
+        .aggregation-info { background: #fff3cd; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; color: #856404; font-size: 12px; border-left: 4px solid #ffc107; }
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .chart-container { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .chart-container h3 { margin-bottom: 20px; color: #333; }
+        .shrinkage-table { width: 100%; border-collapse: collapse; }
+        .shrinkage-table thead { background: #ff6b6b; color: white; }
+        .shrinkage-table th, .shrinkage-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .shrinkage-summary { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .shrinkage-summary h3 { margin-bottom: 10px; color: #856404; }
+        .radio-group { display: flex; gap: 20px; margin: 15px 0; }
+        .radio-group label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; }
+        .radio-group input[type="radio"] { width: 18px; height: 18px; cursor: pointer; }
+        .excel-library-item { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #667eea; }
+        .excel-library-item button { padding: 8px 12px; font-size: 12px; cursor: pointer; border: none; border-radius: 4px; background: #2196f3; color: white; }
+        .import-mapping { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2196f3; }
+        .import-mapping h4 { margin-bottom: 10px; color: #333; }
+        .mapping-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; }
+        .mapping-row label { min-width: 150px; font-weight: 500; }
+        .mapping-row select { flex: 1; }
+        @media (max-width: 768px) {
+            .nav-tabs { justify-content: flex-start; }
+            .nav-tabs button { padding: 12px 15px; font-size: 12px; }
+            .header h1 { font-size: 1.8em; }
+            .header-buttons { flex-direction: column; }
+            table { font-size: 0.9em; }
+            th, td { padding: 8px 10px; }
+            .sheet-controls { flex-direction: column; align-items: flex-start; }
+            .inventory-controls { flex-direction: column; }
+            .analytics-grid { grid-template-columns: 1fr; }
+            .radio-group { flex-direction: column; }
         }
     </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
+            authDomain: "knife-inventory-management.firebaseapp.com",
+            databaseURL: "https://knife-inventory-management-default-rtdb.firebaseio.com",
+            projectId: "knife-inventory-management",
+            storageBucket: "knife-inventory-management.firebasestorage.app",
+            messagingSenderId: "944440388498",
+            appId: "1:944440388498:web:8eadb87306507966f1af4b",
+            measurementId: "G-SSQ4E6R5TW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.firebaseDB = db;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
+        window.firebaseReady = true;
+
+        console.log("✅ Firebase initialized");
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔪 Knife Inventory Manager</h1>
-            <p>Professional Inventory Tracking System</p>
+            <h1>Knife Inventory Manager v30</h1>
+            <p>🎉 Complete Edition - Excel Export/Import + Data Persistence!</p>
+            <div class="header-buttons">
+                <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
+                <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
+                <button class="nav-link import-btn" onclick="openImportExcelModal()">📥 Import from Excel</button>
+                <button class="nav-link" onclick="openAddProductModal()" style="background: #9c27b0; color: white; border-color: #9c27b0;">➕ Add Product</button>
+                <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
+            </div>
         </div>
+
+        <div id="successBanner" class="success-banner"></div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'master-inv')">Master Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'aaron-nav')">Aaron Navigation</button>
+            <button class="tab-btn" onclick="openTab(event, 'pop-nav')">Pop Navigation</button>
+            <button class="tab-btn" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'shrinkage')">📦 Shrinkage Tracking</button>
+            <button class="tab-btn" onclick="openTab(event, 'analytics')">📊 Sales Analytics</button>
+            <button class="tab-btn" onclick="openTab(event, 'excel-library')">📁 Excel Library</button>
+        </div>
+
+        <!-- Master Inventory -->
+        <div id="master-inv" class="tab-content active">
+            <div class="tab-section">
+                <h2>Master Inventory - Combined Stock</h2>
+                <p>Shows current stock levels for all knife products across both Pop and Aaron inventories.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Pop Total</th>
+                            <th>Aaron Total</th>
+                            <th>Combined Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="master-inv-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aaron Navigation -->
+        <div id="aaron-nav" class="tab-content">
+            <div class="tab-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <h2 style="margin: 0;">Aaron's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <button class="nav-link" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
+                    <div id="dynamic-aaron-sales-links" style="display: inline;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pop Navigation -->
+        <div id="pop-nav" class="tab-content">
+            <div class="tab-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <h2 style="margin: 0;">Pop's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <button class="nav-link" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+                    <button class="nav-link" onclick="openTab(event, 'wetumpka')">Wetumpka</button>
+                    <button class="nav-link" onclick="openTab(event, 'trussville')">Trussville</button>
+                    <button class="nav-link" onclick="openTab(event, 'columbia')">Columbia</button>
+                    <button class="nav-link" onclick="openTab(event, 'hattiesburg')">Hattiesburg</button>
+                    <div id="dynamic-sales-links" style="display: inline;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aaron Inventory -->
+        <div id="aaron-inv" class="tab-content">
+            <div class="tab-section">
+                <h2>Aaron's Current Inventory</h2>
+                <div class="flow-info">
+                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                </div>
+                <div class="depletion-notice">
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
+                </div>
+                <div class="aggregation-info">
+                    📊 Units Sold = Running total from all LOCKED sales sheets
+                </div>
+                <div class="inventory-controls">
+                    <h3>Inventory Management</h3>
+                    <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
+                    <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
+                    <button class="nav-link" onclick="openAaronMoveBackInventoryModal()" style="margin: 0; background: #9c27b0; color: white; border-color: #9c27b0;">↔️ Move Back to Storage</button>
+                    <button class="remove-btn" onclick="openAaronRemoveInventoryModal()">🗑️ Remove from Storage</button>
+                </div>
+                <table>
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <tbody id="aaron-inv-tbody">
+                    </tbody>
+                </table>
+                <table>
+                    <thead><tr><th colspan="3">Totals</th><th>Storage Total</th><th>Show Tub Total</th><th>Combined Total</th></tr></thead>
+                    <tbody>
+                        <tr class="summary-row">
+                            <td colspan="3"><strong>AARON TOTALS</strong></td>
+                            <td><input type="number" id="aaron-storage-total" readonly></td>
+                            <td><input type="number" id="aaron-show-total" readonly></td>
+                            <td><input type="number" id="aaron-combined-total" readonly style="font-weight: bold;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pop Inventory -->
+        <div id="pop-inv" class="tab-content">
+            <div class="tab-section">
+                <h2>Pop's Current Inventory</h2>
+                <div class="flow-info">
+                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                </div>
+                <div class="depletion-notice">
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
+                </div>
+                <div class="aggregation-info">
+                    📊 Units Sold = Running total from all LOCKED sales sheets
+                </div>
+                <div class="inventory-controls">
+                    <h3>Inventory Management</h3>
+                    <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
+                    <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
+                    <button class="nav-link" onclick="openPopMoveBackInventoryModal()" style="margin: 0; background: #9c27b0; color: white; border-color: #9c27b0;">↔️ Move Back to Storage</button>
+                    <button class="remove-btn" onclick="openPopRemoveInventoryModal()">🗑️ Remove from Storage</button>
+                </div>
+                <table>
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <tbody id="pop-inv-tbody">
+                    </tbody>
+                </table>
+                <table>
+                    <thead><tr><th colspan="3">Totals</th><th>Storage Total</th><th>Show Tub Total</th><th>Combined Total</th></tr></thead>
+                    <tbody>
+                        <tr class="summary-row">
+                            <td colspan="3"><strong>POP TOTALS</strong></td>
+                            <td><input type="number" id="pop-storage-total" readonly></td>
+                            <td><input type="number" id="pop-show-total" readonly></td>
+                            <td><input type="number" id="pop-combined-total" readonly style="font-weight: bold;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sales Sheets Container -->
+        <div id="sales-sheets-container"></div>
+
+        <!-- Shrinkage Tracking Tab -->
+        <div id="shrinkage" class="tab-content">
+            <div class="tab-section">
+                <h2>📦 Shrinkage Tracking - Broken Items</h2>
+                <p>Track broken or damaged items to maintain accurate inventory.</p>
+                <div class="inventory-controls">
+                    <h3>Log Shrinkage</h3>
+                    <button class="nav-link" onclick="openAddShrinkageModal()" style="margin: 0;">➕ Add Broken Item</button>
+                </div>
+                <div id="shrinkage-summary" class="shrinkage-summary" style="display: none;">
+                    <h3>📊 Shrinkage Summary</h3>
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr><th>Product</th><th>Pop Broken</th><th>Aaron Broken</th><th>Total Broken</th></tr>
+                        </thead>
+                        <tbody id="shrinkage-summary-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <table class="shrinkage-table">
+                    <thead>
+                        <tr><th>Date</th><th>Person</th><th>Product</th><th>Qty</th><th>From</th><th>Notes</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="shrinkage-log">
+                        <tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sales Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="tab-section">
+                <h2>📊 Sales Analytics Dashboard</h2>
+                <p>Track your top sellers and sales trends over time.</p>
+                <div style="margin-top: 20px;">
+                    <button class="refresh-btn" onclick="refreshAnalytics()">Refresh Analytics</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Excel Library Tab -->
+        <div id="excel-library" class="tab-content">
+            <div class="tab-section">
+                <h2>📁 Excel Export Library</h2>
+                <p>All exported Excel files are saved here for quick download.</p>
+                <div id="excel-library-items" style="margin-top: 20px;">
+                    <p style="color: #999; text-align: center;">No exports yet. Export your data to see it here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
+        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and add to inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
+        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
+        <div id="resetSheetModal" class="modal"><div class="modal-content"><h3>⚠️ Reset Sheet to 0?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">This will clear all data in this sheet. This action cannot be undone.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeResetSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmResetSheet()" style="background: #ff6b6b;">Reset</button></div></div></div>
+        <div id="eventCompletedConfirmModal" class="modal"><div class="modal-content"><h3>✅ Event Completed?</h3><div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;"><span id="confirmEventSheetName"></span></p><p style="margin: 10px 0 0 0;">Units: <strong id="confirmEventUnits">--</strong> | Revenue: <strong id="confirmEventRevenue">--</strong></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Complete</button></div></div></div>
+        <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>Add Shrinkage Entry</h3><div class="form-group"><label>Person:</label><select id="shrinkage-person"><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product:</label><select id="shrinkage-product"></select></div><div class="form-group"><label>Quantity:</label><input type="number" id="shrinkage-qty" value="1" min="1"></div><div class="form-group"><label>Deplete From:</label><div class="radio-group"><label><input type="radio" name="shrinkage-from" value="storage" checked> Storage Tub</label><label><input type="radio" name="shrinkage-from" value="show"> Show Tub</label><label><input type="radio" name="shrinkage-from" value="both"> Both (equal split)</label></div></div><div class="form-group"><label>Notes:</label><input type="text" id="shrinkage-notes" placeholder="e.g., Broken handle"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addShrinkageEntry()">Add</button></div></div></div>
+        <div id="addProductModal" class="modal"><div class="modal-content"><h3>Add New Product</h3><div class="form-group"><label>Product Name:</label><input type="text" id="new-product-name" placeholder="e.g., Tactical Blade"></div><div class="form-group"><label>Default Price (Pop):</label><input type="number" id="new-product-price-pop" placeholder="0" min="0"></div><div class="form-group"><label>Default Price (Aaron):</label><input type="number" id="new-product-price-aaron" placeholder="0" min="0"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAddProductModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmAddProduct()">Add Product</button></div></div></div>
+        <div id="popInventoryReceivedModal" class="modal"><div class="modal-content"><h3>Add Inventory - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty</th></tr></thead><tbody id="pop-received-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopInventoryReceivedModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addPopInventoryReceived()">Add</button></div></div></div>
+        <div id="aaronInventoryReceivedModal" class="modal"><div class="modal-content"><h3>Add Inventory - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty</th></tr></thead><tbody id="aaron-received-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronInventoryReceivedModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addAaronInventoryReceived()">Add</button></div></div></div>
+        <div id="popMoveInventoryModal" class="modal"><div class="modal-content"><h3>Move to Show Tub - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Move</th></tr></thead><tbody id="pop-move-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopMoveInventoryModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addPopMoveInventory()">Move</button></div></div></div>
+        <div id="aaronMoveInventoryModal" class="modal"><div class="modal-content"><h3>Move to Show Tub - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Move</th></tr></thead><tbody id="aaron-move-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronMoveInventoryModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addAaronMoveInventory()">Move</button></div></div></div>
+        <div id="popMoveBackInventoryModal" class="modal"><div class="modal-content"><h3>Move Back to Storage - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Move</th></tr></thead><tbody id="pop-move-back-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopMoveBackInventoryModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addPopMoveBackInventory()">Move</button></div></div></div>
+        <div id="aaronMoveBackInventoryModal" class="modal"><div class="modal-content"><h3>Move Back to Storage - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Move</th></tr></thead><tbody id="aaron-move-back-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronMoveBackInventoryModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addAaronMoveBackInventory()">Move</button></div></div></div>
+        <div id="popRemoveInventoryModal" class="modal"><div class="modal-content"><h3>Remove from Storage - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Remove</th></tr></thead><tbody id="pop-remove-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopRemoveInventoryModal()">Cancel</button><button type="button" class="btn-remove" onclick="addPopRemoveInventory()">Remove</button></div></div></div>
+        <div id="aaronRemoveInventoryModal" class="modal"><div class="modal-content"><h3>Remove from Storage - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Remove</th></tr></thead><tbody id="aaron-remove-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button><button type="button" class="btn-remove" onclick="addAaronRemoveInventory()">Remove</button></div></div></div>
+        <div id="newSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Sales Sheet - Pop</h3><div class="form-group"><label>Sheet Name (e.g., Nashville - Dec 1-2):</label><input type="text" id="new-sheet-name"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeNewSalesSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmNewSalesSheet()">Create</button></div></div></div>
+        <div id="newAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Sales Sheet - Aaron</h3><div class="form-group"><label>Sheet Name (e.g., Nashville - Dec 1-2):</label><input type="text" id="new-aaron-sheet-name"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmNewAaronSalesSheet()">Create</button></div></div></div>
+        <div id="deleteSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Sales Sheet</h3><p style="margin-bottom: 20px;">Select sheet to delete:</p><select id="delete-sheet-select" style="width: 100%; padding: 10px; margin-bottom: 20px;"></select><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeDeleteSalesSheetModal()">Cancel</button><button type="button" class="btn-remove" onclick="confirmDeleteSalesSheet()">Delete</button></div></div></div>
         
-        <div class="content">
-            <div id="alert" class="alert"></div>
-            
-            <div class="control-panel">
-                <button class="btn-success" onclick="saveAllData()">💾 Save All Data</button>
-                <button class="btn-primary" onclick="loadAllData()">📂 Load Data</button>
-                <button class="btn-warning" onclick="exportToCSV()">📊 Export CSV</button>
-                <button class="btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
-            </div>
-
-            <div class="tabs">
-                <button class="tab-button active" onclick="switchTab('inventory')">📦 Inventory</button>
-                <button class="tab-button" onclick="switchTab('sales')">💰 Sales Sheets</button>
-                <button class="tab-button" onclick="switchTab('dashboard')">📈 Dashboard</button>
-            </div>
-
-            <!-- INVENTORY TAB -->
-            <div id="inventory" class="tab-content active">
-                <h2>Inventory Management</h2>
+        <!-- Import Excel Modal with Mapping -->
+        <div id="importExcelModal" class="modal">
+            <div class="modal-content">
+                <h3>📥 Import from Excel</h3>
+                <p style="margin: 0 0 20px 0; color: #666; font-size: 13px;">Select an Excel file exported from this system. Map each sheet to an existing page.</p>
                 
-                <div class="input-group">
-                    <input type="text" id="itemName" placeholder="Item Name (e.g., Kershaw Blur)">
-                    <input type="number" id="itemQuantity" placeholder="Quantity" min="0">
-                    <input type="text" id="itemSKU" placeholder="SKU/Model">
-                    <input type="number" id="itemPrice" placeholder="Unit Price" step="0.01" min="0">
-                    <select id="itemLocation">
-                        <option value="">Select Location</option>
-                        <option value="Fort Worth">Fort Worth</option>
-                        <option value="Warehouse">Warehouse</option>
-                        <option value="Event">Event</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <button class="btn-primary" onclick="addInventoryItem()">+ Add Item</button>
+                <div class="form-group">
+                    <label>Select Excel File:</label>
+                    <input type="file" id="import-file" accept=".xlsx,.xls">
                 </div>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>SKU</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Location</th>
-                                <th>Total Value</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTable">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- SALES TAB -->
-            <div id="sales" class="tab-content">
-                <h2>Sales Tracking</h2>
                 
-                <div class="input-group">
-                    <input type="text" id="saleItem" placeholder="Item Sold">
-                    <input type="number" id="saleQuantity" placeholder="Quantity Sold" min="1">
-                    <input type="number" id="salePrice" placeholder="Sale Price" step="0.01" min="0">
-                    <input type="text" id="saleCustomer" placeholder="Customer Name">
-                    <input type="date" id="saleDate">
-                    <button class="btn-primary" onclick="addSale()">+ Record Sale</button>
-                </div>
-
-                <div class="input-group">
-                    <select id="salesLocation">
-                        <option value="">Filter by Location</option>
-                        <option value="Fort Worth">Fort Worth</option>
-                        <option value="Warehouse">Warehouse</option>
-                        <option value="Event">Event</option>
-                        <option value="Online">Online</option>
-                        <option value="All">All Locations</option>
-                    </select>
-                    <input type="date" id="salesStartDate" placeholder="Start Date">
-                    <input type="date" id="salesEndDate" placeholder="End Date">
-                    <button class="btn-primary" onclick="filterSales()">🔍 Filter</button>
-                </div>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Total</th>
-                                <th>Customer</th>
-                                <th>Location</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesTable">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- DASHBOARD TAB -->
-            <div id="dashboard" class="tab-content">
-                <h2>Dashboard & Analytics</h2>
+                <div id="import-mapping-container" style="display: none; max-height: 400px; overflow-y: auto; margin-bottom: 20px;"></div>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Items</h3>
-                        <div class="value" id="totalItems">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Units</h3>
-                        <div class="value" id="totalUnits">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Inventory Value</h3>
-                        <div class="value" id="inventoryValue">$0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Sales</h3>
-                        <div class="value" id="totalSales">$0</div>
-                    </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button>
+                    <button type="button" class="btn-import" onclick="confirmImportExcel()">Import Data</button>
                 </div>
-
-                <h3>Sales by Location</h3>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Location</th>
-                                <th>Sales Count</th>
-                                <th>Total Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody id="locationStats">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- EDIT MODAL -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div class="modal-header">Edit Item</div>
-            <div class="input-group">
-                <input type="text" id="editItemName" placeholder="Item Name">
-                <input type="text" id="editItemSKU" placeholder="SKU">
-                <input type="number" id="editItemQuantity" placeholder="Quantity" min="0">
-                <input type="number" id="editItemPrice" placeholder="Price" step="0.01" min="0">
-                <select id="editItemLocation">
-                    <option value="Fort Worth">Fort Worth</option>
-                    <option value="Warehouse">Warehouse</option>
-                    <option value="Event">Event</option>
-                    <option value="Other">Other</option>
-                </select>
-                <button class="btn-success" onclick="saveEdit()">Save Changes</button>
-                <button class="btn-danger" onclick="closeModal()">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+        let firebaseLoadComplete = false;
+        let isLoadingFromFirebase = false;
+        let saveDataTimer = null;
+        let updateInventoriesTimer = null;
+        let importedSheetMapping = {};
+
+        let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
+        let NUM_PRODUCTS = productNames.length;
+        let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
+        let sheetMetadata = {
+            "wetumpka": { name: "Wetumpka, Alabama", person: "pop", date: "2024-12-12" },
+            "trussville": { name: "Trussville, Alabama", person: "pop", date: "2024-01-03" },
+            "columbia": { name: "Columbia, Tennessee", person: "pop", date: "2024-01-10" },
+            "hattiesburg": { name: "Hattiesburg, Mississippi", person: "pop", date: "2024-01-17" }
         };
+        let sheetStates = {};
+        let shrinkageLog = [];
+        let excelLibrary = [];
+        let pendingActivateSheet = null;
+        let pendingLockSheet = null;
+        let pendingUnlockSheet = null;
+        let pendingResetSheet = null;
+        let pendingEventCompletedSheet = null;
+        let pendingDeleteSheet = null;
+        let chartsInstances = {};
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        function initializeApp() {
+            initSheetStates();
+            renderMasterInventoryTable();
+            renderInventoryTables();
+            renderSalesSheets();
+            renderShrinkageModal();
+            renderReceiveModals();
+            renderMoveInventoryModals();
+            renderRemoveInventoryModals();
+            loadDataFromFirebase();
+        }
 
-        // Global state
-        let inventory = [];
-        let sales = [];
-        let editingItemId = null;
-        let isFirebaseReady = false;
-
-        // Initialize app - wait for Firebase and load data
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set today's date as default for sales
-            document.getElementById('saleDate').valueAsDate = new Date();
-            
-            // Load data from Firebase
-            loadAllData();
-        });
-
-        // FIREBASE OPERATIONS
-        function saveAllData() {
-            if (!isFirebaseReady) {
-                showAlert('Firebase not ready yet. Please wait.', 'error');
-                return;
-            }
-
-            const updates = {};
-            updates['inventory'] = inventory;
-            updates['sales'] = sales;
-            updates['lastSaved'] = new Date().toISOString();
-
-            database.ref().update(updates).then(() => {
-                showAlert('✓ Data saved successfully to Firebase!', 'success');
-                console.log('Data saved:', {inventory, sales});
-            }).catch((error) => {
-                showAlert('Error saving data: ' + error.message, 'error');
-                console.error('Firebase save error:', error);
+        function initSheetStates() {
+            staticSheets.forEach(sheet => {
+                sheetStates[sheet] = { active: false, locked: false, completed: false };
             });
         }
 
-        function loadAllData() {
-            if (!firebase.apps.length) {
-                console.error('Firebase not initialized');
+        // ==================== FIREBASE DATA PERSISTENCE ====================
+        function saveAllDataNow() {
+            if (!window.firebaseReady || !window.firebaseDB) {
+                console.log('⏳ Firebase not ready yet, retrying...');
+                setTimeout(saveAllDataNow, 500);
                 return;
             }
 
-            database.ref().once('value', (snapshot) => {
-                const data = snapshot.val();
-                
-                if (data) {
-                    inventory = data.inventory || [];
-                    sales = data.sales || [];
-                    console.log('Data loaded from Firebase:', {inventory, sales});
-                } else {
-                    console.log('No data found in Firebase, starting fresh');
-                    inventory = [];
-                    sales = [];
+            try {
+                console.log('💾 Saving ALL data to Firebase...');
+
+                const dataToSave = {
+                    pop: [],
+                    aaron: [],
+                    sheets: {},
+                    sheetMetadata: sheetMetadata,
+                    sheetStates: sheetStates,
+                    shrinkageLog: shrinkageLog,
+                    excelLibrary: excelLibrary || [],
+                    timestamp: new Date().toISOString()
+                };
+
+                // Save Pop and Aaron inventories
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const popPrice = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
+                    const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                    const popShowTub = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+
+                    dataToSave.pop.push({
+                        price: popPrice,
+                        storage: popStorage,
+                        showTub: popShowTub
+                    });
+
+                    const aaronPrice = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                    const aaronStorage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                    const aaronShowTub = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+
+                    dataToSave.aaron.push({
+                        price: aaronPrice,
+                        storage: aaronStorage,
+                        showTub: aaronShowTub
+                    });
                 }
 
-                isFirebaseReady = true;
-                renderInventoryTable();
-                renderSalesTable();
-                updateDashboard();
-                showAlert('✓ Data loaded from Firebase!', 'success');
-            }, (error) => {
-                console.error('Firebase load error:', error);
-                isFirebaseReady = true;
-                showAlert('Loaded local data', 'success');
+                // Save all sales sheets data
+                const allSheetIds = [...Object.keys(sheetMetadata)];
+                allSheetIds.forEach(sheetId => {
+                    const sheetObj = { rows: [], totalUnits: 0, totalRevenue: 0 };
+
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+
+                        let brought = 0, sold = 0, left = 0;
+
+                        if (broughtEl) brought = parseFloat(broughtEl.value || 0);
+                        if (soldEl) sold = parseFloat(soldEl.textContent || 0);
+                        if (leftEl) left = parseFloat(leftEl.value || 0);
+
+                        sheetObj.rows.push({
+                            brought: brought,
+                            sold: sold,
+                            left: left
+                        });
+                    }
+
+                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                    const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+
+                    if (totalUnitsEl) sheetObj.totalUnits = parseFloat(totalUnitsEl.value || 0);
+                    if (totalRevEl) sheetObj.totalRevenue = parseFloat(totalRevEl.value || 0);
+
+                    dataToSave.sheets[sheetId] = sheetObj;
+                });
+
+                window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), dataToSave)
+                    .then(() => {
+                        console.log('✅ Data FULLY saved to Firebase!');
+                        showSuccess('✅ All data saved successfully!');
+                    })
+                    .catch(err => {
+                        console.error('❌ Firebase save error:', err);
+                        showSuccess('⚠️ Save error - check console');
+                    });
+
+            } catch (error) {
+                console.error('❌ saveAllDataNow error:', error);
+                showSuccess('❌ Error saving data');
+            }
+        }
+
+        function attachUnitsLeftListeners(sheetId) {
+            const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
+            inputs.forEach(input => {
+                input.removeEventListener('input', handleUnitsLeftChange);
+                input.addEventListener('input', handleUnitsLeftChange, false);
             });
         }
 
-        function clearAllData() {
-            if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
-                inventory = [];
-                sales = [];
+        function handleUnitsLeftChange(e) {
+            try {
+                e.stopPropagation();
                 
-                database.ref().set({
-                    inventory: [],
-                    sales: [],
-                    lastCleared: new Date().toISOString()
-                }).then(() => {
-                    renderInventoryTable();
-                    renderSalesTable();
-                    updateDashboard();
-                    showAlert('✓ All data cleared!', 'success');
-                }).catch((error) => {
-                    showAlert('Error clearing data: ' + error.message, 'error');
+                const sheetId = e.target.getAttribute('data-sheet');
+                const rowIndex = parseInt(e.target.getAttribute('data-row'));
+
+                if (!sheetId || isNaN(rowIndex)) return;
+
+                const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
+                const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
+
+                if (!unitsBroughtEl || !unitsSoldEl) return;
+
+                const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
+                const unitsLeft = parseFloat(e.target.value || 0);
+                const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
+
+                unitsSoldEl.textContent = newUnitsSold;
+
+                recalculateRevenueForSheet(sheetId);
+
+                clearTimeout(updateInventoriesTimer);
+                updateInventoriesTimer = setTimeout(() => {
+                    updateAllInventories();
+                    updateInventoryAggregatedUnitsSold();
+                }, 500);
+
+                clearTimeout(saveDataTimer);
+                saveDataTimer = setTimeout(() => {
+                    saveAllDataNow();
+                }, 800);
+
+            } catch (err) {
+                console.error('Error in handleUnitsLeftChange:', err);
+            }
+        }
+
+        function loadDataFromFirebase() {
+            if (!window.firebaseReady || !window.firebaseDB) {
+                setTimeout(loadDataFromFirebase, 500);
+                return;
+            }
+
+            try {
+                console.log('🔄 Setting up Firebase listener...');
+
+                window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
+                    const data = snapshot.val();
+
+                    if (!data) {
+                        console.log('📭 No existing Firebase data');
+                        firebaseLoadComplete = true;
+                        return;
+                    }
+
+                    // Only load on first page load, not on updates
+                    if (firebaseLoadComplete) {
+                        console.log('✅ Firebase listener active (first load already done)');
+                        return;
+                    }
+
+                    console.log('📥 Loading data from Firebase on page load...');
+
+                    // Load Pop inventory
+                    if (data.pop && Array.isArray(data.pop)) {
+                        for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
+                            const item = data.pop[i];
+                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                            const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+
+                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (storageEl) storageEl.value = item.storage ?? 0;
+                            if (showEl) showEl.value = item.showTub ?? 0;
+                        }
+                    }
+
+                    // Load Aaron inventory
+                    if (data.aaron && Array.isArray(data.aaron)) {
+                        for (let i = 0; i < Math.min(data.aaron.length, NUM_PRODUCTS); i++) {
+                            const item = data.aaron[i];
+                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                            const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+
+                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (storageEl) storageEl.value = item.storage ?? 0;
+                            if (showEl) showEl.value = item.showTub ?? 0;
+                        }
+                    }
+
+                    // Load sales sheets data
+                    if (data.sheets && typeof data.sheets === 'object') {
+                        Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
+                            if (!sheetData || !Array.isArray(sheetData.rows)) return;
+
+                            sheetData.rows.forEach((row, idx) => {
+                                if (idx >= NUM_PRODUCTS) return;
+
+                                const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                                const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
+
+                                if (broughtEl) broughtEl.value = row.brought ?? 0;
+                                if (soldEl) soldEl.textContent = row.sold ?? 0;
+                                if (leftEl) leftEl.value = row.left ?? 0;
+                            });
+
+                            const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                            const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+
+                            if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0;
+                            if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
+                        });
+                    }
+
+                    // Load metadata and states
+                    if (data.sheetMetadata) sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
+                    if (data.sheetStates) sheetStates = { ...sheetStates, ...data.sheetStates };
+                    if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
+                    if (data.excelLibrary) excelLibrary = data.excelLibrary;
+
+                    // Re-render all sheets and attach listeners
+                    renderSalesSheets();
+                    updateAllInventories();
+                    updateInventoryAggregatedUnitsSold();
+                    updateShrinkageDisplay();
+                    renderExcelLibrary();
+
+                    // Attach event listeners to all sales sheet inputs
+                    Object.keys(sheetStates).forEach(sheetId => {
+                        initializeSheetButtonVisibility(sheetId);
+                        updateSheetStatus(sheetId);
+                        attachUnitsLeftListeners(sheetId);
+                    });
+
+                    console.log('✅ Firebase load COMPLETE! All data loaded and listeners attached.');
+                    firebaseLoadComplete = true;
+                });
+            } catch (err) {
+                console.error('Error in loadDataFromFirebase:', err);
+                firebaseLoadComplete = true;
+            }
+        }
+
+        // ==================== RENDERING FUNCTIONS ====================
+        function renderMasterInventoryTable() {
+            const tbody = document.getElementById('master-inv-tbody');
+            tbody.innerHTML = '';
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" class="master-pop-stock" data-product="${i}" readonly></td><td><input type="number" class="master-aaron-stock" data-product="${i}" readonly></td><td><input type="number" class="master-combined" data-product="${i}" readonly style="font-weight: bold;"></td>`;
+                tbody.appendChild(row);
+            }
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `<td><strong>GRAND TOTAL</strong></td><td><input type="number" id="master-pop-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-aaron-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-grand-total" readonly style="font-weight: bold; background: #667eea; color: white;"></td>`;
+            tbody.appendChild(totalRow);
+        }
+
+        function renderInventoryTables() {
+            renderPersonInventoryTable('pop');
+            renderPersonInventoryTable('aaron');
+        }
+
+        function renderPersonInventoryTable(person) {
+            const tbody = document.getElementById(`${person}-inv-tbody`);
+            tbody.innerHTML = '';
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" placeholder="0" class="${person}-price" data-product="${i}" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="${person}-storage" data-product="${i}" readonly></td><td><input type="number" placeholder="Show" class="${person}-show-tub" data-product="${i}"></td><td><input type="number" class="${person}-units-sold-agg" data-product="${i}" readonly></td><td><input type="number" class="${person}-current-stock" data-product="${i}" readonly value="0"></td>`;
+                tbody.appendChild(row);
+            }
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `<td colspan="5">Total knives on hand</td><td><input type="number" id="${person}-total-on-hand" readonly value="0"></td>`;
+            tbody.appendChild(totalRow);
+        }
+
+        function renderSalesSheets() {
+            const container = document.getElementById('sales-sheets-container');
+            container.innerHTML = '';
+            const allSheets = [...Object.keys(sheetMetadata)];
+            allSheets.forEach(sheetId => {
+                if (!sheetMetadata[sheetId]) return;
+                const div = document.createElement('div');
+                div.id = sheetId;
+                div.className = 'tab-content';
+                div.innerHTML = generateSheetHTML(sheetId);
+                container.appendChild(div);
+            });
+            renderDynamicNavLinks();
+        }
+
+        function renderDynamicNavLinks() {
+            const popNavContainer = document.getElementById('dynamic-sales-links');
+            if (popNavContainer) {
+                popNavContainer.innerHTML = '';
+                Object.keys(sheetMetadata).forEach(sheetId => {
+                    if (staticSheets.includes(sheetId)) return;
+                    const meta = sheetMetadata[sheetId];
+                    if (meta?.person === 'pop') {
+                        const navLink = document.createElement('button');
+                        navLink.className = 'nav-link';
+                        navLink.textContent = meta.name;
+                        navLink.onclick = (e) => openTab(e, sheetId);
+                        popNavContainer.appendChild(navLink);
+                    }
+                });
+            }
+
+            const aaronNavContainer = document.getElementById('dynamic-aaron-sales-links');
+            if (aaronNavContainer) {
+                aaronNavContainer.innerHTML = '';
+                Object.keys(sheetMetadata).forEach(sheetId => {
+                    if (staticSheets.includes(sheetId)) return;
+                    const meta = sheetMetadata[sheetId];
+                    if (meta?.person === 'aaron') {
+                        const navLink = document.createElement('button');
+                        navLink.className = 'nav-link';
+                        navLink.textContent = meta.name;
+                        navLink.onclick = (e) => openTab(e, sheetId);
+                        aaronNavContainer.appendChild(navLink);
+                    }
                 });
             }
         }
 
-        // INVENTORY OPERATIONS
-        function addInventoryItem() {
-            const name = document.getElementById('itemName').value;
-            const quantity = parseInt(document.getElementById('itemQuantity').value) || 0;
-            const sku = document.getElementById('itemSKU').value;
-            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
-            const location = document.getElementById('itemLocation').value;
-
-            if (!name || !location) {
-                showAlert('Please fill in all required fields', 'error');
-                return;
+        function generateSheetHTML(sheetId) {
+            const meta = sheetMetadata[sheetId];
+            if (!meta) return '';
+            let tableRows = '';
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                tableRows += `<tr><td>${productNames[i]}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" value="0"></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}" value="0"></td></tr>`;
             }
-
-            const item = {
-                id: Date.now(),
-                name,
-                quantity,
-                sku,
-                price,
-                location,
-                dateAdded: new Date().toISOString()
-            };
-
-            inventory.push(item);
-            clearInventoryInputs();
-            renderInventoryTable();
-            showAlert('✓ Item added!', 'success');
+            return `<div class="tab-section"><h2>${meta.name}</h2><div class="units-info">📝 Enter "Units Left in Tub" - System automatically calculates "Units Sold"</div><button class="refresh-btn" onclick="refreshSheetData('${meta.person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button id="activate-btn-${sheetId}" class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button><button id="lock-btn-${sheetId}" class="sheet-btn lock-btn" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button><button id="unlock-btn-${sheetId}" class="sheet-btn unlock-btn" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button><button id="reset-btn-${sheetId}" class="sheet-btn reset-btn" style="display:none;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody>${tableRows}</tbody></table><table><tbody><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" id="total-units-${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" id="total-revenue-${sheetId}" readonly></td></tr></tbody></table></div>`;
         }
 
-        function editInventoryItem(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
+        function initializeSheetButtonVisibility(sheetId) {
+            try {
+                const state = sheetStates[sheetId];
+                if (!state) return;
 
-            editingItemId = id;
-            document.getElementById('editItemName').value = item.name;
-            document.getElementById('editItemSKU').value = item.sku;
-            document.getElementById('editItemQuantity').value = item.quantity;
-            document.getElementById('editItemPrice').value = item.price;
-            document.getElementById('editItemLocation').value = item.location;
-            
-            document.getElementById('editModal').classList.add('show');
-        }
+                const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+                const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
+                const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
+                const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
+                const eventBox = document.getElementById(`${sheetId}-event-box`);
 
-        function saveEdit() {
-            const item = inventory.find(i => i.id === editingItemId);
-            if (!item) return;
+                if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) return;
 
-            item.name = document.getElementById('editItemName').value;
-            item.sku = document.getElementById('editItemSKU').value;
-            item.quantity = parseInt(document.getElementById('editItemQuantity').value) || 0;
-            item.price = parseFloat(document.getElementById('editItemPrice').value) || 0;
-            item.location = document.getElementById('editItemLocation').value;
-
-            renderInventoryTable();
-            closeModal();
-            showAlert('✓ Item updated!', 'success');
-            editingItemId = null;
-        }
-
-        function deleteInventoryItem(id) {
-            if (confirm('Delete this item?')) {
-                inventory = inventory.filter(i => i.id !== id);
-                renderInventoryTable();
-                showAlert('✓ Item deleted!', 'success');
-            }
-        }
-
-        function clearInventoryInputs() {
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemQuantity').value = '';
-            document.getElementById('itemSKU').value = '';
-            document.getElementById('itemPrice').value = '';
-            document.getElementById('itemLocation').value = '';
-        }
-
-        function renderInventoryTable() {
-            const tbody = document.getElementById('inventoryTable');
-            tbody.innerHTML = '';
-
-            inventory.forEach(item => {
-                const totalValue = (item.quantity * item.price).toFixed(2);
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.sku || '-'}</td>
-                    <td>${item.quantity}</td>
-                    <td>$${item.price.toFixed(2)}</td>
-                    <td>${item.location}</td>
-                    <td>$${totalValue}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-primary btn-small" onclick="editInventoryItem(${item.id})">Edit</button>
-                            <button class="btn-danger btn-small" onclick="deleteInventoryItem(${item.id})">Delete</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // SALES OPERATIONS
-        function addSale() {
-            const item = document.getElementById('saleItem').value;
-            const quantity = parseInt(document.getElementById('saleQuantity').value) || 0;
-            const price = parseFloat(document.getElementById('salePrice').value) || 0;
-            const customer = document.getElementById('saleCustomer').value;
-            const date = document.getElementById('saleDate').value;
-
-            if (!item || !quantity || !price || !date) {
-                showAlert('Please fill in all required fields', 'error');
-                return;
-            }
-
-            const sale = {
-                id: Date.now(),
-                item,
-                quantity,
-                price,
-                customer,
-                date,
-                total: quantity * price,
-                dateCreated: new Date().toISOString()
-            };
-
-            sales.push(sale);
-            clearSalesInputs();
-            renderSalesTable();
-            showAlert('✓ Sale recorded!', 'success');
-        }
-
-        function deleteSale(id) {
-            if (confirm('Delete this sale?')) {
-                sales = sales.filter(s => s.id !== id);
-                renderSalesTable();
-                showAlert('✓ Sale deleted!', 'success');
-            }
-        }
-
-        function clearSalesInputs() {
-            document.getElementById('saleItem').value = '';
-            document.getElementById('saleQuantity').value = '';
-            document.getElementById('salePrice').value = '';
-            document.getElementById('saleCustomer').value = '';
-            document.getElementById('saleDate').valueAsDate = new Date();
-        }
-
-        function filterSales() {
-            renderSalesTable();
-        }
-
-        function renderSalesTable() {
-            const tbody = document.getElementById('salesTable');
-            tbody.innerHTML = '';
-
-            const location = document.getElementById('salesLocation').value;
-            const startDate = document.getElementById('salesStartDate').value;
-            const endDate = document.getElementById('salesEndDate').value;
-
-            let filtered = sales;
-
-            if (location && location !== 'All') {
-                filtered = filtered.filter(s => s.location === location);
-            }
-
-            if (startDate) {
-                filtered = filtered.filter(s => new Date(s.date) >= new Date(startDate));
-            }
-
-            if (endDate) {
-                filtered = filtered.filter(s => new Date(s.date) <= new Date(endDate));
-            }
-
-            filtered.forEach(sale => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${sale.date}</td>
-                    <td>${sale.item}</td>
-                    <td>${sale.quantity}</td>
-                    <td>$${sale.price.toFixed(2)}</td>
-                    <td>$${sale.total.toFixed(2)}</td>
-                    <td>${sale.customer || '-'}</td>
-                    <td>${sale.location || '-'}</td>
-                    <td>
-                        <button class="btn-danger btn-small" onclick="deleteSale(${sale.id})">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // DASHBOARD
-        function updateDashboard() {
-            const totalItems = inventory.length;
-            const totalUnits = inventory.reduce((sum, item) => sum + item.quantity, 0);
-            const inventoryValue = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const totalSalesValue = sales.reduce((sum, sale) => sum + sale.total, 0);
-
-            document.getElementById('totalItems').textContent = totalItems;
-            document.getElementById('totalUnits').textContent = totalUnits;
-            document.getElementById('inventoryValue').textContent = '$' + inventoryValue.toFixed(2);
-            document.getElementById('totalSales').textContent = '$' + totalSalesValue.toFixed(2);
-
-            // Location stats
-            const locationStats = {};
-            sales.forEach(sale => {
-                const loc = sale.location || 'Unknown';
-                if (!locationStats[loc]) {
-                    locationStats[loc] = { count: 0, revenue: 0 };
+                if (state.locked) {
+                    activateBtn.style.display = 'none';
+                    lockBtn.style.display = 'none';
+                    unlockBtn.style.display = 'inline-flex';
+                    resetBtn.style.display = 'inline-flex';
+                } else if (state.active) {
+                    activateBtn.style.display = 'none';
+                    lockBtn.style.display = 'inline-flex';
+                    unlockBtn.style.display = 'none';
+                    resetBtn.style.display = 'inline-flex';
+                    if (eventBox) eventBox.style.display = 'flex';
+                } else {
+                    activateBtn.style.display = 'inline-flex';
+                    lockBtn.style.display = 'none';
+                    unlockBtn.style.display = 'none';
+                    resetBtn.style.display = 'none';
+                    if (eventBox) eventBox.style.display = 'none';
                 }
-                locationStats[loc].count += 1;
-                locationStats[loc].revenue += sale.total;
-            });
+            } catch (err) {
+                console.error('Error in initializeSheetButtonVisibility:', err);
+            }
+        }
 
-            const statsTable = document.getElementById('locationStats');
-            statsTable.innerHTML = '';
-            Object.entries(locationStats).forEach(([location, stats]) => {
+        function updateSheetStatus(sheetId) {
+            try {
+                const statusEl = document.getElementById(`${sheetId}-status`);
+                if (!statusEl) return;
+                if (sheetStates[sheetId]?.locked) {
+                    statusEl.textContent = '🔒 Locked';
+                    statusEl.className = 'sheet-status completed';
+                } else if (sheetStates[sheetId]?.active) {
+                    statusEl.textContent = '● Active';
+                    statusEl.className = 'sheet-status active';
+                } else {
+                    statusEl.textContent = '● Inactive';
+                    statusEl.className = 'sheet-status inactive';
+                }
+            } catch (err) {
+                console.error('Error in updateSheetStatus:', err);
+            }
+        }
+
+        function renderShrinkageModal() {
+            const select = document.getElementById('shrinkage-product');
+            select.innerHTML = '';
+            productNames.forEach((name, idx) => {
+                const option = document.createElement('option');
+                option.value = idx;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        function renderReceiveModals() {
+            ['pop', 'aaron'].forEach(person => {
+                const tbody = document.getElementById(`${person}-received-tbody`);
+                tbody.innerHTML = '';
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" id="${person}-received-${i}"></td>`;
+                    tbody.appendChild(row);
+                }
+            });
+        }
+
+        function renderMoveInventoryModals() {
+            ['pop', 'aaron'].forEach(person => {
+                const tbody = document.getElementById(`${person}-move-tbody`);
+                tbody.innerHTML = '';
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" id="${person}-move-${i}"></td>`;
+                    tbody.appendChild(row);
+                }
+                const moveBackTbody = document.getElementById(`${person}-move-back-tbody`);
+                moveBackTbody.innerHTML = '';
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" id="${person}-move-back-${i}"></td>`;
+                    moveBackTbody.appendChild(row);
+                }
+            });
+        }
+
+        function renderRemoveInventoryModals() {
+            ['pop', 'aaron'].forEach(person => {
+                const tbody = document.getElementById(`${person}-remove-tbody`);
+                tbody.innerHTML = '';
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${productNames[i]}</td><td><input type="number" id="${person}-remove-${i}"></td>`;
+                    tbody.appendChild(row);
+                }
+            });
+        }
+
+        function updateDeleteSheetSelect() {
+            const select = document.getElementById('delete-sheet-select');
+            select.innerHTML = '';
+            const allSheets = [...Object.keys(sheetMetadata)];
+            allSheets.forEach(sheetId => {
+                if (!sheetMetadata[sheetId]) return;
+                const option = document.createElement('option');
+                option.value = sheetId;
+                option.textContent = sheetMetadata[sheetId].name;
+                select.appendChild(option);
+            });
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function openTab(evt, tabName) {
+            const tabcontent = document.querySelectorAll('.tab-content');
+            tabcontent.forEach(tab => tab.classList.remove('active'));
+            const tabbuttons = document.querySelectorAll('.tab-btn');
+            tabbuttons.forEach(btn => btn.classList.remove('active'));
+            const tabEl = document.getElementById(tabName);
+            if (tabEl) tabEl.classList.add('active');
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        }
+
+        function showSuccess(message) {
+            const banner = document.getElementById('successBanner');
+            banner.textContent = message;
+            banner.classList.add('show');
+            setTimeout(() => banner.classList.remove('show'), 3000);
+        }
+
+        function updateAllInventories() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    ['pop', 'aaron'].forEach(person => {
+                        const storage = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
+                        const showTub = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
+                        const stock = document.querySelector(`.${person}-current-stock[data-product="${i}"]`);
+                        if (stock) stock.value = storage + showTub;
+                        const masterEl = document.querySelector(`.master-${person}-stock[data-product="${i}"]`);
+                        if (masterEl) masterEl.value = storage + showTub;
+                    });
+                    const popStock = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
+                    const aaronStock = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
+                    const masterCombined = document.querySelector(`.master-combined[data-product="${i}"]`);
+                    if (masterCombined) masterCombined.value = popStock + aaronStock;
+                }
+
+                let popStorageTotal = 0, popShowTotal = 0, popCombined = 0;
+                let aaronStorageTotal = 0, aaronShowTotal = 0, aaronCombined = 0;
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                    const popShow = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                    const aaronStorage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                    const aaronShow = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                    popStorageTotal += popStorage;
+                    popShowTotal += popShow;
+                    popCombined += popStorage + popShow;
+                    aaronStorageTotal += aaronStorage;
+                    aaronShowTotal += aaronShow;
+                    aaronCombined += aaronStorage + aaronShow;
+                }
+                const popStorEl = document.getElementById('pop-storage-total');
+                const popShowEl = document.getElementById('pop-show-total');
+                const popCombEl = document.getElementById('pop-combined-total');
+                const aaronStorEl = document.getElementById('aaron-storage-total');
+                const aaronShowEl = document.getElementById('aaron-show-total');
+                const aaronCombEl = document.getElementById('aaron-combined-total');
+
+                if (popStorEl) popStorEl.value = popStorageTotal;
+                if (popShowEl) popShowEl.value = popShowTotal;
+                if (popCombEl) popCombEl.value = popCombined;
+                if (aaronStorEl) aaronStorEl.value = aaronStorageTotal;
+                if (aaronShowEl) aaronShowEl.value = aaronShowTotal;
+                if (aaronCombEl) aaronCombEl.value = aaronCombined;
+
+                const masterPopTot = document.getElementById('master-pop-total');
+                const masterAaronTot = document.getElementById('master-aaron-total');
+                const masterGrandTot = document.getElementById('master-grand-total');
+                const popTotHand = document.getElementById('pop-total-on-hand');
+                const aaronTotHand = document.getElementById('aaron-total-on-hand');
+
+                if (masterPopTot) masterPopTot.value = popCombined;
+                if (masterAaronTot) masterAaronTot.value = aaronCombined;
+                if (masterGrandTot) masterGrandTot.value = popCombined + aaronCombined;
+                if (popTotHand) popTotHand.value = popCombined;
+                if (aaronTotHand) aaronTotHand.value = aaronCombined;
+            } catch (err) {
+                console.error('Error in updateAllInventories:', err);
+            }
+        }
+
+        function updateInventoryAggregatedUnitsSold() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    ['pop', 'aaron'].forEach(person => {
+                        let totalSold = 0;
+                        Object.keys(sheetMetadata).forEach(sheetId => {
+                            if (sheetStates[sheetId]?.locked) {
+                                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                                if (soldEl) totalSold += parseFloat(soldEl.textContent || 0);
+                            }
+                        });
+                        const aggEl = document.querySelector(`.${person}-units-sold-agg[data-product="${i}"]`);
+                        if (aggEl) aggEl.value = totalSold;
+                    });
+                }
+            } catch (err) {
+                console.error('Error in updateInventoryAggregatedUnitsSold:', err);
+            }
+        }
+
+        function recalculateAllRevenue() {
+            Object.keys(sheetMetadata).forEach(sheetId => {
+                recalculateRevenueForSheet(sheetId);
+            });
+        }
+
+        function recalculateRevenueForSheet(sheetId) {
+            try {
+                const meta = sheetMetadata[sheetId];
+                if (!meta) return;
+
+                let totalRevenue = 0;
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const price = parseFloat(document.querySelector(`.${meta.person}-price[data-product="${i}"]`)?.value || 0);
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
+                    totalRevenue += price * sold;
+                }
+                const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                let totalUnits = 0;
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    totalUnits += soldEl ? parseFloat(soldEl.textContent || 0) : 0;
+                }
+                if (totalUnitsEl) totalUnitsEl.value = totalUnits;
+                if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
+            } catch (err) {
+                console.error('Error in recalculateRevenueForSheet:', err);
+            }
+        }
+
+        // ==================== SHEET ACTIONS ====================
+        function openActivateSheetModal(person, sheetId) {
+            pendingActivateSheet = { person, sheetId };
+            document.getElementById('activateSheetName').textContent = sheetMetadata[sheetId]?.name || sheetId;
+            document.getElementById('activateSheetModal').classList.add('active');
+        }
+
+        function closeActivateSheetModal() {
+            document.getElementById('activateSheetModal').classList.remove('active');
+            pendingActivateSheet = null;
+        }
+
+        function confirmActivateSheet() {
+            try {
+                if (!pendingActivateSheet) return;
+                const { sheetId } = pendingActivateSheet;
+                sheetStates[sheetId].active = true;
+                sheetStates[sheetId].locked = false;
+                updateSheetStatus(sheetId);
+                initializeSheetButtonVisibility(sheetId);
+                Object.keys(sheetMetadata).forEach(sid => {
+                    if (sid !== sheetId && sheetMetadata[sid]?.person === sheetMetadata[sheetId]?.person) {
+                        if (sheetStates[sid]?.active) {
+                            sheetStates[sid].active = false;
+                            updateSheetStatus(sid);
+                            initializeSheetButtonVisibility(sid);
+                        }
+                    }
+                });
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const person = sheetMetadata[sheetId].person;
+                    const price = parseFloat(document.querySelector(`.${person}-price[data-product="${i}"]`)?.value || 0);
+                    const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
+                    const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
+                    const total = storageVal + showVal;
+                    document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`).value = total;
+                }
+                recalculateAllRevenue();
+                saveAllDataNow();
+                showSuccess('✅ Sheet activated!');
+                closeActivateSheetModal();
+            } catch (err) {
+                console.error('Error in confirmActivateSheet:', err);
+                showSuccess('❌ Error activating sheet');
+            }
+        }
+
+        function openLockSheetModal(sheetId) {
+            pendingLockSheet = sheetId;
+            document.getElementById('lockSheetModal').classList.add('active');
+        }
+
+        function closeLockSheetModal() {
+            document.getElementById('lockSheetModal').classList.remove('active');
+            pendingLockSheet = null;
+        }
+
+        function confirmLockSheet() {
+            try {
+                if (!pendingLockSheet) return;
+                const sheetId = pendingLockSheet;
+                const meta = sheetMetadata[sheetId];
+                if (!meta) return;
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
+                    const showEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
+                    if (showEl && sold > 0) {
+                        showEl.value = Math.max(0, parseFloat(showEl.value || 0) - sold);
+                    }
+                }
+
+                sheetStates[sheetId].locked = true;
+                sheetStates[sheetId].active = false;
+                updateSheetStatus(sheetId);
+                initializeSheetButtonVisibility(sheetId);
+                updateAllInventories();
+                updateInventoryAggregatedUnitsSold();
+                saveAllDataNow();
+                showSuccess('✅ Sheet locked!');
+                closeLockSheetModal();
+            } catch (err) {
+                console.error('Error in confirmLockSheet:', err);
+                showSuccess('❌ Error locking sheet');
+            }
+        }
+
+        function openUnlockSheetModal(sheetId) {
+            pendingUnlockSheet = sheetId;
+            document.getElementById('unlockSheetModal').classList.add('active');
+        }
+
+        function closeUnlockSheetModal() {
+            document.getElementById('unlockSheetModal').classList.remove('active');
+            pendingUnlockSheet = null;
+        }
+
+        function confirmUnlockSheet() {
+            try {
+                if (!pendingUnlockSheet) return;
+                const sheetId = pendingUnlockSheet;
+                const meta = sheetMetadata[sheetId];
+                if (!meta) return;
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
+                    const showEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
+                    if (showEl && sold > 0) {
+                        showEl.value = parseFloat(showEl.value || 0) + sold;
+                    }
+                }
+
+                sheetStates[sheetId].locked = false;
+                updateSheetStatus(sheetId);
+                initializeSheetButtonVisibility(sheetId);
+                updateAllInventories();
+                updateInventoryAggregatedUnitsSold();
+                saveAllDataNow();
+                showSuccess('✅ Sheet unlocked!');
+                closeUnlockSheetModal();
+            } catch (err) {
+                console.error('Error in confirmUnlockSheet:', err);
+                showSuccess('❌ Error unlocking sheet');
+            }
+        }
+
+        function openResetSheetModal(sheetId) {
+            pendingResetSheet = sheetId;
+            document.getElementById('resetSheetModal').classList.add('active');
+        }
+
+        function closeResetSheetModal() {
+            document.getElementById('resetSheetModal').classList.remove('active');
+            pendingResetSheet = null;
+        }
+
+        function confirmResetSheet() {
+            try {
+                if (!pendingResetSheet) return;
+                const sheetId = pendingResetSheet;
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    if (broughtEl) broughtEl.value = 0;
+                    if (soldEl) soldEl.textContent = 0;
+                    if (leftEl) leftEl.value = 0;
+                }
+                const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
+                const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
+                if (totalUnitsEl) totalUnitsEl.value = 0;
+                if (totalRevEl) totalRevEl.value = 0;
+                sheetStates[sheetId] = { active: false, locked: false, completed: false };
+                updateSheetStatus(sheetId);
+                initializeSheetButtonVisibility(sheetId);
+                saveAllDataNow();
+                showSuccess('✅ Sheet reset!');
+                closeResetSheetModal();
+            } catch (err) {
+                console.error('Error in confirmResetSheet:', err);
+                showSuccess('❌ Error resetting sheet');
+            }
+        }
+
+        function refreshSheetData(person, sheetId) {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
+                    const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
+                    const total = storageVal + showVal;
+                    document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`).value = total;
+                }
+                showSuccess('✅ Units brought updated from inventory!');
+                saveAllDataNow();
+            } catch (err) {
+                console.error('Error in refreshSheetData:', err);
+            }
+        }
+
+        function toggleEventCompleted(sheetId) {
+            try {
+                const checkbox = document.getElementById(`event-completed-${sheetId}`);
+                if (checkbox.checked) {
+                    const sheet = sheetMetadata[sheetId];
+                    let totalUnits = 0;
+                    let totalRevenue = 0;
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        totalUnits += parseFloat(soldEl?.textContent || 0);
+                        const price = parseFloat(document.querySelector(`.${sheet.person}-price[data-product="${i}"]`)?.value || 0);
+                        totalRevenue += price * parseFloat(soldEl?.textContent || 0);
+                    }
+                    document.getElementById('confirmEventSheetName').textContent = sheet.name;
+                    document.getElementById('confirmEventUnits').textContent = totalUnits;
+                    document.getElementById('confirmEventRevenue').textContent = totalRevenue.toFixed(2);
+                    pendingEventCompletedSheet = sheetId;
+                    document.getElementById('eventCompletedConfirmModal').classList.add('active');
+                } else {
+                    sheetStates[sheetId].completed = false;
+                }
+            } catch (err) {
+                console.error('Error in toggleEventCompleted:', err);
+            }
+        }
+
+        function closeEventCompletedConfirmModal() {
+            document.getElementById('eventCompletedConfirmModal').classList.remove('active');
+            document.getElementById(`event-completed-${pendingEventCompletedSheet}`).checked = false;
+            pendingEventCompletedSheet = null;
+        }
+
+        function confirmEventCompleted() {
+            try {
+                if (!pendingEventCompletedSheet) return;
+                sheetStates[pendingEventCompletedSheet].completed = true;
+                saveAllDataNow();
+                showSuccess('✅ Event marked as completed!');
+                closeEventCompletedConfirmModal();
+            } catch (err) {
+                console.error('Error in confirmEventCompleted:', err);
+                showSuccess('❌ Error marking event');
+            }
+        }
+
+        function openAddShrinkageModal() {
+            document.getElementById('addShrinkageModal').classList.add('active');
+        }
+
+        function closeShrinkageModal() {
+            document.getElementById('addShrinkageModal').classList.remove('active');
+            document.getElementById('shrinkage-qty').value = '1';
+            document.getElementById('shrinkage-notes').value = '';
+            document.querySelector('input[name="shrinkage-from"][value="storage"]').checked = true;
+        }
+
+        function addShrinkageEntry() {
+            try {
+                const person = document.getElementById('shrinkage-person').value;
+                const productIdx = parseInt(document.getElementById('shrinkage-product').value);
+                const qty = parseInt(document.getElementById('shrinkage-qty').value);
+                const depletFrom = document.querySelector('input[name="shrinkage-from"]:checked').value;
+                const notes = document.getElementById('shrinkage-notes').value;
+                if (qty <= 0) return alert('Qty must be > 0');
+                shrinkageLog.push({ date: new Date().toLocaleDateString(), person, productIdx, qty, depletFrom, notes });
+                const storageEl = document.querySelector(`.${person}-storage[data-product="${productIdx}"]`);
+                const showEl = document.querySelector(`.${person}-show-tub[data-product="${productIdx}"]`);
+                if (depletFrom === 'storage' || depletFrom === 'both') {
+                    if (storageEl) {
+                        const current = parseFloat(storageEl.value || 0);
+                        const toRemove = depletFrom === 'both' ? Math.ceil(qty / 2) : qty;
+                        storageEl.value = Math.max(0, current - toRemove);
+                    }
+                }
+                if (depletFrom === 'show' || depletFrom === 'both') {
+                    if (showEl) {
+                        const current = parseFloat(showEl.value || 0);
+                        const toRemove = depletFrom === 'both' ? Math.floor(qty / 2) : qty;
+                        showEl.value = Math.max(0, current - toRemove);
+                    }
+                }
+                updateAllInventories();
+                updateShrinkageDisplay();
+                saveAllDataNow();
+                showSuccess('✅ Shrinkage logged!');
+                closeShrinkageModal();
+            } catch (err) {
+                console.error('Error in addShrinkageEntry:', err);
+                showSuccess('❌ Error adding shrinkage');
+            }
+        }
+
+        function updateShrinkageDisplay() {
+            const tbody = document.getElementById('shrinkage-log');
+            tbody.innerHTML = '';
+            if (shrinkageLog.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>';
+                document.getElementById('shrinkage-summary').style.display = 'none';
+                return;
+            }
+            shrinkageLog.forEach((entry, idx) => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${location}</td>
-                    <td>${stats.count}</td>
-                    <td>$${stats.revenue.toFixed(2)}</td>
-                `;
-                statsTable.appendChild(row);
+                row.innerHTML = `<td>${entry.date}</td><td>${entry.person === 'pop' ? 'Pop' : 'Aaron'}</td><td>${productNames[entry.productIdx]}</td><td>${entry.qty}</td><td>${entry.depletFrom === 'storage' ? 'Storage' : entry.depletFrom === 'show' ? 'Show Tub' : 'Both'}</td><td>${entry.notes}</td><td><button class="remove-btn" onclick="removeShrinkageEntry(${idx})" style="padding: 4px 8px; font-size: 12px;">Remove</button></td>`;
+                tbody.appendChild(row);
             });
+            const summary = {};
+            shrinkageLog.forEach(entry => {
+                const key = productNames[entry.productIdx];
+                if (!summary[key]) summary[key] = { pop: 0, aaron: 0 };
+                summary[key][entry.person] += entry.qty;
+            });
+            const summaryTbody = document.getElementById('shrinkage-summary-tbody');
+            summaryTbody.innerHTML = '';
+            Object.entries(summary).forEach(([name, data]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${name}</td><td>${data.pop}</td><td>${data.aaron}</td><td>${data.pop + data.aaron}</td>`;
+                summaryTbody.appendChild(row);
+            });
+            document.getElementById('shrinkage-summary').style.display = 'block';
         }
 
-        // UI OPERATIONS
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        function removeShrinkageEntry(idx) {
+            shrinkageLog.splice(idx, 1);
+            updateShrinkageDisplay();
+            saveAllDataNow();
+        }
 
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+        // ==================== INVENTORY MANAGEMENT ====================
+        function openAddProductModal() {
+            document.getElementById('new-product-name').value = '';
+            document.getElementById('new-product-price-pop').value = '';
+            document.getElementById('new-product-price-aaron').value = '';
+            document.getElementById('addProductModal').classList.add('active');
+        }
 
-            if (tabName === 'dashboard') {
-                updateDashboard();
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('active');
+        }
+
+        function confirmAddProduct() {
+            try {
+                const name = document.getElementById('new-product-name').value.trim();
+                if (!name) return alert('Product name is required');
+                productNames.push(name);
+                NUM_PRODUCTS++;
+                renderInventoryTables();
+                renderSalesSheets();
+                renderShrinkageModal();
+                showSuccess('✅ Product added!');
+                closeAddProductModal();
+                saveAllDataNow();
+            } catch (err) {
+                console.error('Error in confirmAddProduct:', err);
+                showSuccess('❌ Error adding product');
             }
         }
 
-        function showAlert(message, type) {
-            const alert = document.getElementById('alert');
-            alert.textContent = message;
-            alert.className = `alert alert-${type} show`;
-            setTimeout(() => {
-                alert.classList.remove('show');
-            }, 4000);
+        function openPopInventoryReceivedModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`pop-received-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('popInventoryReceivedModal').classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('editModal').classList.remove('show');
-            editingItemId = null;
+        function closePopInventoryReceivedModal() {
+            document.getElementById('popInventoryReceivedModal').classList.remove('active');
         }
 
-        function exportToCSV() {
-            let csv = 'INVENTORY EXPORT\n';
-            csv += 'Date,' + new Date().toISOString() + '\n\n';
-            csv += 'INVENTORY ITEMS\n';
-            csv += 'Name,SKU,Quantity,Price,Location,Total Value\n';
+        function addPopInventoryReceived() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toAdd = parseFloat(document.getElementById(`pop-received-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    if (storageEl && toAdd > 0) {
+                        storageEl.value = parseFloat(storageEl.value || 0) + toAdd;
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory added!');
+                closePopInventoryReceivedModal();
+            } catch (err) {
+                console.error('Error in addPopInventoryReceived:', err);
+            }
+        }
+
+        function openAaronInventoryReceivedModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`aaron-received-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('aaronInventoryReceivedModal').classList.add('active');
+        }
+
+        function closeAaronInventoryReceivedModal() {
+            document.getElementById('aaronInventoryReceivedModal').classList.remove('active');
+        }
+
+        function addAaronInventoryReceived() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toAdd = parseFloat(document.getElementById(`aaron-received-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    if (storageEl && toAdd > 0) {
+                        storageEl.value = parseFloat(storageEl.value || 0) + toAdd;
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory added!');
+                closeAaronInventoryReceivedModal();
+            } catch (err) {
+                console.error('Error in addAaronInventoryReceived:', err);
+            }
+        }
+
+        function openPopMoveInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`pop-move-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('popMoveInventoryModal').classList.add('active');
+        }
+
+        function closePopMoveInventoryModal() {
+            document.getElementById('popMoveInventoryModal').classList.remove('active');
+        }
+
+        function addPopMoveInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toMove = parseFloat(document.getElementById(`pop-move-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                    if (storageEl && showEl && toMove > 0) {
+                        const currentStorage = parseFloat(storageEl.value || 0);
+                        if (toMove <= currentStorage) {
+                            storageEl.value = currentStorage - toMove;
+                            showEl.value = parseFloat(showEl.value || 0) + toMove;
+                        }
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory moved!');
+                closePopMoveInventoryModal();
+            } catch (err) {
+                console.error('Error in addPopMoveInventory:', err);
+            }
+        }
+
+        function openAaronMoveInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`aaron-move-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('aaronMoveInventoryModal').classList.add('active');
+        }
+
+        function closeAaronMoveInventoryModal() {
+            document.getElementById('aaronMoveInventoryModal').classList.remove('active');
+        }
+
+        function addAaronMoveInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toMove = parseFloat(document.getElementById(`aaron-move-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                    if (storageEl && showEl && toMove > 0) {
+                        const currentStorage = parseFloat(storageEl.value || 0);
+                        if (toMove <= currentStorage) {
+                            storageEl.value = currentStorage - toMove;
+                            showEl.value = parseFloat(showEl.value || 0) + toMove;
+                        }
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory moved!');
+                closeAaronMoveInventoryModal();
+            } catch (err) {
+                console.error('Error in addAaronMoveInventory:', err);
+            }
+        }
+
+        function openPopMoveBackInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`pop-move-back-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('popMoveBackInventoryModal').classList.add('active');
+        }
+
+        function closePopMoveBackInventoryModal() {
+            document.getElementById('popMoveBackInventoryModal').classList.remove('active');
+        }
+
+        function addPopMoveBackInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toMove = parseFloat(document.getElementById(`pop-move-back-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+                    if (storageEl && showEl && toMove > 0) {
+                        const currentShow = parseFloat(showEl.value || 0);
+                        if (toMove <= currentShow) {
+                            showEl.value = currentShow - toMove;
+                            storageEl.value = parseFloat(storageEl.value || 0) + toMove;
+                        }
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory moved back!');
+                closePopMoveBackInventoryModal();
+            } catch (err) {
+                console.error('Error in addPopMoveBackInventory:', err);
+            }
+        }
+
+        function openAaronMoveBackInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`aaron-move-back-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('aaronMoveBackInventoryModal').classList.add('active');
+        }
+
+        function closeAaronMoveBackInventoryModal() {
+            document.getElementById('aaronMoveBackInventoryModal').classList.remove('active');
+        }
+
+        function addAaronMoveBackInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toMove = parseFloat(document.getElementById(`aaron-move-back-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+                    if (storageEl && showEl && toMove > 0) {
+                        const currentShow = parseFloat(showEl.value || 0);
+                        if (toMove <= currentShow) {
+                            showEl.value = currentShow - toMove;
+                            storageEl.value = parseFloat(storageEl.value || 0) + toMove;
+                        }
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory moved back!');
+                closeAaronMoveBackInventoryModal();
+            } catch (err) {
+                console.error('Error in addAaronMoveBackInventory:', err);
+            }
+        }
+
+        function openPopRemoveInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`pop-remove-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('popRemoveInventoryModal').classList.add('active');
+        }
+
+        function closePopRemoveInventoryModal() {
+            document.getElementById('popRemoveInventoryModal').classList.remove('active');
+        }
+
+        function addPopRemoveInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toRemove = parseFloat(document.getElementById(`pop-remove-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                    if (storageEl && toRemove > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - toRemove);
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory removed!');
+                closePopRemoveInventoryModal();
+            } catch (err) {
+                console.error('Error in addPopRemoveInventory:', err);
+            }
+        }
+
+        function openAaronRemoveInventoryModal() {
+            for (let i = 0; i < NUM_PRODUCTS; i++) {
+                const input = document.getElementById(`aaron-remove-${i}`);
+                if (input) input.value = '';
+            }
+            document.getElementById('aaronRemoveInventoryModal').classList.add('active');
+        }
+
+        function closeAaronRemoveInventoryModal() {
+            document.getElementById('aaronRemoveInventoryModal').classList.remove('active');
+        }
+
+        function addAaronRemoveInventory() {
+            try {
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const toRemove = parseFloat(document.getElementById(`aaron-remove-${i}`)?.value || 0);
+                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                    if (storageEl && toRemove > 0) {
+                        storageEl.value = Math.max(0, parseFloat(storageEl.value || 0) - toRemove);
+                    }
+                }
+                updateAllInventories();
+                saveAllDataNow();
+                showSuccess('✅ Inventory removed!');
+                closeAaronRemoveInventoryModal();
+            } catch (err) {
+                console.error('Error in addAaronRemoveInventory:', err);
+            }
+        }
+
+        // ==================== SALES SHEET MANAGEMENT ====================
+        function openNewSalesSheetModal() {
+            document.getElementById('new-sheet-name').value = '';
+            document.getElementById('newSalesSheetModal').classList.add('active');
+        }
+
+        function closeNewSalesSheetModal() {
+            document.getElementById('newSalesSheetModal').classList.remove('active');
+        }
+
+        function confirmNewSalesSheet() {
+            try {
+                const name = document.getElementById('new-sheet-name').value.trim();
+                if (!name) return alert('Sheet name is required');
+                const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+                if (sheetMetadata[sheetId]) return alert('Sheet already exists');
+                sheetMetadata[sheetId] = { name, person: 'pop', date: new Date().toISOString().split('T')[0] };
+                sheetStates[sheetId] = { active: false, locked: false, completed: false };
+                renderSalesSheets();
+                updateDeleteSheetSelect();
+                showSuccess('✅ Sheet created!');
+                closeNewSalesSheetModal();
+                saveAllDataNow();
+            } catch (err) {
+                console.error('Error in confirmNewSalesSheet:', err);
+                showSuccess('❌ Error creating sheet');
+            }
+        }
+
+        function openNewAaronSalesSheetModal() {
+            document.getElementById('new-aaron-sheet-name').value = '';
+            document.getElementById('newAaronSalesSheetModal').classList.add('active');
+        }
+
+        function closeNewAaronSalesSheetModal() {
+            document.getElementById('newAaronSalesSheetModal').classList.remove('active');
+        }
+
+        function confirmNewAaronSalesSheet() {
+            try {
+                const name = document.getElementById('new-aaron-sheet-name').value.trim();
+                if (!name) return alert('Sheet name is required');
+                const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+                if (sheetMetadata[sheetId]) return alert('Sheet already exists');
+                sheetMetadata[sheetId] = { name, person: 'aaron', date: new Date().toISOString().split('T')[0] };
+                sheetStates[sheetId] = { active: false, locked: false, completed: false };
+                renderSalesSheets();
+                updateDeleteSheetSelect();
+                showSuccess('✅ Sheet created!');
+                closeNewAaronSalesSheetModal();
+                saveAllDataNow();
+            } catch (err) {
+                console.error('Error in confirmNewAaronSalesSheet:', err);
+                showSuccess('❌ Error creating sheet');
+            }
+        }
+
+        function openDeletePopSalesSheetModal() {
+            updateDeleteSheetSelect();
+            document.getElementById('deleteSalesSheetModal').classList.add('active');
+        }
+
+        function openDeleteAaronSalesSheetModal() {
+            updateDeleteSheetSelect();
+            document.getElementById('deleteSalesSheetModal').classList.add('active');
+        }
+
+        function closeDeleteSalesSheetModal() {
+            document.getElementById('deleteSalesSheetModal').classList.remove('active');
+        }
+
+        function confirmDeleteSalesSheet() {
+            try {
+                const sheetId = document.getElementById('delete-sheet-select').value;
+                if (!sheetId) return alert('Select a sheet to delete');
+                if (!sheetMetadata[sheetId]) return alert('Sheet not found');
+                delete sheetMetadata[sheetId];
+                delete sheetStates[sheetId];
+                const tabEl = document.getElementById(sheetId);
+                if (tabEl) tabEl.remove();
+                renderDynamicNavLinks();
+                updateDeleteSheetSelect();
+                showSuccess('✅ Sheet deleted!');
+                closeDeleteSalesSheetModal();
+                saveAllDataNow();
+            } catch (err) {
+                console.error('Error in confirmDeleteSalesSheet:', err);
+                showSuccess('❌ Error deleting sheet');
+            }
+        }
+
+        // ==================== EXPORT/IMPORT ====================
+        function exportToExcel() {
+            try {
+                console.log('📊 Starting Excel export...');
+                
+                const wb = XLSX.utils.book_new();
+                
+                // Sheet 1: Master Inventory
+                const masterData = [
+                    ["Master Inventory - " + new Date().toLocaleDateString()]
+                ];
+                masterData.push(["Product Name", "Pop Total", "Aaron Total", "Combined Total"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const popStock = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
+                    const aaronStock = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
+                    masterData.push([productNames[i], popStock, aaronStock, popStock + aaronStock]);
+                }
+                const masterWs = XLSX.utils.aoa_to_sheet(masterData);
+                XLSX.utils.book_append_sheet(wb, masterWs, "Master Inventory");
+                
+                // Sheet 2: Pop Inventory
+                const popInvData = [
+                    ["Pop's Current Inventory - " + new Date().toLocaleDateString()]
+                ];
+                popInvData.push(["Product Name", "Selling Price", "Storage Tub", "Show Tub", "Units Sold (Locked)", "Total On Hand"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
+                    const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                    const show = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                    const sold = parseFloat(document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                    popInvData.push([productNames[i], price, storage, show, sold, storage + show]);
+                }
+                const popInvWs = XLSX.utils.aoa_to_sheet(popInvData);
+                XLSX.utils.book_append_sheet(wb, popInvWs, "Pop Inventory");
+                
+                // Sheet 3: Aaron Inventory
+                const aaronInvData = [
+                    ["Aaron's Current Inventory - " + new Date().toLocaleDateString()]
+                ];
+                aaronInvData.push(["Product Name", "Selling Price", "Storage Tub", "Show Tub", "Units Sold (Locked)", "Total On Hand"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const price = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                    const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                    const show = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                    const sold = parseFloat(document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                    aaronInvData.push([productNames[i], price, storage, show, sold, storage + show]);
+                }
+                const aaronInvWs = XLSX.utils.aoa_to_sheet(aaronInvData);
+                XLSX.utils.book_append_sheet(wb, aaronInvWs, "Aaron Inventory");
+                
+                // Sheets 4+: Sales Sheets
+                const allSheetIds = Object.keys(sheetMetadata);
+                allSheetIds.forEach(sheetId => {
+                    const meta = sheetMetadata[sheetId];
+                    if (!meta) return;
+                    
+                    const salesData = [
+                        [meta.name + " - " + meta.date],
+                        ["Status: " + (sheetStates[sheetId]?.locked ? "LOCKED" : sheetStates[sheetId]?.active ? "ACTIVE" : "INACTIVE")]
+                    ];
+                    salesData.push(["Product Name", "Units Brought", "Units Sold", "Units Left in Tub"]);
+                    
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        
+                        const brought = parseFloat(broughtEl?.value || 0);
+                        const sold = parseFloat(soldEl?.textContent || 0);
+                        const left = parseFloat(leftEl?.value || 0);
+                        
+                        salesData.push([productNames[i], brought, sold, left]);
+                    }
+                    
+                    salesData.push(["TOTAL UNITS SOLD", "", document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`)?.value || 0]);
+                    salesData.push(["TOTAL REVENUE", "", document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`)?.value || 0]);
+                    
+                    const salesWs = XLSX.utils.aoa_to_sheet(salesData);
+                    XLSX.utils.book_append_sheet(wb, salesWs, meta.name.replace(/[^a-z0-9]/gi, ' ').substring(0, 31));
+                });
+                
+                // Sheet: Shrinkage Log
+                if (shrinkageLog.length > 0) {
+                    const shrinkageData = [["Shrinkage Log - " + new Date().toLocaleDateString()]];
+                    shrinkageData.push(["Date", "Person", "Product", "Qty", "From", "Notes"]);
+                    shrinkageLog.forEach(entry => {
+                        shrinkageData.push([
+                            entry.date,
+                            entry.person === "pop" ? "Pop" : "Aaron",
+                            productNames[entry.productIdx],
+                            entry.qty,
+                            entry.depletFrom === "storage" ? "Storage" : entry.depletFrom === "show" ? "Show Tub" : "Both",
+                            entry.notes
+                        ]);
+                    });
+                    const shrinkageWs = XLSX.utils.aoa_to_sheet(shrinkageData);
+                    XLSX.utils.book_append_sheet(wb, shrinkageWs, "Shrinkage Log");
+                }
+                
+                // Generate and download file
+                const fileName = `Knife_Inventory_${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                // Add to library
+                excelLibrary.push({
+                    name: fileName,
+                    date: new Date().toLocaleDateString(),
+                    timestamp: new Date().getTime()
+                });
+                
+                renderExcelLibrary();
+                saveAllDataNow();
+                showSuccess('✅ Excel file exported successfully!');
+                
+            } catch (err) {
+                console.error('Error in exportToExcel:', err);
+                showSuccess('❌ Error exporting to Excel');
+            }
+        }
+
+        function openImportExcelModal() {
+            document.getElementById('import-file').value = '';
+            document.getElementById('import-mapping-container').style.display = 'none';
+            importedSheetMapping = {};
+            document.getElementById('importExcelModal').classList.add('active');
             
-            inventory.forEach(item => {
-                csv += `"${item.name}","${item.sku}",${item.quantity},${item.price},"${item.location}",${item.quantity * item.price}\n`;
-            });
-
-            csv += '\n\nSALES RECORDS\n';
-            csv += 'Date,Item,Quantity,Price,Total,Customer,Location\n';
-            
-            sales.forEach(sale => {
-                csv += `"${sale.date}","${sale.item}",${sale.quantity},${sale.price},${sale.total},"${sale.customer}","${sale.location || 'N/A'}"\n`;
-            });
-
-            const link = document.createElement('a');
-            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-            link.download = 'knife-inventory-' + new Date().toISOString().split('T')[0] + '.csv';
-            link.click();
-
-            showAlert('✓ CSV exported!', 'success');
+            document.getElementById('import-file').onchange = handleFileSelect;
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeModal();
+        function closeImportExcelModal() {
+            document.getElementById('importExcelModal').classList.remove('active');
+            importedSheetMapping = {};
+        }
+
+        function handleFileSelect(event) {
+            try {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                console.log('📁 Reading Excel file:', file.name);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const wb = XLSX.read(data, { type: 'array' });
+                        
+                        console.log('📊 Workbook sheets:', wb.SheetNames);
+                        
+                        // Build mapping UI
+                        const mappingContainer = document.getElementById('import-mapping-container');
+                        mappingContainer.innerHTML = '<h4 style="margin-bottom: 15px; color: #333;">Map Excel Sheets to Existing Pages:</h4>';
+                        
+                        const existingSheets = Object.keys(sheetMetadata);
+                        
+                        // Add inventory mapping section
+                        const inventorySection = document.createElement('div');
+                        inventorySection.style.marginBottom = '20px';
+                        inventorySection.style.borderBottom = '1px solid #ddd';
+                        inventorySection.style.paddingBottom = '15px';
+                        inventorySection.innerHTML = '<h5 style="color: #667eea; margin-bottom: 10px;">📦 Inventory Pages</h5>';
+                        mappingContainer.appendChild(inventorySection);
+                        
+                        // Pop Inventory mapping
+                        if (wb.SheetNames.includes("Pop Inventory")) {
+                            const popRow = document.createElement('div');
+                            popRow.className = 'mapping-row';
+                            popRow.innerHTML = `
+                                <label style="font-weight: 600; color: #333;">Pop Inventory:</label>
+                                <span style="flex: 1; padding: 8px 12px; background: #f0f4ff; border-radius: 5px; color: #667eea;">Auto-imported</span>
+                            `;
+                            inventorySection.appendChild(popRow);
+                        }
+                        
+                        // Aaron Inventory mapping
+                        if (wb.SheetNames.includes("Aaron Inventory")) {
+                            const aaronRow = document.createElement('div');
+                            aaronRow.className = 'mapping-row';
+                            aaronRow.innerHTML = `
+                                <label style="font-weight: 600; color: #333;">Aaron Inventory:</label>
+                                <span style="flex: 1; padding: 8px 12px; background: #f0f4ff; border-radius: 5px; color: #667eea;">Auto-imported</span>
+                            `;
+                            inventorySection.appendChild(aaronRow);
+                        }
+                        
+                        // Add sales sheets mapping section
+                        const salesSection = document.createElement('div');
+                        salesSection.innerHTML = '<h5 style="color: #667eea; margin-bottom: 10px;">📊 Sales Sheets</h5>';
+                        mappingContainer.appendChild(salesSection);
+                        
+                        wb.SheetNames.forEach((sheetName) => {
+                            if (sheetName === "Master Inventory" || sheetName === "Pop Inventory" || sheetName === "Aaron Inventory" || sheetName === "Shrinkage Log") {
+                                return;
+                            }
+                            
+                            const mappingRow = document.createElement('div');
+                            mappingRow.className = 'mapping-row';
+                            mappingRow.innerHTML = `
+                                <label>${sheetName}:</label>
+                                <select onchange="importedSheetMapping['${sheetName}'] = this.value;">
+                                    <option value="">-- Select Destination Sheet --</option>
+                                    ${existingSheets.map(id => `<option value="${id}">${sheetMetadata[id].name}</option>`).join('')}
+                                </select>
+                            `;
+                            salesSection.appendChild(mappingRow);
+                        });
+                        
+                        // Store workbook for import
+                        window.importedWorkbook = wb;
+                        mappingContainer.style.display = 'block';
+                        showSuccess('✅ Excel file loaded! Inventories auto-imported, map sales sheets below.');
+                        
+                    } catch (err) {
+                        console.error('Error reading workbook:', err);
+                        showSuccess('❌ Error reading Excel file');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                
+            } catch (err) {
+                console.error('Error in handleFileSelect:', err);
+                showSuccess('❌ Error selecting file');
             }
         }
 
-        // Keyboard shortcut: Ctrl+S to save
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault();
-                saveAllData();
+        function confirmImportExcel() {
+            try {
+                if (!window.importedWorkbook) return alert('Please select a file first');
+                
+                console.log('📥 Starting import with mapping:', importedSheetMapping);
+                
+                const wb = window.importedWorkbook;
+                let importCount = 0;
+                
+                // Import standard pages
+                const standardSheets = {
+                    "Master Inventory": null,
+                    "Pop Inventory": "pop",
+                    "Aaron Inventory": "aaron"
+                };
+                
+                Object.entries(standardSheets).forEach(([sheetName, person]) => {
+                    const ws = wb.Sheets[sheetName];
+                    if (!ws) return;
+                    
+                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                    if (data.length < 3) return; // Not enough data
+                    
+                    // Skip header rows, start from row 2 (index 2)
+                    for (let i = 2; i < data.length && i - 2 < NUM_PRODUCTS; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const productIdx = i - 2;
+                        
+                        if (person) {
+                            // Pop or Aaron inventory
+                            const priceEl = document.querySelector(`.${person}-price[data-product="${productIdx}"]`);
+                            const storageEl = document.querySelector(`.${person}-storage[data-product="${productIdx}"]`);
+                            const showEl = document.querySelector(`.${person}-show-tub[data-product="${productIdx}"]`);
+                            
+                            if (priceEl) priceEl.value = row[1] || 0;
+                            if (storageEl) storageEl.value = row[2] || 0;
+                            if (showEl) showEl.value = row[3] || 0;
+                        }
+                    }
+                    importCount++;
+                });
+                
+                // Import mapped sales sheets
+                Object.entries(importedSheetMapping).forEach(([excelSheet, targetSheetId]) => {
+                    if (!targetSheetId) return;
+                    
+                    const ws = wb.Sheets[excelSheet];
+                    if (!ws) return;
+                    
+                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                    if (data.length < 3) return;
+                    
+                    // Parse sales sheet data
+                    for (let i = 3; i < data.length && i - 3 < NUM_PRODUCTS; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const productIdx = i - 3;
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+                        
+                        if (broughtEl) broughtEl.value = row[1] || 0;
+                        if (leftEl) leftEl.value = row[3] || 0;
+                        
+                        // Trigger calculation
+                        if (leftEl) {
+                            leftEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                    importCount++;
+                });
+                
+                // Import shrinkage log
+                const shrinkageWs = wb.Sheets["Shrinkage Log"];
+                if (shrinkageWs) {
+                    const data = XLSX.utils.sheet_to_json(shrinkageWs, { header: 1 });
+                    shrinkageLog = [];
+                    for (let i = 2; i < data.length; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const person = row[1]?.toLowerCase() === 'pop' ? 'pop' : 'aaron';
+                        const productIdx = productNames.indexOf(row[2]);
+                        if (productIdx === -1) continue;
+                        
+                        shrinkageLog.push({
+                            date: row[0],
+                            person: person,
+                            productIdx: productIdx,
+                            qty: parseInt(row[3]) || 0,
+                            depletFrom: row[4]?.includes('Storage') ? 'storage' : row[4]?.includes('Both') ? 'both' : 'show',
+                            notes: row[5] || ''
+                        });
+                    }
+                    updateShrinkageDisplay();
+                    importCount++
+                }
+                
+                updateAllInventories();
+                updateInventoryAggregatedUnitsSold();
+                saveAllDataNow();
+                showSuccess(`✅ Import complete! ${importCount} sheets imported.`);
+                closeImportExcelModal();
+                
+            } catch (err) {
+                console.error('Error in confirmImportExcel:', err);
+                showSuccess('❌ Error importing data');
             }
-        });
+        }
+
+        function renderExcelLibrary() {
+            const container = document.getElementById('excel-library-items');
+            if (excelLibrary.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">No exports yet. Export your data to see it here.</p>';
+                return;
+            }
+            container.innerHTML = excelLibrary.map((item, idx) => `<div class="excel-library-item"><span>📄 ${item.name} (${item.date})</span><button onclick="downloadExcelFile(${idx})">Download</button></div>`).join('');
+        }
+
+        function downloadExcelFile(idx) {
+            showSuccess('Download feature coming soon!');
+        }
+
+        // ==================== UTILITIES ====================
+        function resetAllData() {
+            if (!confirm('⚠️ This will reset ALL data! Are you sure?')) return;
+            Object.keys(sheetMetadata).forEach(sheetId => {
+                if (staticSheets.includes(sheetId)) {
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        if (broughtEl) broughtEl.value = 0;
+                        if (soldEl) soldEl.textContent = 0;
+                        if (leftEl) leftEl.value = 0;
+                    }
+                }
+            });
+            shrinkageLog = [];
+            updateShrinkageDisplay();
+            updateAllInventories();
+            saveAllDataNow();
+            showSuccess('✅ Data reset!');
+        }
+
+        function refreshAnalytics() {
+            showSuccess('✅ Analytics refreshed!');
+        }
+
+        window.onload = initializeApp;
     </script>
 </body>
 </html>
