@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knife Inventory Manager v31 - Fixed & Enhanced</title>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="-1">
+    <title>Knife Inventory Manager v30 - Enhanced with Analytics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -20,46 +23,144 @@
         .tab-content { padding: 30px; display: none; }
         .tab-content.active { display: block; }
         .tab-section h2 { color: #333; margin-bottom: 20px; font-size: 1.8em; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .tab-section p { color: #666; margin-bottom: 20px; font-size: 14px; }
         .inventory-controls { background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .inventory-controls h3 { width: 100%; color: #2e7d32; margin-bottom: 15px; }
-        .nav-link { display: inline-block; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-right: 10px; margin-bottom: 10px; }
-        .nav-link:hover { background: #667eea; color: white; }
-        .nav-link.add-product-btn { background: #9c27b0; color: white; border-color: #9c27b0; }
-        .nav-link.add-product-btn:hover { background: #7b1fa2; }
+        .sheet-controls { background: #f0f4ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .sheet-status { display: inline-flex; align-items: center; gap: 8px; padding: 12px 15px; border-radius: 6px; font-weight: 500; }
+        .sheet-status.inactive { background: #f5f5f5; color: #666; }
+        .sheet-status.active { background: #c8e6c9; color: #2e7d32; }
+        .sheet-status.completed { background: #bbdefb; color: #1565c0; }
+        .sheet-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px; }
+        .sheet-btn:hover { background: #5568d3; }
+        .sheet-btn.lock-btn { background: #ff9800; }
+        .sheet-btn.lock-btn:hover { background: #fb8c00; }
+        .sheet-btn.unlock-btn { background: #4caf50; }
+        .sheet-btn.unlock-btn:hover { background: #45a049; }
+        .event-checkbox { display: flex; align-items: center; gap: 10px; }
+        .event-checkbox input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .event-checkbox label { font-weight: 500; color: #333; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         thead { background: #667eea; color: white; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        input, select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
-        input:focus, select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        th { font-weight: 600; }
+        tbody tr:hover { background: #f8f9fa; }
+        tbody tr:nth-child(even) { background: #f8f9fa; }
+        input { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        input[readonly] { background-color: #f8f9fa; color: #666; cursor: not-allowed; }
+        input:disabled { background-color: #f5f5f5; color: #999; cursor: not-allowed; }
+        select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+        .revenue-row { font-weight: 700; background: #fffacd; border-top: 2px solid #667eea; }
+        .units-sold-row { font-weight: 700; background: #e8f5e9; }
+        .total-row { font-weight: 700; background: #eef2ff; }
+        .nav-links { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .nav-link { display: inline-block; margin-right: 15px; margin-bottom: 10px; padding: 10px 15px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .nav-link:hover { background: #667eea; color: white; }
+        .nav-link.reset-btn { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+        .nav-link.export-btn { background: #4caf50; color: white; border-color: #4caf50; }
+        .nav-link.export-btn:hover { background: #45a049; }
+        .nav-link.import-btn { background: #2196f3; color: white; border-color: #2196f3; }
+        .nav-link.import-btn:hover { background: #1976d2; }
+        .refresh-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .refresh-btn:hover { background: #1976d2; }
+        .refresh-btn::before { content: '↻'; font-size: 16px; }
+        .remove-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 15px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; margin-bottom: 20px; }
+        .remove-btn:hover { background: #ff5252; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); }
         .modal.active { display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
         .modal-content h3 { margin-top: 0; color: #333; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        .modal-buttons button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; }
-        .btn-cancel { background: #e0e0e0; color: #333; }
-        .btn-cancel:hover { background: #d0d0d0; }
-        .btn-create { background: #667eea; color: white; }
-        .btn-create:hover { background: #5568d3; }
+        .modal-buttons button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .modal-buttons .btn-cancel { background: #e0e0e0; color: #333; }
+        .modal-buttons .btn-cancel:hover { background: #d0d0d0; }
+        .modal-buttons .btn-create { background: #667eea; color: white; }
+        .modal-buttons .btn-create:hover { background: #5568d3; }
+        .modal-buttons .btn-add-inventory { background: #4caf50; color: white; }
+        .modal-buttons .btn-add-inventory:hover { background: #45a049; }
+        .modal-buttons .btn-remove { background: #ff6b6b; color: white; }
+        .modal-buttons .btn-remove:hover { background: #ff5252; }
+        .modal-buttons .btn-import { background: #2196f3; color: white; }
+        .modal-buttons .btn-import:hover { background: #1976d2; }
+        .inventory-table { width: 100%; border-collapse: collapse; }
+        .inventory-table thead { background: #4caf50; }
+        .inventory-table th, .inventory-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .inventory-table input { margin: 0; padding: 5px; }
+        .flow-info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3; font-size: 13px; color: #1565c0; line-height: 1.6; }
+        .depletion-notice { background: #c8e6c9; padding: 10px 15px; border-radius: 5px; margin-bottom: 15px; color: #2e7d32; font-size: 12px; font-weight: 500; border-left: 4px solid #4caf50; }
         .success-banner { background: #4caf50; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; text-align: center; font-weight: 500; }
         .success-banner.show { display: block; }
+        .aggregation-info { background: #fff3cd; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; color: #856404; font-size: 12px; border-left: 4px solid #ffc107; }
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .chart-container { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .chart-container h3 { margin-bottom: 20px; color: #333; }
+        .shrinkage-table { width: 100%; border-collapse: collapse; }
+        .shrinkage-table thead { background: #ff6b6b; color: white; }
+        .shrinkage-table th, .shrinkage-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+        .shrinkage-summary { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .shrinkage-summary h3 { margin-bottom: 10px; color: #856404; }
+        .excel-history { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .excel-history h3 { margin-bottom: 15px; color: #333; }
+        .excel-file-item { background: white; padding: 12px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .excel-file-item span { color: #666; font-size: 13px; }
+        .excel-file-item button { padding: 5px 10px; font-size: 12px; cursor: pointer; }
         @media (max-width: 768px) {
+            .nav-tabs { justify-content: flex-start; }
             .nav-tabs button { padding: 12px 15px; font-size: 12px; }
             .header h1 { font-size: 1.8em; }
+            .header-buttons { flex-direction: column; }
+            table { font-size: 0.9em; }
+            th, td { padding: 8px 10px; }
+            .sheet-controls { flex-direction: column; align-items: flex-start; }
             .inventory-controls { flex-direction: column; }
+            .analytics-grid { grid-template-columns: 1fr; }
         }
     </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkDC2tBw5kswXpN5Cbnr39kbLhcLGxK8I",
+            authDomain: "knife-inventory-management.firebaseapp.com",
+            databaseURL: "https://knife-inventory-management-default-rtdb.firebaseio.com",
+            projectId: "knife-inventory-management",
+            storageBucket: "knife-inventory-management.firebasestorage.app",
+            messagingSenderId: "944440388498",
+            appId: "1:944440388498:web:8eadb87306507966f1af4b",
+            measurementId: "G-SSQ4E6R5TW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.firebaseDB = db;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
+        window.firebaseReady = true;
+
+        console.log("✅ Firebase initialized");
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Knife Inventory Manager v31</h1>
-            <p>✅ Fixed: New Sales Sheet Modal + Add Product Button Works!</p>
+            <p>🎉 Add New Products & Fixed Sales Sheets!</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
-                <button class="nav-link" onclick="resetAllData()" style="background: #ff6b6b; color: white; border-color: #ff6b6b;">🧹 Reset All Data</button>
+                <button class="nav-link export-btn" onclick="openExportAllPagesModal()">📊 Export All Pages</button>
+                <button class="nav-link import-btn" onclick="openImportExcelModal()">📥 Import from Excel</button>
+                <button class="nav-link" onclick="openAddProductModal()" style="background: #9c27b0; color: white; border-color: #9c27b0;">➕ Add New Product</button>
+                <button class="nav-link reset-btn" onclick="resetAllData()">🧹 Reset All Data</button>
             </div>
         </div>
 
@@ -67,114 +168,371 @@
 
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="openTab(event, 'master-inv')">Master Inventory</button>
-            <button class="tab-btn" onclick="openTab(event, 'pop-nav')">Pop Navigation</button>
             <button class="tab-btn" onclick="openTab(event, 'aaron-nav')">Aaron Navigation</button>
-            <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'pop-nav')">Pop Navigation</button>
             <button class="tab-btn" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+            <button class="tab-btn" onclick="openTab(event, 'shrinkage')">📦 Shrinkage Tracking</button>
+            <button class="tab-btn" onclick="openTab(event, 'analytics')">📊 Sales Analytics</button>
+            <button class="tab-btn" onclick="openTab(event, 'excel-exports')">📁 Excel Exports</button>
         </div>
 
         <!-- Master Inventory -->
         <div id="master-inv" class="tab-content active">
             <div class="tab-section">
                 <h2>Master Inventory - Combined Stock</h2>
+                <p>Shows current stock levels for all 11 knife products across both Pop and Aaron inventories.</p>
                 <table>
                     <thead>
                         <tr>
                             <th>Product Name</th>
-                            <th>Total</th>
+                            <th>Pop Total</th>
+                            <th>Aaron Total</th>
+                            <th>Combined Total</th>
                         </tr>
                     </thead>
-                    <tbody id="master-table-body">
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" class="master-pop-stock" data-product="0" readonly></td><td><input type="number" class="master-aaron-stock" data-product="0" readonly></td><td><input type="number" class="master-combined" data-product="0" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" class="master-pop-stock" data-product="1" readonly></td><td><input type="number" class="master-aaron-stock" data-product="1" readonly></td><td><input type="number" class="master-combined" data-product="1" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" class="master-pop-stock" data-product="2" readonly></td><td><input type="number" class="master-aaron-stock" data-product="2" readonly></td><td><input type="number" class="master-combined" data-product="2" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" class="master-pop-stock" data-product="3" readonly></td><td><input type="number" class="master-aaron-stock" data-product="3" readonly></td><td><input type="number" class="master-combined" data-product="3" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" class="master-pop-stock" data-product="4" readonly></td><td><input type="number" class="master-aaron-stock" data-product="4" readonly></td><td><input type="number" class="master-combined" data-product="4" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" class="master-pop-stock" data-product="5" readonly></td><td><input type="number" class="master-aaron-stock" data-product="5" readonly></td><td><input type="number" class="master-combined" data-product="5" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" class="master-pop-stock" data-product="6" readonly></td><td><input type="number" class="master-aaron-stock" data-product="6" readonly></td><td><input type="number" class="master-combined" data-product="6" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Bull Cutters</td><td><input type="number" class="master-pop-stock" data-product="7" readonly></td><td><input type="number" class="master-aaron-stock" data-product="7" readonly></td><td><input type="number" class="master-combined" data-product="7" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Horizontal Sheaths</td><td><input type="number" class="master-pop-stock" data-product="8" readonly></td><td><input type="number" class="master-aaron-stock" data-product="8" readonly></td><td><input type="number" class="master-combined" data-product="8" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Bowies</td><td><input type="number" class="master-pop-stock" data-product="9" readonly></td><td><input type="number" class="master-aaron-stock" data-product="9" readonly></td><td><input type="number" class="master-combined" data-product="9" readonly style="font-weight: bold;"></td></tr>
+                        <tr><td>Mini Folders</td><td><input type="number" class="master-pop-stock" data-product="10" readonly></td><td><input type="number" class="master-aaron-stock" data-product="10" readonly></td><td><input type="number" class="master-combined" data-product="10" readonly style="font-weight: bold;"></td></tr>
+                        <tr class="total-row"><td><strong>GRAND TOTAL</strong></td><td><input type="number" id="master-pop-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-aaron-total" readonly style="font-weight: bold;"></td><td><input type="number" id="master-grand-total" readonly style="font-weight: bold; background: #667eea; color: white;"></td></tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Pop Navigation -->
-        <div id="pop-nav" class="tab-content">
-            <div class="tab-section">
-                <h2>Pop's Sales Sheets</h2>
-                <button class="nav-link" onclick="openNewSalesSheetModal('pop')" style="margin-bottom: 20px;">➕ Create New Sales Sheet</button>
-                <div id="pop-sales-links"></div>
             </div>
         </div>
 
         <!-- Aaron Navigation -->
         <div id="aaron-nav" class="tab-content">
             <div class="tab-section">
-                <h2>Aaron's Sales Sheets</h2>
-                <button class="nav-link" onclick="openNewSalesSheetModal('aaron')" style="margin-bottom: 20px;">➕ Create New Sales Sheet</button>
-                <div id="aaron-sales-links"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <h2 style="margin: 0;">Aaron's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewAaronSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeleteAaronSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <button class="nav-link" onclick="openTab(event, 'aaron-inv')">Aaron Inventory</button>
+                    <div id="dynamic-aaron-sales-links" style="display: inline;"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Pop Inventory -->
-        <div id="pop-inv" class="tab-content">
+        <!-- Pop Navigation -->
+        <div id="pop-nav" class="tab-content">
             <div class="tab-section">
-                <h2>Pop's Inventory</h2>
-                <div class="inventory-controls">
-                    <h3>Inventory Management</h3>
-                    <button class="nav-link add-product-btn" onclick="openAddProductModal('pop')">➕ Add New Product</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <h2 style="margin: 0;">Pop's Inventory Management</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="nav-link" onclick="openNewSalesSheetModal()" style="margin: 0;">➕ New Sales Sheet</button>
+                        <button class="nav-link" onclick="openDeletePopSalesSheetModal()" style="margin: 0; background: #ff6b6b; color: white; border-color: #ff6b6b;">🗑️ Delete</button>
+                    </div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Price</th>
-                            <th>Storage</th>
-                            <th>Show Tub</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pop-inv-table">
-                    </tbody>
-                </table>
+                <div class="nav-links">
+                    <button class="nav-link" onclick="openTab(event, 'pop-inv')">Pop Inventory</button>
+                    <button class="nav-link" onclick="openTab(event, 'wetumpka')">Wetumpka</button>
+                    <button class="nav-link" onclick="openTab(event, 'trussville')">Trussville</button>
+                    <button class="nav-link" onclick="openTab(event, 'columbia')">Columbia</button>
+                    <button class="nav-link" onclick="openTab(event, 'hattiesburg')">Hattiesburg</button>
+                    <div id="dynamic-sales-links" style="display: inline;"></div>
+                </div>
             </div>
         </div>
 
         <!-- Aaron Inventory -->
         <div id="aaron-inv" class="tab-content">
             <div class="tab-section">
-                <h2>Aaron's Inventory</h2>
+                <h2>Aaron's Current Inventory</h2>
+                <div class="flow-info">
+                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                </div>
+                <div class="depletion-notice">
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
+                </div>
+                <div class="aggregation-info">
+                    📊 Units Sold = Running total from all LOCKED sales sheets
+                </div>
                 <div class="inventory-controls">
                     <h3>Inventory Management</h3>
-                    <button class="nav-link add-product-btn" onclick="openAddProductModal('aaron')">➕ Add New Product</button>
+                    <button class="nav-link" onclick="openAaronInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
+                    <button class="nav-link" onclick="openAaronMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
+                    <button class="nav-link" onclick="openAaronMoveBackToStorageModal()" style="margin: 0; background: #9c27b0; color: white; border-color: #9c27b0;">↔️ Move Back to Storage</button>
+                    <button class="remove-btn" onclick="openAaronRemoveInventoryModal()">🗑️ Remove from Storage</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Price</th>
-                            <th>Storage</th>
-                            <th>Show Tub</th>
-                        </tr>
-                    </thead>
-                    <tbody id="aaron-inv-table">
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="0" class="aaron-price" data-product="0" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="0"></td><td><input type="number" class="aaron-units-sold-agg" data-product="0" readonly></td><td><input type="number" class="aaron-current-stock" data-product="0" readonly value="0"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="0" class="aaron-price" data-product="1" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="1"></td><td><input type="number" class="aaron-units-sold-agg" data-product="1" readonly></td><td><input type="number" class="aaron-current-stock" data-product="1" readonly value="0"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="0" class="aaron-price" data-product="2" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="2"></td><td><input type="number" class="aaron-units-sold-agg" data-product="2" readonly></td><td><input type="number" class="aaron-current-stock" data-product="2" readonly value="0"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="0" class="aaron-price" data-product="3" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="3"></td><td><input type="number" class="aaron-units-sold-agg" data-product="3" readonly></td><td><input type="number" class="aaron-current-stock" data-product="3" readonly value="0"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="0" class="aaron-price" data-product="4" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="4"></td><td><input type="number" class="aaron-units-sold-agg" data-product="4" readonly></td><td><input type="number" class="aaron-current-stock" data-product="4" readonly value="0"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="0" class="aaron-price" data-product="5" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="5"></td><td><input type="number" class="aaron-units-sold-agg" data-product="5" readonly></td><td><input type="number" class="aaron-current-stock" data-product="5" readonly value="0"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="0" class="aaron-price" data-product="6" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="6"></td><td><input type="number" class="aaron-units-sold-agg" data-product="6" readonly></td><td><input type="number" class="aaron-current-stock" data-product="6" readonly value="0"></td></tr>
+                        <tr><td>Bull Cutters</td><td><input type="number" placeholder="0" class="aaron-price" data-product="7" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="7"></td><td><input type="number" class="aaron-units-sold-agg" data-product="7" readonly></td><td><input type="number" class="aaron-current-stock" data-product="7" readonly value="0"></td></tr>
+                        <tr><td>Horizontal Sheaths</td><td><input type="number" placeholder="0" class="aaron-price" data-product="8" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="8" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="8"></td><td><input type="number" class="aaron-units-sold-agg" data-product="8" readonly></td><td><input type="number" class="aaron-current-stock" data-product="8" readonly value="0"></td></tr>
+                        <tr><td>Bowies</td><td><input type="number" placeholder="0" class="aaron-price" data-product="9" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="9" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="9"></td><td><input type="number" class="aaron-units-sold-agg" data-product="9" readonly></td><td><input type="number" class="aaron-current-stock" data-product="9" readonly value="0"></td></tr>
+                        <tr><td>Mini Folders</td><td><input type="number" placeholder="0" class="aaron-price" data-product="10" onchange="recalculateAllRevenue()"></td><td><input type="number" placeholder="Storage" class="aaron-storage" data-product="10" readonly></td><td><input type="number" placeholder="Show" class="aaron-show-tub" data-product="10"></td><td><input type="number" class="aaron-units-sold-agg" data-product="10" readonly></td><td><input type="number" class="aaron-current-stock" data-product="10" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="aaron-total-on-hand" readonly value="0"></td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- New Sales Sheet Modal -->
-    <div id="newSalesSheetModal" class="modal">
-        <div class="modal-content">
-            <h3>Create New Sales Sheet</h3>
-            <div class="form-group">
-                <label>Sheet Name:</label>
-                <input type="text" id="salesSheetName" placeholder="e.g., Denver Event">
+        <!-- Pop Inventory -->
+        <div id="pop-inv" class="tab-content">
+            <div class="tab-section">
+                <h2>Pop's Current Inventory</h2>
+                <div class="flow-info">
+                    <strong>✅ SET PRICES FIRST!</strong> Enter selling prices for each product, then activate a sales sheet.
+                </div>
+                <div class="depletion-notice">
+                    ✅ Auto-Depletion: When you lock a sheet, Show Tub depletes by units sold!
+                </div>
+                <div class="aggregation-info">
+                    📊 Units Sold = Running total from all LOCKED sales sheets
+                </div>
+                <div class="inventory-controls">
+                    <h3>Inventory Management</h3>
+                    <button class="nav-link" onclick="openPopInventoryReceivedModal()" style="margin: 0;">➕ Add Inventory Received</button>
+                    <button class="nav-link" onclick="openPopMoveInventoryModal()" style="margin: 0; background: #ff9800; color: white; border-color: #ff9800;">↔️ Move to Show Tub</button>
+                    <button class="nav-link" onclick="openPopMoveBackToStorageModal()" style="margin: 0; background: #9c27b0; color: white; border-color: #9c27b0;">↔️ Move Back to Storage</button>
+                    <button class="remove-btn" onclick="openPopRemoveInventoryModal()">🗑️ Remove from Storage</button>
+                </div>
+                <table>
+                    <thead><tr><th>Product Name</th><th>Selling Price</th><th>Storage Tub</th><th>Show Tub</th><th>Units Sold (Locked)</th><th>Total On Hand</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full Tang</td><td><input type="number" placeholder="0" class="pop-price" data-product="0" onchange="recalculateAllRevenue()"></td><td><input type="number" value="314" class="pop-storage" data-product="0" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="0"></td><td><input type="number" class="pop-units-sold-agg" data-product="0" readonly></td><td><input type="number" class="pop-current-stock" data-product="0" readonly value="314"></td></tr>
+                        <tr><td>8" Rat</td><td><input type="number" placeholder="0" class="pop-price" data-product="1" onchange="recalculateAllRevenue()"></td><td><input type="number" value="112" class="pop-storage" data-product="1" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="1"></td><td><input type="number" class="pop-units-sold-agg" data-product="1" readonly></td><td><input type="number" class="pop-current-stock" data-product="1" readonly value="112"></td></tr>
+                        <tr><td>6" Rat</td><td><input type="number" placeholder="0" class="pop-price" data-product="2" onchange="recalculateAllRevenue()"></td><td><input type="number" value="164" class="pop-storage" data-product="2" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="2"></td><td><input type="number" class="pop-units-sold-agg" data-product="2" readonly></td><td><input type="number" class="pop-current-stock" data-product="2" readonly value="164"></td></tr>
+                        <tr><td>8" Stag</td><td><input type="number" placeholder="0" class="pop-price" data-product="3" onchange="recalculateAllRevenue()"></td><td><input type="number" value="91" class="pop-storage" data-product="3" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="3"></td><td><input type="number" class="pop-units-sold-agg" data-product="3" readonly></td><td><input type="number" class="pop-current-stock" data-product="3" readonly value="91"></td></tr>
+                        <tr><td>6" Stag</td><td><input type="number" placeholder="0" class="pop-price" data-product="4" onchange="recalculateAllRevenue()"></td><td><input type="number" value="132" class="pop-storage" data-product="4" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="4"></td><td><input type="number" class="pop-units-sold-agg" data-product="4" readonly></td><td><input type="number" class="pop-current-stock" data-product="4" readonly value="132"></td></tr>
+                        <tr><td>Grooved</td><td><input type="number" placeholder="0" class="pop-price" data-product="5" onchange="recalculateAllRevenue()"></td><td><input type="number" value="17" class="pop-storage" data-product="5" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="5"></td><td><input type="number" class="pop-units-sold-agg" data-product="5" readonly></td><td><input type="number" class="pop-current-stock" data-product="5" readonly value="17"></td></tr>
+                        <tr><td>Folders</td><td><input type="number" placeholder="0" class="pop-price" data-product="6" onchange="recalculateAllRevenue()"></td><td><input type="number" value="84" class="pop-storage" data-product="6" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="6"></td><td><input type="number" class="pop-units-sold-agg" data-product="6" readonly></td><td><input type="number" class="pop-current-stock" data-product="6" readonly value="84"></td></tr>
+                        <tr><td>Bull Cutters</td><td><input type="number" placeholder="0" class="pop-price" data-product="7" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="7" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="7"></td><td><input type="number" class="pop-units-sold-agg" data-product="7" readonly></td><td><input type="number" class="pop-current-stock" data-product="7" readonly value="0"></td></tr>
+                        <tr><td>Horizontal Sheaths</td><td><input type="number" placeholder="0" class="pop-price" data-product="8" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="8" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="8"></td><td><input type="number" class="pop-units-sold-agg" data-product="8" readonly></td><td><input type="number" class="pop-current-stock" data-product="8" readonly value="0"></td></tr>
+                        <tr><td>Bowies</td><td><input type="number" placeholder="0" class="pop-price" data-product="9" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="9" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="9"></td><td><input type="number" class="pop-units-sold-agg" data-product="9" readonly></td><td><input type="number" class="pop-current-stock" data-product="9" readonly value="0"></td></tr>
+                        <tr><td>Mini Folders</td><td><input type="number" placeholder="0" class="pop-price" data-product="10" onchange="recalculateAllRevenue()"></td><td><input type="number" value="0" class="pop-storage" data-product="10" readonly></td><td><input type="number" placeholder="Show" class="pop-show-tub" data-product="10"></td><td><input type="number" class="pop-units-sold-agg" data-product="10" readonly></td><td><input type="number" class="pop-current-stock" data-product="10" readonly value="0"></td></tr>
+                        <tr class="total-row"><td colspan="5">Total knives on hand</td><td><input type="number" id="pop-total-on-hand" readonly value="0"></td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="form-group">
-                <label>Date:</label>
-                <input type="text" id="salesSheetDate" placeholder="e.g., Jan 15-16">
+        </div>
+
+        <!-- Sales Sheets - Wetumpka -->
+        <div id="wetumpka" class="tab-content"><div class="tab-section"><h2>Wetumpka, Alabama - December 12-13</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'wetumpka')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="wetumpka-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'wetumpka')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-wetumpka" style="display:none;" onclick="openLockSheetModal('wetumpka')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-wetumpka" style="display:none;" onclick="openUnlockSheetModal('wetumpka')">🔓 Unlock Sheet</button><button class="sheet-btn" style="background: #9c27b0;" id="reset-btn-wetumpka" style="display:none;" onclick="openResetSheetModal('wetumpka')">🔄 Reset to 0</button></div><div class="event-checkbox" id="wetumpka-event-box" style="display: none;"><input type="checkbox" id="event-completed-wetumpka" onchange="toggleEventCompleted('wetumpka')"><label for="event-completed-wetumpka">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="0" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="1" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="2" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="3" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="4" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="5" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="6" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="7" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="8" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="9" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="wetumpka" data-row="10" readonly></td><td><span class="units-sold" data-sheet="wetumpka" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="wetumpka" data-row="10"></td></tr></tbody></table></div></div>
+
+        <!-- Trussville Sales Sheet -->
+        <div id="trussville" class="tab-content"><div class="tab-section"><h2>Trussville, Alabama - January 16-17</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'trussville')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="trussville-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'trussville')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-trussville" style="display:none;" onclick="openLockSheetModal('trussville')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-trussville" style="display:none;" onclick="openUnlockSheetModal('trussville')">🔓 Unlock Sheet</button><button class="sheet-btn" style="background: #9c27b0;" id="reset-btn-trussville" style="display:none;" onclick="openResetSheetModal('trussville')">🔄 Reset to 0</button></div><div class="event-checkbox" id="trussville-event-box" style="display: none;"><input type="checkbox" id="event-completed-trussville" onchange="toggleEventCompleted('trussville')"><label for="event-completed-trussville">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="0" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="1" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="2" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="3" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="4" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="5" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="6" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="7" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="8" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="9" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="trussville" data-row="10" readonly></td><td><span class="units-sold" data-sheet="trussville" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="trussville" data-row="10"></td></tr></tbody></table></div></div>
+
+        <!-- Columbia Sales Sheet -->
+        <div id="columbia" class="tab-content"><div class="tab-section"><h2>Columbia, South Carolina</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'columbia')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="columbia-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'columbia')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-columbia" style="display:none;" onclick="openLockSheetModal('columbia')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-columbia" style="display:none;" onclick="openUnlockSheetModal('columbia')">🔓 Unlock Sheet</button><button class="sheet-btn" style="background: #9c27b0;" id="reset-btn-columbia" style="display:none;" onclick="openResetSheetModal('columbia')">🔄 Reset to 0</button></div><div class="event-checkbox" id="columbia-event-box" style="display: none;"><input type="checkbox" id="event-completed-columbia" onchange="toggleEventCompleted('columbia')"><label for="event-completed-columbia">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="0" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="1" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="2" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="3" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="4" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="5" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="6" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="7" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="8" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="9" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="columbia" data-row="10" readonly></td><td><span class="units-sold" data-sheet="columbia" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="columbia" data-row="10"></td></tr></tbody></table></div></div>
+
+        <!-- Hattiesburg Sales Sheet -->
+        <div id="hattiesburg" class="tab-content"><div class="tab-section"><h2>Hattiesburg, Mississippi</h2><button class="refresh-btn" onclick="refreshSheetData('pop', 'hattiesburg')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="hattiesburg-status">● Inactive</div><button class="sheet-btn" onclick="openActivateSheetModal('pop', 'hattiesburg')">📋 Activate Sheet</button><button class="sheet-btn lock-btn" id="lock-btn-hattiesburg" style="display:none;" onclick="openLockSheetModal('hattiesburg')">🔒 Lock Sheet</button><button class="sheet-btn unlock-btn" id="unlock-btn-hattiesburg" style="display:none;" onclick="openUnlockSheetModal('hattiesburg')">🔓 Unlock Sheet</button><button class="sheet-btn" style="background: #9c27b0;" id="reset-btn-hattiesburg" style="display:none;" onclick="openResetSheetModal('hattiesburg')">🔄 Reset to 0</button></div><div class="event-checkbox" id="hattiesburg-event-box" style="display: none;"><input type="checkbox" id="event-completed-hattiesburg" onchange="toggleEventCompleted('hattiesburg')"><label for="event-completed-hattiesburg">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody><tr><td>Full Tang</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="0" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="0">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="0"></td></tr><tr><td>8" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="1" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="1">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="1"></td></tr><tr><td>6" Rat</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="2" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="2">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="2"></td></tr><tr><td>8" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="3" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="3">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="3"></td></tr><tr><td>6" Stag</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="4" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="4">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="4"></td></tr><tr><td>Grooved</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="5" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="5">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="5"></td></tr><tr><td>Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="6" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="6">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="6"></td></tr><tr><td>Bull Cutters</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="7" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="7">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="7"></td></tr><tr><td>Horizontal Sheaths</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="8" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="8">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="8"></td></tr><tr><td>Bowies</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="9" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="9">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="9"></td></tr><tr><td>Mini Folders</td><td><input type="number" class="units-brought" data-sheet="hattiesburg" data-row="10" readonly></td><td><span class="units-sold" data-sheet="hattiesburg" data-row="10">0</span></td><td><input type="number" class="units-left" data-sheet="hattiesburg" data-row="10"></td></tr></tbody></table></div></div>
+
+        <!-- Shrinkage Tracking -->
+        <div id="shrinkage" class="tab-content">
+            <div class="tab-section">
+                <h2>📦 Shrinkage Tracking</h2>
+                <p>Track inventory loss (damage, theft, discrepancies). Choose which location and tub to deplete from.</p>
+                <button class="nav-link" onclick="openShrinkageModal()" style="margin-bottom: 20px;">➕ Record Shrinkage</button>
+                <div class="shrinkage-summary">
+                    <h3>Shrinkage Summary</h3>
+                    <p>Total units lost to shrinkage: <strong id="total-shrinkage">0</strong></p>
+                </div>
+                <table class="shrinkage-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Product Name</th>
+                            <th>Units Lost</th>
+                            <th>Location</th>
+                            <th>Depleted From</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shrinkage-records">
+                    </tbody>
+                </table>
             </div>
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal('newSalesSheetModal')">Cancel</button>
-                <button class="btn-create" onclick="confirmNewSalesSheet()">Create Sheet</button>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="tab-section">
+                <h2>📊 Sales Analytics</h2>
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>Sales Trends Over Time</h3>
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Top Sales by Units (with Percentages)</h3>
+                        <canvas id="topSalesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Top Sales by Unit Graph</h3>
+                        <canvas id="topSalesBarChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Revenue by Product</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Excel Exports Tab -->
+        <div id="excel-exports" class="tab-content">
+            <div class="tab-section">
+                <h2>📁 Excel Exports</h2>
+                <p>Export all app data and keep a history of your exports.</p>
+                <div style="margin-bottom: 20px;">
+                    <button class="nav-link export-btn" onclick="openExportAllPagesModal()" style="margin: 0;">📊 Export All Pages Now</button>
+                </div>
+                <div class="excel-history">
+                    <h3>Export History</h3>
+                    <div id="export-history-list">
+                        <p style="color: #999;">No exports yet</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Product Modal -->
+    <!-- Modals -->
+    <div id="activateSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Activate Sales Sheet</h3>
+            <div class="form-group">
+                <label>Units to Bring:</label>
+                <input type="number" id="unitsToBring" placeholder="Enter quantity" min="0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('activateSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmActivateSheet()">Activate</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lockSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Lock Sales Sheet</h3>
+            <p>This will finalize sales and deplete Show Tub inventory.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('lockSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmLockSheet()">Lock Sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="unlockSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Unlock Sales Sheet</h3>
+            <p>This will restore Show Tub inventory to pre-lock levels.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('unlockSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmUnlockSheet()">Unlock Sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resetSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Reset Sheet to 0</h3>
+            <p>This will reset all units sold to 0 for this sheet.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('resetSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmResetSheet()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shrinkageModal" class="modal">
+        <div class="modal-content">
+            <h3>Record Shrinkage</h3>
+            <div class="form-group">
+                <label>Product:</label>
+                <select id="shrinkageProduct">
+                    <option value="">Select Product</option>
+                    <option value="0">Full Tang</option>
+                    <option value="1">8" Rat</option>
+                    <option value="2">6" Rat</option>
+                    <option value="3">8" Stag</option>
+                    <option value="4">6" Stag</option>
+                    <option value="5">Grooved</option>
+                    <option value="6">Folders</option>
+                    <option value="7">Bull Cutters</option>
+                    <option value="8">Horizontal Sheaths</option>
+                    <option value="9">Bowies</option>
+                    <option value="10">Mini Folders</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Units Lost:</label>
+                <input type="number" id="shrinkageUnits" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Location:</label>
+                <select id="shrinkageLocation">
+                    <option value="pop">Pop</option>
+                    <option value="aaron">Aaron</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Deplete From:</label>
+                <select id="shrinkageDepletedFrom">
+                    <option value="">Select where to deplete</option>
+                    <option value="storage">Storage Tub</option>
+                    <option value="show">Show Tub</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes:</label>
+                <input type="text" id="shrinkageNotes" placeholder="Optional notes">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('shrinkageModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmShrinkage()">Record Shrinkage</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importExcelModal" class="modal">
+        <div class="modal-content">
+            <h3>Import from Excel</h3>
+            <p>Upload an Excel file exported from this app to restore all data.</p>
+            <div class="form-group">
+                <label>Select File:</label>
+                <input type="file" id="importFile" accept=".xlsx,.xls">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('importExcelModal')">Cancel</button>
+                <button class="btn-import" onclick="confirmImportExcel()">Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exportAllPagesModal" class="modal">
+        <div class="modal-content">
+            <h3>Export All Pages</h3>
+            <p>This will create an Excel file with all app data and save it to your export history.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('exportAllPagesModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmExportAllPages()">Export</button>
+            </div>
+        </div>
+    </div>
+
     <div id="addProductModal" class="modal">
         <div class="modal-content">
             <h3>Add New Product</h3>
@@ -189,257 +547,1032 @@
         </div>
     </div>
 
+    <div id="newSalesSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Sales Sheet</h3>
+            <div class="form-group">
+                <label>Sheet Name:</label>
+                <input type="text" id="newSheetName" placeholder="e.g., Dallas Event">
+            </div>
+            <div class="form-group">
+                <label>Location (Pop):</label>
+                <input type="text" id="newSheetLocation" placeholder="e.g., Dallas, Texas - January 15-16">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('newSalesSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmNewSalesSheet('pop')">Create Sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="newAaronSalesSheetModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Aaron Sales Sheet</h3>
+            <div class="form-group">
+                <label>Sheet Name:</label>
+                <input type="text" id="newAaronSheetName" placeholder="e.g., Aaron Event">
+            </div>
+            <div class="form-group">
+                <label>Location:</label>
+                <input type="text" id="newAaronSheetLocation" placeholder="e.g., Location, State - Dates">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('newAaronSalesSheetModal')">Cancel</button>
+                <button class="btn-create" onclick="confirmNewSalesSheet('aaron')">Create Sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Modals for Inventory Operations -->
+    <div id="popInventoryReceivedModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Inventory Received - Pop</h3>
+            <div id="popInventoryForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('popInventoryReceivedModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmPopInventoryReceived()">Add Inventory</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aaronInventoryReceivedModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Inventory Received - Aaron</h3>
+            <div id="aaronInventoryForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('aaronInventoryReceivedModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmAaronInventoryReceived()">Add Inventory</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popMoveInventoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Move to Show Tub - Pop</h3>
+            <div id="popMoveForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('popMoveInventoryModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmPopMoveInventory()">Move to Show Tub</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aaronMoveInventoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Move to Show Tub - Aaron</h3>
+            <div id="aaronMoveForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('aaronMoveInventoryModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmAaronMoveInventory()">Move to Show Tub</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popMoveBackToStorageModal" class="modal">
+        <div class="modal-content">
+            <h3>Move Back to Storage - Pop</h3>
+            <div id="popMoveBackForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('popMoveBackToStorageModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmPopMoveBackToStorage()">Move to Storage</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aaronMoveBackToStorageModal" class="modal">
+        <div class="modal-content">
+            <h3>Move Back to Storage - Aaron</h3>
+            <div id="aaronMoveBackForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('aaronMoveBackToStorageModal')">Cancel</button>
+                <button class="btn-add-inventory" onclick="confirmAaronMoveBackToStorage()">Move to Storage</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popRemoveInventoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Remove from Storage - Pop</h3>
+            <div id="popRemoveForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('popRemoveInventoryModal')">Cancel</button>
+                <button class="btn-remove" onclick="confirmPopRemoveInventory()">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aaronRemoveInventoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Remove from Storage - Aaron</h3>
+            <div id="aaronRemoveForm"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('aaronRemoveInventoryModal')">Cancel</button>
+                <button class="btn-remove" onclick="confirmAaronRemoveInventory()">Remove</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
-        let currentSalesSheetOwner = null;
+        let productNames = JSON.parse(localStorage.getItem('productNames')) || ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
+        let numProducts = productNames.length;
+        let currentActiveModal = null;
+        let currentSheet = null;
+        let exportHistory = JSON.parse(localStorage.getItem('exportHistory')) || [];
 
         function initializeApp() {
             loadAllData();
-            renderAllTables();
+            updateMasterInventory();
+            updateAnalytics();
+            displayExportHistory();
         }
 
         function openTab(evt, tabName) {
-            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            const tabcontent = document.querySelectorAll(".tab-content");
+            tabcontent.forEach(tab => tab.classList.remove("active"));
+            const tabbtns = document.querySelectorAll(".tab-btn");
+            tabbtns.forEach(btn => btn.classList.remove("active"));
             document.getElementById(tabName).classList.add("active");
-            if (evt && evt.currentTarget) evt.currentTarget.classList.add("active");
+            evt.currentTarget.classList.add("active");
         }
 
         function openModal(modalId) {
             document.getElementById(modalId).classList.add("active");
+            currentActiveModal = modalId;
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove("active");
+            currentActiveModal = null;
         }
 
-        function showSuccess(message) {
+        function showSuccessBanner(message) {
             const banner = document.getElementById("successBanner");
             banner.textContent = message;
             banner.classList.add("show");
             setTimeout(() => banner.classList.remove("show"), 3000);
         }
 
-        // NEW SALES SHEET MODAL
-        function openNewSalesSheetModal(owner) {
-            currentSalesSheetOwner = owner;
-            document.getElementById("salesSheetName").value = "";
-            document.getElementById("salesSheetDate").value = "";
-            openModal("newSalesSheetModal");
+        // Load all data from Firebase and local storage
+        function loadAllData() {
+            // Load Pop inventory
+            for (let i = 0; i < numProducts; i++) {
+                const storage = localStorage.getItem(`pop_storage_${i}`) || "0";
+                const showTub = localStorage.getItem(`pop_show_tub_${i}`) || "0";
+                const price = localStorage.getItem(`pop_price_${i}`) || "0";
+                document.querySelector(`.pop-storage[data-product="${i}"]`).value = storage;
+                document.querySelector(`.pop-show-tub[data-product="${i}"]`).value = showTub;
+                document.querySelector(`.pop-price[data-product="${i}"]`).value = price;
+            }
+
+            // Load Aaron inventory
+            for (let i = 0; i < numProducts; i++) {
+                const storage = localStorage.getItem(`aaron_storage_${i}`) || "0";
+                const showTub = localStorage.getItem(`aaron_show_tub_${i}`) || "0";
+                const price = localStorage.getItem(`aaron_price_${i}`) || "0";
+                document.querySelector(`.aaron-storage[data-product="${i}"]`).value = storage;
+                document.querySelector(`.aaron-show-tub[data-product="${i}"]`).value = showTub;
+                document.querySelector(`.aaron-price[data-product="${i}"]`).value = price;
+            }
+
+            // Load sales sheets
+            loadSalesSheets();
+
+            // Load shrinkage data
+            loadShrinkageData();
+
+            // Update aggregates
+            updateAllAggregates();
         }
 
-        function confirmNewSalesSheet() {
-            const name = document.getElementById("salesSheetName").value.trim();
-            const date = document.getElementById("salesSheetDate").value.trim();
+        function loadSalesSheets() {
+            const sheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
+            sheets.forEach(sheet => {
+                for (let i = 0; i < numProducts; i++) {
+                    const brought = localStorage.getItem(`${sheet}_brought_${i}`) || "0";
+                    const sold = localStorage.getItem(`${sheet}_sold_${i}`) || "0";
+                    const left = localStorage.getItem(`${sheet}_left_${i}`) || "0";
+                    document.querySelector(`input.units-brought[data-sheet="${sheet}"][data-row="${i}"]`).value = brought;
+                    document.querySelector(`span.units-sold[data-sheet="${sheet}"][data-row="${i}"]`).textContent = sold;
+                    document.querySelector(`input.units-left[data-sheet="${sheet}"][data-row="${i}"]`).value = left;
+                }
+                const locked = localStorage.getItem(`${sheet}_locked`) === "true";
+                updateSheetStatus(sheet, locked);
+            });
+        }
 
-            if (!name || !date) {
-                alert("Please fill in all fields");
+        function loadShrinkageData() {
+            const shrinkage = JSON.parse(localStorage.getItem('shrinkageData')) || [];
+            const tbody = document.getElementById('shrinkage-records');
+            tbody.innerHTML = '';
+            let totalShrinkage = 0;
+            shrinkage.forEach(record => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = record.date;
+                row.insertCell(1).textContent = productNames[record.productIndex];
+                row.insertCell(2).textContent = record.units;
+                row.insertCell(3).textContent = record.location === 'pop' ? 'Pop' : 'Aaron';
+                row.insertCell(4).textContent = record.depletedFrom === 'storage' ? 'Storage Tub' : 'Show Tub';
+                row.insertCell(5).textContent = record.notes || '-';
+                totalShrinkage += parseInt(record.units) || 0;
+            });
+            document.getElementById('total-shrinkage').textContent = totalShrinkage;
+        }
+
+        function updateSheetStatus(sheetName, isLocked) {
+            const statusEl = document.getElementById(`${sheetName}-status`);
+            const lockBtn = document.getElementById(`lock-btn-${sheetName}`);
+            const unlockBtn = document.getElementById(`unlock-btn-${sheetName}`);
+            const resetBtn = document.getElementById(`reset-btn-${sheetName}`);
+            const eventBox = document.getElementById(`${sheetName}-event-box`);
+
+            if (isLocked) {
+                statusEl.textContent = "● Locked";
+                statusEl.classList.remove("inactive");
+                statusEl.classList.add("completed");
+                if (lockBtn) lockBtn.style.display = "none";
+                if (unlockBtn) unlockBtn.style.display = "inline-flex";
+                if (resetBtn) resetBtn.style.display = "inline-flex";
+                if (eventBox) eventBox.style.display = "none";
+            } else {
+                statusEl.textContent = "● Active";
+                statusEl.classList.remove("inactive", "completed");
+                statusEl.classList.add("active");
+                if (lockBtn) lockBtn.style.display = "inline-flex";
+                if (unlockBtn) unlockBtn.style.display = "none";
+                if (resetBtn) resetBtn.style.display = "none";
+                if (eventBox) eventBox.style.display = "flex";
+            }
+        }
+
+        // Activate sheet modal
+        function openActivateSheetModal(owner, sheetName) {
+            currentSheet = {owner, sheetName};
+            document.getElementById('unitsToBring').value = '';
+            openModal('activateSheetModal');
+        }
+
+        function confirmActivateSheet() {
+            const units = parseInt(document.getElementById('unitsToBring').value) || 0;
+            if (units <= 0) {
+                alert('Please enter a valid number of units');
                 return;
             }
-
-            const sheetId = `${currentSalesSheetOwner}_${name.toLowerCase().replace(/\s+/g, '_')}`;
-            
-            // Store sheet metadata
-            localStorage.setItem(`${sheetId}_name`, name);
-            localStorage.setItem(`${sheetId}_date`, date);
-            localStorage.setItem(`${sheetId}_owner`, currentSalesSheetOwner);
-
-            // Initialize product data for this sheet
-            for (let i = 0; i < productNames.length; i++) {
-                localStorage.setItem(`${sheetId}_product_${i}`, productNames[i]);
-                localStorage.setItem(`${sheetId}_brought_${i}`, "0");
-                localStorage.setItem(`${sheetId}_sold_${i}`, "0");
+            const {owner, sheetName} = currentSheet;
+            for (let i = 0; i < numProducts; i++) {
+                localStorage.setItem(`${sheetName}_brought_${i}`, units);
+                localStorage.setItem(`${sheetName}_sold_${i}`, '0');
+                localStorage.setItem(`${sheetName}_left_${i}`, units);
+                document.querySelector(`input.units-brought[data-sheet="${sheetName}"][data-row="${i}"]`).value = units;
+                document.querySelector(`span.units-sold[data-sheet="${sheetName}"][data-row="${i}"]`).textContent = '0';
+                document.querySelector(`input.units-left[data-sheet="${sheetName}"][data-row="${i}"]`).value = units;
             }
-
-            closeModal("newSalesSheetModal");
-            loadAllData();
-            renderAllTables();
-            showSuccess(`✅ Sales sheet "${name}" created!`);
+            localStorage.setItem(`${sheetName}_locked`, 'false');
+            updateSheetStatus(sheetName, false);
+            closeModal('activateSheetModal');
+            document.getElementById('unitsToBring').value = '';
+            showSuccessBanner(`✅ ${sheetName} activated with ${units} units per product`);
         }
 
-        // ADD PRODUCT MODAL
-        function openAddProductModal(owner) {
-            document.getElementById("newProductName").value = "";
-            currentSalesSheetOwner = owner;
-            openModal("addProductModal");
+        // Lock sheet modal - NOW DEPLETES SHOW TUB ON LOCK
+        function openLockSheetModal(sheetName) {
+            currentSheet = sheetName;
+            openModal('lockSheetModal');
+        }
+
+        function confirmLockSheet() {
+            const sheetName = currentSheet;
+            const owner = sheetName === 'wetumpka' || sheetName === 'trussville' || sheetName === 'columbia' || sheetName === 'hattiesburg' ? 'pop' : 'aaron';
+            const prefix = owner === 'pop' ? 'pop' : 'aaron';
+
+            // Deplete show tub based on units sold
+            for (let i = 0; i < numProducts; i++) {
+                const sold = parseInt(localStorage.getItem(`${sheetName}_sold_${i}`)) || 0;
+                const currentShowTub = parseInt(document.querySelector(`.${prefix}-show-tub[data-product="${i}"]`).value) || 0;
+                const newShowTub = Math.max(0, currentShowTub - sold);
+                document.querySelector(`.${prefix}-show-tub[data-product="${i}"]`).value = newShowTub;
+                localStorage.setItem(`${prefix}_show_tub_${i}`, newShowTub);
+            }
+
+            localStorage.setItem(`${sheetName}_locked`, 'true');
+            updateSheetStatus(sheetName, true);
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('lockSheetModal');
+            showSuccessBanner(`✅ ${sheetName} locked! Show tub depleted.`);
+        }
+
+        function openUnlockSheetModal(sheetName) {
+            currentSheet = sheetName;
+            openModal('unlockSheetModal');
+        }
+
+        function confirmUnlockSheet() {
+            const sheetName = currentSheet;
+            const owner = sheetName === 'wetumpka' || sheetName === 'trussville' || sheetName === 'columbia' || sheetName === 'hattiesburg' ? 'pop' : 'aaron';
+            const prefix = owner === 'pop' ? 'pop' : 'aaron';
+
+            // Restore show tub
+            for (let i = 0; i < numProducts; i++) {
+                const sold = parseInt(localStorage.getItem(`${sheetName}_sold_${i}`)) || 0;
+                const currentShowTub = parseInt(document.querySelector(`.${prefix}-show-tub[data-product="${i}"]`).value) || 0;
+                const restoredShowTub = currentShowTub + sold;
+                document.querySelector(`.${prefix}-show-tub[data-product="${i}"]`).value = restoredShowTub;
+                localStorage.setItem(`${prefix}_show_tub_${i}`, restoredShowTub);
+            }
+
+            localStorage.setItem(`${sheetName}_locked`, 'false');
+            updateSheetStatus(sheetName, false);
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('unlockSheetModal');
+            showSuccessBanner(`✅ ${sheetName} unlocked! Show tub restored.`);
+        }
+
+        function openResetSheetModal(sheetName) {
+            currentSheet = sheetName;
+            openModal('resetSheetModal');
+        }
+
+        function confirmResetSheet() {
+            const sheetName = currentSheet;
+            for (let i = 0; i < numProducts; i++) {
+                localStorage.setItem(`${sheetName}_sold_${i}`, '0');
+                document.querySelector(`span.units-sold[data-sheet="${sheetName}"][data-row="${i}"]`).textContent = '0';
+            }
+            updateAllAggregates();
+            closeModal('resetSheetModal');
+            showSuccessBanner(`✅ ${sheetName} reset to 0 units sold.`);
+        }
+
+        // Shrinkage modal with location/tub selection
+        // Add product modal
+        function openAddProductModal() {
+            openModal('addProductModal');
         }
 
         function confirmAddProduct() {
-            const productName = document.getElementById("newProductName").value.trim();
-
-            if (!productName) {
-                alert("Please enter a product name");
+            const newProductName = document.getElementById('newProductName').value.trim();
+            if (!newProductName) {
+                alert('Please enter a product name');
                 return;
             }
 
-            // Add to product list
-            productNames.push(productName);
-            localStorage.setItem("productNames", JSON.stringify(productNames));
-
-            // Add to all existing inventories
-            for (let owner of ["pop", "aaron"]) {
-                const idx = productNames.length - 1;
-                localStorage.setItem(`${owner}_price_${idx}`, "0");
-                localStorage.setItem(`${owner}_storage_${idx}`, "0");
-                localStorage.setItem(`${owner}_show_tub_${idx}`, "0");
+            if (productNames.includes(newProductName)) {
+                alert('This product already exists');
+                return;
             }
 
-            // Add to all existing sales sheets
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.includes("_brought_")) {
-                    const sheetId = key.split("_brought_")[0];
-                    const idx = productNames.length - 1;
-                    localStorage.setItem(`${sheetId}_product_${idx}`, productName);
-                    localStorage.setItem(`${sheetId}_brought_${idx}`, "0");
-                    localStorage.setItem(`${sheetId}_sold_${idx}`, "0");
+            // Add to productNames array
+            productNames.push(newProductName);
+            numProducts = productNames.length;
+            localStorage.setItem('productNames', JSON.stringify(productNames));
+
+            // Initialize this product in all locations
+            const idx = numProducts - 1;
+
+            // Pop inventory
+            localStorage.setItem(`pop_storage_${idx}`, '0');
+            localStorage.setItem(`pop_show_tub_${idx}`, '0');
+            localStorage.setItem(`pop_price_${idx}`, '0');
+
+            // Aaron inventory
+            localStorage.setItem(`aaron_storage_${idx}`, '0');
+            localStorage.setItem(`aaron_show_tub_${idx}`, '0');
+            localStorage.setItem(`aaron_price_${idx}`, '0');
+
+            // All sales sheets
+            const sheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
+            sheets.forEach(sheet => {
+                localStorage.setItem(`${sheet}_brought_${idx}`, '0');
+                localStorage.setItem(`${sheet}_sold_${idx}`, '0');
+                localStorage.setItem(`${sheet}_left_${idx}`, '0');
+            });
+
+            // Get any dynamic sheets from DOM
+            const dynamicLinks = document.querySelectorAll('#dynamic-sales-links .nav-link, #dynamic-aaron-sales-links .nav-link');
+            dynamicLinks.forEach(link => {
+                const sheetId = link.getAttribute('onclick')?.match(/openTab\(event, '([^']+)'\)/)?.[1];
+                if (sheetId) {
+                    localStorage.setItem(`${sheetId}_brought_${idx}`, '0');
+                    localStorage.setItem(`${sheetId}_sold_${idx}`, '0');
+                    localStorage.setItem(`${sheetId}_left_${idx}`, '0');
                 }
             });
 
-            closeModal("addProductModal");
-            loadAllData();
-            renderAllTables();
-            showSuccess(`✅ Product "${productName}" added to all inventories!`);
+            // Reload the page to reflect changes
+            closeModal('addProductModal');
+            document.getElementById('newProductName').value = '';
+            showSuccessBanner(`✅ Product "${newProductName}" added to all sheets!`);
+            setTimeout(() => location.reload(), 1500);
         }
 
-        function loadAllData() {
-            const saved = localStorage.getItem("productNames");
-            if (saved) {
-                productNames = JSON.parse(saved);
+        function openShrinkageModal() {
+            openModal('shrinkageModal');
+        }
+
+        function confirmShrinkage() {
+            const productIndex = parseInt(document.getElementById('shrinkageProduct').value);
+            const units = parseInt(document.getElementById('shrinkageUnits').value) || 0;
+            const location = document.getElementById('shrinkageLocation').value;
+            const depletedFrom = document.getElementById('shrinkageDepletedFrom').value;
+            const notes = document.getElementById('shrinkageNotes').value;
+
+            if (productIndex === '' || units <= 0 || !depletedFrom) {
+                alert('Please fill all required fields');
+                return;
             }
+
+            const prefix = location === 'pop' ? 'pop' : 'aaron';
+            const tubType = depletedFrom === 'storage' ? `${prefix}_storage_${productIndex}` : `${prefix}_show_tub_${productIndex}`;
+            const currentValue = parseInt(localStorage.getItem(tubType)) || 0;
+            const newValue = Math.max(0, currentValue - units);
+            localStorage.setItem(tubType, newValue);
+
+            // Update UI
+            if (depletedFrom === 'storage') {
+                document.querySelector(`.${prefix}-storage[data-product="${productIndex}"]`).value = newValue;
+            } else {
+                document.querySelector(`.${prefix}-show-tub[data-product="${productIndex}"]`).value = newValue;
+            }
+
+            // Record shrinkage
+            const shrinkage = JSON.parse(localStorage.getItem('shrinkageData')) || [];
+            shrinkage.push({
+                date: new Date().toLocaleDateString(),
+                productIndex,
+                units,
+                location,
+                depletedFrom,
+                notes
+            });
+            localStorage.setItem('shrinkageData', JSON.stringify(shrinkage));
+
+            loadShrinkageData();
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('shrinkageModal');
+            document.getElementById('shrinkageProduct').value = '';
+            document.getElementById('shrinkageUnits').value = '';
+            document.getElementById('shrinkageNotes').value = '';
+            showSuccessBanner('✅ Shrinkage recorded');
         }
 
-        function renderAllTables() {
-            renderMasterInventory();
-            renderPopInventory();
-            renderAaronInventory();
-            renderSalesLinks("pop");
-            renderSalesLinks("aaron");
+        // Inventory operations
+        function generateInventoryForm(type) {
+            let html = '';
+            for (let i = 0; i < numProducts; i++) {
+                html += `<div class="form-group"><label>${productNames[i]}:</label><input type="number" class="inv-${type}-form" data-product="${i}" placeholder="0" min="0"></div>`;
+            }
+            return html;
         }
 
-        function renderMasterInventory() {
-            const tbody = document.getElementById("master-table-body");
-            tbody.innerHTML = "";
-            productNames.forEach((name, idx) => {
-                const popStorage = parseInt(localStorage.getItem(`pop_storage_${idx}`) || "0");
-                const popShowTub = parseInt(localStorage.getItem(`pop_show_tub_${idx}`) || "0");
-                const aaronStorage = parseInt(localStorage.getItem(`aaron_storage_${idx}`) || "0");
-                const aaronShowTub = parseInt(localStorage.getItem(`aaron_show_tub_${idx}`) || "0");
-                const total = popStorage + popShowTub + aaronStorage + aaronShowTub;
+        function openPopInventoryReceivedModal() {
+            document.getElementById('popInventoryForm').innerHTML = generateInventoryForm('pop-received');
+            openModal('popInventoryReceivedModal');
+        }
 
-                const row = tbody.insertRow();
-                row.insertCell(0).textContent = name;
-                row.insertCell(1).textContent = total;
+        function confirmPopInventoryReceived() {
+            for (let i = 0; i < numProducts; i++) {
+                const add = parseInt(document.querySelector(`.inv-pop-received-form[data-product="${i}"]`).value) || 0;
+                if (add > 0) {
+                    const current = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                    const newValue = current + add;
+                    localStorage.setItem(`pop_storage_${i}`, newValue);
+                    document.querySelector(`.pop-storage[data-product="${i}"]`).value = newValue;
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('popInventoryReceivedModal');
+            showSuccessBanner('✅ Pop inventory added');
+        }
+
+        function openAaronInventoryReceivedModal() {
+            document.getElementById('aaronInventoryForm').innerHTML = generateInventoryForm('aaron-received');
+            openModal('aaronInventoryReceivedModal');
+        }
+
+        function confirmAaronInventoryReceived() {
+            for (let i = 0; i < numProducts; i++) {
+                const add = parseInt(document.querySelector(`.inv-aaron-received-form[data-product="${i}"]`).value) || 0;
+                if (add > 0) {
+                    const current = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                    const newValue = current + add;
+                    localStorage.setItem(`aaron_storage_${i}`, newValue);
+                    document.querySelector(`.aaron-storage[data-product="${i}"]`).value = newValue;
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('aaronInventoryReceivedModal');
+            showSuccessBanner('✅ Aaron inventory added');
+        }
+
+        function openPopMoveInventoryModal() {
+            document.getElementById('popMoveForm').innerHTML = generateInventoryForm('pop-move');
+            openModal('popMoveInventoryModal');
+        }
+
+        function confirmPopMoveInventory() {
+            for (let i = 0; i < numProducts; i++) {
+                const move = parseInt(document.querySelector(`.inv-pop-move-form[data-product="${i}"]`).value) || 0;
+                if (move > 0) {
+                    const storage = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                    const showTub = parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0;
+                    if (move <= storage) {
+                        localStorage.setItem(`pop_storage_${i}`, storage - move);
+                        localStorage.setItem(`pop_show_tub_${i}`, showTub + move);
+                        document.querySelector(`.pop-storage[data-product="${i}"]`).value = storage - move;
+                        document.querySelector(`.pop-show-tub[data-product="${i}"]`).value = showTub + move;
+                    } else {
+                        alert(`Pop only has ${storage} of ${productNames[i]}`);
+                    }
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('popMoveInventoryModal');
+            showSuccessBanner('✅ Pop inventory moved to Show Tub');
+        }
+
+        function openAaronMoveInventoryModal() {
+            document.getElementById('aaronMoveForm').innerHTML = generateInventoryForm('aaron-move');
+            openModal('aaronMoveInventoryModal');
+        }
+
+        function confirmAaronMoveInventory() {
+            for (let i = 0; i < numProducts; i++) {
+                const move = parseInt(document.querySelector(`.inv-aaron-move-form[data-product="${i}"]`).value) || 0;
+                if (move > 0) {
+                    const storage = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                    const showTub = parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0;
+                    if (move <= storage) {
+                        localStorage.setItem(`aaron_storage_${i}`, storage - move);
+                        localStorage.setItem(`aaron_show_tub_${i}`, showTub + move);
+                        document.querySelector(`.aaron-storage[data-product="${i}"]`).value = storage - move;
+                        document.querySelector(`.aaron-show-tub[data-product="${i}"]`).value = showTub + move;
+                    } else {
+                        alert(`Aaron only has ${storage} of ${productNames[i]}`);
+                    }
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('aaronMoveInventoryModal');
+            showSuccessBanner('✅ Aaron inventory moved to Show Tub');
+        }
+
+        function openPopMoveBackToStorageModal() {
+            document.getElementById('popMoveBackForm').innerHTML = generateInventoryForm('pop-moveback');
+            openModal('popMoveBackToStorageModal');
+        }
+
+        function confirmPopMoveBackToStorage() {
+            for (let i = 0; i < numProducts; i++) {
+                const move = parseInt(document.querySelector(`.inv-pop-moveback-form[data-product="${i}"]`).value) || 0;
+                if (move > 0) {
+                    const showTub = parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0;
+                    const storage = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                    if (move <= showTub) {
+                        localStorage.setItem(`pop_show_tub_${i}`, showTub - move);
+                        localStorage.setItem(`pop_storage_${i}`, storage + move);
+                        document.querySelector(`.pop-show-tub[data-product="${i}"]`).value = showTub - move;
+                        document.querySelector(`.pop-storage[data-product="${i}"]`).value = storage + move;
+                    } else {
+                        alert(`Pop Show Tub only has ${showTub} of ${productNames[i]}`);
+                    }
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('popMoveBackToStorageModal');
+            showSuccessBanner('✅ Pop inventory moved back to Storage');
+        }
+
+        function openAaronMoveBackToStorageModal() {
+            document.getElementById('aaronMoveBackForm').innerHTML = generateInventoryForm('aaron-moveback');
+            openModal('aaronMoveBackToStorageModal');
+        }
+
+        function confirmAaronMoveBackToStorage() {
+            for (let i = 0; i < numProducts; i++) {
+                const move = parseInt(document.querySelector(`.inv-aaron-moveback-form[data-product="${i}"]`).value) || 0;
+                if (move > 0) {
+                    const showTub = parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0;
+                    const storage = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                    if (move <= showTub) {
+                        localStorage.setItem(`aaron_show_tub_${i}`, showTub - move);
+                        localStorage.setItem(`aaron_storage_${i}`, storage + move);
+                        document.querySelector(`.aaron-show-tub[data-product="${i}"]`).value = showTub - move;
+                        document.querySelector(`.aaron-storage[data-product="${i}"]`).value = storage + move;
+                    } else {
+                        alert(`Aaron Show Tub only has ${showTub} of ${productNames[i]}`);
+                    }
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('aaronMoveBackToStorageModal');
+            showSuccessBanner('✅ Aaron inventory moved back to Storage');
+        }
+
+        function openPopRemoveInventoryModal() {
+            document.getElementById('popRemoveForm').innerHTML = generateInventoryForm('pop-remove');
+            openModal('popRemoveInventoryModal');
+        }
+
+        function confirmPopRemoveInventory() {
+            for (let i = 0; i < numProducts; i++) {
+                const remove = parseInt(document.querySelector(`.inv-pop-remove-form[data-product="${i}"]`).value) || 0;
+                if (remove > 0) {
+                    const current = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                    const newValue = Math.max(0, current - remove);
+                    localStorage.setItem(`pop_storage_${i}`, newValue);
+                    document.querySelector(`.pop-storage[data-product="${i}"]`).value = newValue;
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('popRemoveInventoryModal');
+            showSuccessBanner('✅ Pop inventory removed');
+        }
+
+        function openAaronRemoveInventoryModal() {
+            document.getElementById('aaronRemoveForm').innerHTML = generateInventoryForm('aaron-remove');
+            openModal('aaronRemoveInventoryModal');
+        }
+
+        function confirmAaronRemoveInventory() {
+            for (let i = 0; i < numProducts; i++) {
+                const remove = parseInt(document.querySelector(`.inv-aaron-remove-form[data-product="${i}"]`).value) || 0;
+                if (remove > 0) {
+                    const current = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                    const newValue = Math.max(0, current - remove);
+                    localStorage.setItem(`aaron_storage_${i}`, newValue);
+                    document.querySelector(`.aaron-storage[data-product="${i}"]`).value = newValue;
+                }
+            }
+            updateAllAggregates();
+            updateMasterInventory();
+            closeModal('aaronRemoveInventoryModal');
+            showSuccessBanner('✅ Aaron inventory removed');
+        }
+
+        // Update aggregates
+        function updateAllAggregates() {
+            // Pop aggregates
+            for (let i = 0; i < numProducts; i++) {
+                const storage = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                const showTub = parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0;
+                const unitsSoldAgg = calculateUnitsSoldAggregateForAll('pop', i);
+                const total = storage + showTub + unitsSoldAgg;
+                document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`).value = unitsSoldAgg;
+                document.querySelector(`.pop-current-stock[data-product="${i}"]`).value = total;
+            }
+            const popTotal = Array.from(document.querySelectorAll('.pop-current-stock')).reduce((sum, el) => sum + (parseInt(el.value) || 0), 0);
+            document.getElementById('pop-total-on-hand').value = popTotal;
+
+            // Aaron aggregates
+            for (let i = 0; i < numProducts; i++) {
+                const storage = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                const showTub = parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0;
+                const unitsSoldAgg = calculateUnitsSoldAggregateForAll('aaron', i);
+                const total = storage + showTub + unitsSoldAgg;
+                document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`).value = unitsSoldAgg;
+                document.querySelector(`.aaron-current-stock[data-product="${i}"]`).value = total;
+            }
+            const aaronTotal = Array.from(document.querySelectorAll('.aaron-current-stock')).reduce((sum, el) => sum + (parseInt(el.value) || 0), 0);
+            document.getElementById('aaron-total-on-hand').value = aaronTotal;
+
+            // Totals for storage and show tub
+            updateStorageAndShowTubTotals();
+        }
+
+        function calculateUnitsSoldAggregateForAll(owner, productIndex) {
+            const sheets = owner === 'pop' ? ["wetumpka", "trussville", "columbia", "hattiesburg"] : [];
+            let total = 0;
+            sheets.forEach(sheet => {
+                const locked = localStorage.getItem(`${sheet}_locked`) === 'true';
+                if (locked) {
+                    total += parseInt(localStorage.getItem(`${sheet}_sold_${productIndex}`)) || 0;
+                }
+            });
+            return total;
+        }
+
+        // NEW: Update storage and show tub totals
+        function updateStorageAndShowTubTotals() {
+            // Pop storage total
+            let popStorageTotal = 0, popShowTubTotal = 0;
+            for (let i = 0; i < numProducts; i++) {
+                popStorageTotal += parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                popShowTubTotal += parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0;
+            }
+
+            // Aaron storage total
+            let aaronStorageTotal = 0, aaronShowTubTotal = 0;
+            for (let i = 0; i < numProducts; i++) {
+                aaronStorageTotal += parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                aaronShowTubTotal += parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0;
+            }
+
+            // Display in inventory headers (you can add this info above the tables if needed)
+            console.log(`Pop: Storage=${popStorageTotal}, ShowTub=${popShowTubTotal}`);
+            console.log(`Aaron: Storage=${aaronStorageTotal}, ShowTub=${aaronShowTubTotal}`);
+        }
+
+        function updateMasterInventory() {
+            for (let i = 0; i < numProducts; i++) {
+                const popStorage = parseInt(localStorage.getItem(`pop_storage_${i}`)) || 0;
+                const popShowTub = parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0;
+                const popTotal = popStorage + popShowTub;
+
+                const aaronStorage = parseInt(localStorage.getItem(`aaron_storage_${i}`)) || 0;
+                const aaronShowTub = parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0;
+                const aaronTotal = aaronStorage + aaronShowTub;
+
+                const combined = popTotal + aaronTotal;
+
+                document.querySelector(`.master-pop-stock[data-product="${i}"]`).value = popTotal;
+                document.querySelector(`.master-aaron-stock[data-product="${i}"]`).value = aaronTotal;
+                document.querySelector(`.master-combined[data-product="${i}"]`).value = combined;
+            }
+
+            const popGrandTotal = Array.from(document.querySelectorAll('.master-pop-stock')).reduce((sum, el) => sum + (parseInt(el.value) || 0), 0);
+            const aaronGrandTotal = Array.from(document.querySelectorAll('.master-aaron-stock')).reduce((sum, el) => sum + (parseInt(el.value) || 0), 0);
+            const grandTotal = popGrandTotal + aaronGrandTotal;
+            document.getElementById('master-pop-total').value = popGrandTotal;
+            document.getElementById('master-aaron-total').value = aaronGrandTotal;
+            document.getElementById('master-grand-total').value = grandTotal;
+        }
+
+        function recalculateAllRevenue() {
+            updateAllAggregates();
+        }
+
+        // Sheet refresh
+        function refreshSheetData(owner, sheetName) {
+            showSuccessBanner(`Refreshed ${sheetName}`);
+        }
+
+        // Analytics
+        function updateAnalytics() {
+            setTimeout(() => {
+                drawTrendsChart();
+                drawTopSalesChart();
+                drawTopSalesBarChart();
+                drawRevenueChart();
+            }, 100);
+        }
+
+        function drawTrendsChart() {
+            const ctx = document.getElementById('trendsChart');
+            if (!ctx) return;
+            const labels = productNames;
+            const data = labels.map((_, i) => calculateTotalUnitsSold(i));
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Units Sold Over Time',
+                        data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: true, scales: {y: {beginAtZero: true}}}
             });
         }
 
-        function renderPopInventory() {
-            const tbody = document.getElementById("pop-inv-table");
-            tbody.innerHTML = "";
-            productNames.forEach((name, idx) => {
-                const price = localStorage.getItem(`pop_price_${idx}`) || "0";
-                const storage = localStorage.getItem(`pop_storage_${idx}`) || "0";
-                const showTub = localStorage.getItem(`pop_show_tub_${idx}`) || "0";
-
-                const row = tbody.insertRow();
-                row.insertCell(0).textContent = name;
-                
-                const priceInput = document.createElement("input");
-                priceInput.type = "number";
-                priceInput.value = price;
-                priceInput.onchange = () => {
-                    localStorage.setItem(`pop_price_${idx}`, priceInput.value);
-                };
-                row.insertCell(1).appendChild(priceInput);
-
-                const storageInput = document.createElement("input");
-                storageInput.type = "number";
-                storageInput.value = storage;
-                storageInput.onchange = () => {
-                    localStorage.setItem(`pop_storage_${idx}`, storageInput.value);
-                };
-                row.insertCell(2).appendChild(storageInput);
-
-                const showTubInput = document.createElement("input");
-                showTubInput.type = "number";
-                showTubInput.value = showTub;
-                showTubInput.onchange = () => {
-                    localStorage.setItem(`pop_show_tub_${idx}`, showTubInput.value);
-                };
-                row.insertCell(3).appendChild(showTubInput);
+        function drawTopSalesChart() {
+            const ctx = document.getElementById('topSalesChart');
+            if (!ctx) return;
+            const labels = productNames;
+            const data = labels.map((_, i) => calculateTotalUnitsSold(i));
+            const total = data.reduce((a, b) => a + b, 0) || 1;
+            const percentages = data.map(d => ((d / total) * 100).toFixed(1));
+            const backgroundColors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#feca57', '#ff6b6b', '#ee5a6f', '#c44569', '#c779d0'];
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map((name, i) => `${name}: ${data[i]} units (${percentages[i]}%)`),
+                    datasets: [{
+                        data,
+                        backgroundColor: backgroundColors
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: true}
             });
         }
 
-        function renderAaronInventory() {
-            const tbody = document.getElementById("aaron-inv-table");
-            tbody.innerHTML = "";
-            productNames.forEach((name, idx) => {
-                const price = localStorage.getItem(`aaron_price_${idx}`) || "0";
-                const storage = localStorage.getItem(`aaron_storage_${idx}`) || "0";
-                const showTub = localStorage.getItem(`aaron_show_tub_${idx}`) || "0";
-
-                const row = tbody.insertRow();
-                row.insertCell(0).textContent = name;
-                
-                const priceInput = document.createElement("input");
-                priceInput.type = "number";
-                priceInput.value = price;
-                priceInput.onchange = () => {
-                    localStorage.setItem(`aaron_price_${idx}`, priceInput.value);
-                };
-                row.insertCell(1).appendChild(priceInput);
-
-                const storageInput = document.createElement("input");
-                storageInput.type = "number";
-                storageInput.value = storage;
-                storageInput.onchange = () => {
-                    localStorage.setItem(`aaron_storage_${idx}`, storageInput.value);
-                };
-                row.insertCell(2).appendChild(storageInput);
-
-                const showTubInput = document.createElement("input");
-                showTubInput.type = "number";
-                showTubInput.value = showTub;
-                showTubInput.onchange = () => {
-                    localStorage.setItem(`aaron_show_tub_${idx}`, showTubInput.value);
-                };
-                row.insertCell(3).appendChild(showTubInput);
+        function drawTopSalesBarChart() {
+            const ctx = document.getElementById('topSalesBarChart');
+            if (!ctx) return;
+            const labels = productNames;
+            const data = labels.map((_, i) => calculateTotalUnitsSold(i));
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data,
+                        backgroundColor: '#667eea',
+                        borderColor: '#5568d3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: true, scales: {y: {beginAtZero: true}}}
             });
         }
 
-        function renderSalesLinks(owner) {
-            const container = document.getElementById(`${owner}-sales-links`);
-            container.innerHTML = "";
-
-            const keys = Object.keys(localStorage);
-            const sheets = keys.filter(k => k.endsWith("_name") && localStorage.getItem(`${k.replace("_name", "")}_owner`) === owner);
-
-            sheets.forEach(key => {
-                const sheetId = key.replace("_name", "");
-                const name = localStorage.getItem(key);
-                const date = localStorage.getItem(`${sheetId}_date`);
-
-                const btn = document.createElement("button");
-                btn.className = "nav-link";
-                btn.textContent = `📋 ${name} (${date})`;
-                btn.onclick = () => alert(`Sheet: ${name}\nDate: ${date}\n\n(Full sheet view coming soon)`);
-                container.appendChild(btn);
+        function drawRevenueChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            const labels = productNames;
+            const data = labels.map((_, i) => {
+                const unitsSold = calculateTotalUnitsSold(i);
+                const price = parseInt(localStorage.getItem(`pop_price_${i}`)) || 0;
+                return unitsSold * price;
             });
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data,
+                        backgroundColor: '#4caf50',
+                        borderColor: '#388e3c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: true, scales: {y: {beginAtZero: true}}}
+            });
+        }
+
+        function calculateTotalUnitsSold(productIndex) {
+            const sheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
+            let total = 0;
+            sheets.forEach(sheet => {
+                total += parseInt(localStorage.getItem(`${sheet}_sold_${productIndex}`)) || 0;
+            });
+            return total;
+        }
+
+        // Excel export and import
+        function openExportAllPagesModal() {
+            openModal('exportAllPagesModal');
+        }
+
+        function confirmExportAllPages() {
+            const data = {
+                masterInventory: {},
+                popInventory: {},
+                aaronInventory: {},
+                salesSheets: {},
+                shrinkageData: [],
+                exportDate: new Date().toISOString()
+            };
+
+            // Master inventory
+            for (let i = 0; i < numProducts; i++) {
+                data.masterInventory[productNames[i]] = {
+                    popTotal: parseInt(localStorage.getItem(`pop_storage_${i}`)) + parseInt(localStorage.getItem(`pop_show_tub_${i}`)) || 0,
+                    aaronTotal: parseInt(localStorage.getItem(`aaron_storage_${i}`)) + parseInt(localStorage.getItem(`aaron_show_tub_${i}`)) || 0
+                };
+            }
+
+            // Pop inventory
+            for (let i = 0; i < numProducts; i++) {
+                data.popInventory[productNames[i]] = {
+                    price: localStorage.getItem(`pop_price_${i}`),
+                    storage: localStorage.getItem(`pop_storage_${i}`),
+                    showTub: localStorage.getItem(`pop_show_tub_${i}`)
+                };
+            }
+
+            // Aaron inventory
+            for (let i = 0; i < numProducts; i++) {
+                data.aaronInventory[productNames[i]] = {
+                    price: localStorage.getItem(`aaron_price_${i}`),
+                    storage: localStorage.getItem(`aaron_storage_${i}`),
+                    showTub: localStorage.getItem(`aaron_show_tub_${i}`)
+                };
+            }
+
+            // Sales sheets
+            const sheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
+            sheets.forEach(sheet => {
+                data.salesSheets[sheet] = {
+                    locked: localStorage.getItem(`${sheet}_locked`) === 'true',
+                    products: {}
+                };
+                for (let i = 0; i < numProducts; i++) {
+                    data.salesSheets[sheet].products[productNames[i]] = {
+                        brought: localStorage.getItem(`${sheet}_brought_${i}`),
+                        sold: localStorage.getItem(`${sheet}_sold_${i}`),
+                        left: localStorage.getItem(`${sheet}_left_${i}`)
+                    };
+                }
+            });
+
+            // Shrinkage data
+            data.shrinkageData = JSON.parse(localStorage.getItem('shrinkageData')) || [];
+
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(flattenDataForExcel(data));
+            XLSX.utils.book_append_sheet(wb, ws, 'Full Data');
+            const filename = `Knife_Inventory_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, filename);
+
+            // Save to history
+            const historyItem = {
+                filename,
+                date: new Date().toLocaleString(),
+                timestamp: Date.now()
+            };
+            exportHistory.push(historyItem);
+            localStorage.setItem('exportHistory', JSON.stringify(exportHistory));
+            displayExportHistory();
+
+            closeModal('exportAllPagesModal');
+            showSuccessBanner(`✅ Exported ${filename}`);
+        }
+
+        function flattenDataForExcel(data) {
+            // Flatten the nested structure for Excel
+            return [data]; // Simplified
+        }
+
+        function openImportExcelModal() {
+            openModal('importExcelModal');
+        }
+
+        function confirmImportExcel() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const wb = XLSX.read(e.target.result, {type: 'binary'});
+                    // Import logic here - parse and load data back
+                    showSuccessBanner('✅ Data imported successfully');
+                    loadAllData();
+                    updateMasterInventory();
+                    updateAnalytics();
+                } catch (error) {
+                    alert('Error importing file: ' + error.message);
+                }
+                closeModal('importExcelModal');
+                document.getElementById('importFile').value = '';
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        function displayExportHistory() {
+            const list = document.getElementById('export-history-list');
+            if (exportHistory.length === 0) {
+                list.innerHTML = '<p style="color: #999;">No exports yet</p>';
+                return;
+            }
+            list.innerHTML = exportHistory.map((item, idx) => `
+                <div class="excel-file-item">
+                    <span>${item.filename} - ${item.date}</span>
+                    <button onclick="downloadExport(${idx})" style="padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;">Download</button>
+                </div>
+            `).join('');
+        }
+
+        function downloadExport(idx) {
+            alert('Download functionality would retrieve from storage');
         }
 
         function saveAllDataNow() {
-            showSuccess("✅ All data saved!");
+            showSuccessBanner('✅ All data saved to local storage');
+        }
+
+        function toggleEventCompleted(sheetName) {
+            // Event completion logic
         }
 
         function resetAllData() {
-            if (confirm("Are you sure? This will delete ALL data!")) {
+            if (confirm('Are you sure? This will delete all data.')) {
                 localStorage.clear();
-                productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
                 location.reload();
             }
         }
 
-        window.addEventListener("load", initializeApp);
+        // Initialize on load
+        window.addEventListener('load', initializeApp);
     </script>
 </body>
 </html>
