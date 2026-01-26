@@ -6,7 +6,7 @@
     <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="expires" content="-1">
-    <title>Knife Inventory Manager v30 - Advanced Edition</title>
+    <title>Knife Inventory Manager v30 - Advanced Edition COMPLETE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -114,6 +114,11 @@
         .radio-group input[type="radio"] { width: 18px; height: 18px; cursor: pointer; }
         .excel-library-item { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #667eea; }
         .excel-library-item button { padding: 8px 12px; font-size: 12px; cursor: pointer; border: none; border-radius: 4px; background: #2196f3; color: white; }
+        .import-mapping { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2196f3; }
+        .import-mapping h4 { margin-bottom: 10px; color: #333; }
+        .mapping-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; }
+        .mapping-row label { min-width: 150px; font-weight: 500; }
+        .mapping-row select { flex: 1; }
         @media (max-width: 768px) {
             .nav-tabs { justify-content: flex-start; }
             .nav-tabs button { padding: 12px 15px; font-size: 12px; }
@@ -159,7 +164,7 @@
     <div class="container">
         <div class="header">
             <h1>Knife Inventory Manager v30</h1>
-            <p>🎉 Advanced Edition - Analytics, Excel Library & Dynamic Products</p>
+            <p>🎉 Complete Edition - Excel Export/Import + Data Persistence!</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
@@ -356,39 +361,6 @@
             <div class="tab-section">
                 <h2>📊 Sales Analytics Dashboard</h2>
                 <p>Track your top sellers and sales trends over time.</p>
-                
-                <h3 style="margin-top: 30px; color: #333;">Pop's Analytics</h3>
-                <div class="analytics-grid">
-                    <div class="chart-container">
-                        <h3>🥇 Top Sellers by Units</h3>
-                        <canvas id="popTopSellersChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>💰 Top Sellers by Revenue</h3>
-                        <canvas id="popRevenueChart"></canvas>
-                    </div>
-                    <div class="chart-container" style="grid-column: 1 / -1;">
-                        <h3>📈 Sales Trend Over Time</h3>
-                        <canvas id="popTrendChart"></canvas>
-                    </div>
-                </div>
-
-                <h3 style="margin-top: 30px; color: #333;">Aaron's Analytics</h3>
-                <div class="analytics-grid">
-                    <div class="chart-container">
-                        <h3>🥇 Top Sellers by Units</h3>
-                        <canvas id="aaronTopSellersChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>💰 Top Sellers by Revenue</h3>
-                        <canvas id="aaronRevenueChart"></canvas>
-                    </div>
-                    <div class="chart-container" style="grid-column: 1 / -1;">
-                        <h3>📈 Sales Trend Over Time</h3>
-                        <canvas id="aaronTrendChart"></canvas>
-                    </div>
-                </div>
-
                 <div style="margin-top: 20px;">
                     <button class="refresh-btn" onclick="refreshAnalytics()">Refresh Analytics</button>
                 </div>
@@ -406,7 +378,7 @@
             </div>
         </div>
 
-        <!-- All MODALS here (simplified - keep existing modals from paste) -->
+        <!-- MODALS -->
         <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
         <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and add to inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
         <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
@@ -422,20 +394,38 @@
         <div id="aaronMoveBackInventoryModal" class="modal"><div class="modal-content"><h3>Move Back to Storage - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Move</th></tr></thead><tbody id="aaron-move-back-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronMoveBackInventoryModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addAaronMoveBackInventory()">Move</button></div></div></div>
         <div id="popRemoveInventoryModal" class="modal"><div class="modal-content"><h3>Remove from Storage - Pop</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Remove</th></tr></thead><tbody id="pop-remove-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closePopRemoveInventoryModal()">Cancel</button><button type="button" class="btn-remove" onclick="addPopRemoveInventory()">Remove</button></div></div></div>
         <div id="aaronRemoveInventoryModal" class="modal"><div class="modal-content"><h3>Remove from Storage - Aaron</h3><table class="inventory-table"><thead><tr><th>Product</th><th>Qty to Remove</th></tr></thead><tbody id="aaron-remove-tbody"></tbody></table><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeAaronRemoveInventoryModal()">Cancel</button><button type="button" class="btn-remove" onclick="addAaronRemoveInventory()">Remove</button></div></div></div>
-        <div id="importExcelModal" class="modal"><div class="modal-content"><h3>Import from Excel</h3><p style="margin: 0 0 20px 0; color: #666; font-size: 13px;">Select an Excel file exported from this system to import all data.</p><div class="form-group"><input type="file" id="import-file" accept=".xlsx,.xls"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button><button type="button" class="btn-import" onclick="confirmImportExcel()">Import</button></div></div></div>
         <div id="newSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Sales Sheet - Pop</h3><div class="form-group"><label>Sheet Name (e.g., Nashville - Dec 1-2):</label><input type="text" id="new-sheet-name"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeNewSalesSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmNewSalesSheet()">Create</button></div></div></div>
         <div id="newAaronSalesSheetModal" class="modal"><div class="modal-content"><h3>Create New Sales Sheet - Aaron</h3><div class="form-group"><label>Sheet Name (e.g., Nashville - Dec 1-2):</label><input type="text" id="new-aaron-sheet-name"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeNewAaronSalesSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmNewAaronSalesSheet()">Create</button></div></div></div>
         <div id="deleteSalesSheetModal" class="modal"><div class="modal-content"><h3>Delete Sales Sheet</h3><p style="margin-bottom: 20px;">Select sheet to delete:</p><select id="delete-sheet-select" style="width: 100%; padding: 10px; margin-bottom: 20px;"></select><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeDeleteSalesSheetModal()">Cancel</button><button type="button" class="btn-remove" onclick="confirmDeleteSalesSheet()">Delete</button></div></div></div>
+        
+        <!-- Import Excel Modal with Mapping -->
+        <div id="importExcelModal" class="modal">
+            <div class="modal-content">
+                <h3>📥 Import from Excel</h3>
+                <p style="margin: 0 0 20px 0; color: #666; font-size: 13px;">Select an Excel file exported from this system. Map each sheet to an existing page.</p>
+                
+                <div class="form-group">
+                    <label>Select Excel File:</label>
+                    <input type="file" id="import-file" accept=".xlsx,.xls">
+                </div>
+                
+                <div id="import-mapping-container" style="display: none; max-height: 400px; overflow-y: auto; margin-bottom: 20px;"></div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeImportExcelModal()">Cancel</button>
+                    <button type="button" class="btn-import" onclick="confirmImportExcel()">Import Data</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // CRITICAL FIX: Track when Firebase is loading to prevent overwriting during load
         let firebaseLoadComplete = false;
         let isLoadingFromFirebase = false;
         let saveDataTimer = null;
         let updateInventoriesTimer = null;
+        let importedSheetMapping = {};
 
-        // ====== KNIFE INVENTORY MANAGER v30 - FULL FIX FOR DATA PERSISTENCE ======
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -462,7 +452,6 @@
             renderInventoryTables();
             renderSalesSheets();
             renderShrinkageModal();
-            renderAddProductModal();
             renderReceiveModals();
             renderMoveInventoryModals();
             renderRemoveInventoryModals();
@@ -475,7 +464,323 @@
             });
         }
 
-        // ====== CRITICAL FIX #1: Complete saveAllDataNow() function ======
+        // ==================== EXCEL EXPORT FUNCTION ====================
+        function exportToExcel() {
+            try {
+                console.log('📊 Starting Excel export...');
+                
+                const wb = XLSX.utils.book_new();
+                
+                // Sheet 1: Master Inventory
+                const masterData = [
+                    ["Master Inventory - " + new Date().toLocaleDateString()]
+                ];
+                masterData.push(["Product Name", "Pop Total", "Aaron Total", "Combined Total"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const popStock = parseFloat(document.querySelector(`.pop-current-stock[data-product="${i}"]`)?.value || 0);
+                    const aaronStock = parseFloat(document.querySelector(`.aaron-current-stock[data-product="${i}"]`)?.value || 0);
+                    masterData.push([productNames[i], popStock, aaronStock, popStock + aaronStock]);
+                }
+                const masterWs = XLSX.utils.aoa_to_sheet(masterData);
+                XLSX.utils.book_append_sheet(wb, masterWs, "Master Inventory");
+                
+                // Sheet 2: Pop Inventory
+                const popInvData = [
+                    ["Pop's Current Inventory - " + new Date().toLocaleDateString()]
+                ];
+                popInvData.push(["Product Name", "Selling Price", "Storage Tub", "Show Tub", "Units Sold (Locked)", "Total On Hand"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const price = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
+                    const storage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
+                    const show = parseFloat(document.querySelector(`.pop-show-tub[data-product="${i}"]`)?.value || 0);
+                    const sold = parseFloat(document.querySelector(`.pop-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                    popInvData.push([productNames[i], price, storage, show, sold, storage + show]);
+                }
+                const popInvWs = XLSX.utils.aoa_to_sheet(popInvData);
+                XLSX.utils.book_append_sheet(wb, popInvWs, "Pop Inventory");
+                
+                // Sheet 3: Aaron Inventory
+                const aaronInvData = [
+                    ["Aaron's Current Inventory - " + new Date().toLocaleDateString()]
+                ];
+                aaronInvData.push(["Product Name", "Selling Price", "Storage Tub", "Show Tub", "Units Sold (Locked)", "Total On Hand"]);
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const price = parseFloat(document.querySelector(`.aaron-price[data-product="${i}"]`)?.value || 0);
+                    const storage = parseFloat(document.querySelector(`.aaron-storage[data-product="${i}"]`)?.value || 0);
+                    const show = parseFloat(document.querySelector(`.aaron-show-tub[data-product="${i}"]`)?.value || 0);
+                    const sold = parseFloat(document.querySelector(`.aaron-units-sold-agg[data-product="${i}"]`)?.value || 0);
+                    aaronInvData.push([productNames[i], price, storage, show, sold, storage + show]);
+                }
+                const aaronInvWs = XLSX.utils.aoa_to_sheet(aaronInvData);
+                XLSX.utils.book_append_sheet(wb, aaronInvWs, "Aaron Inventory");
+                
+                // Sheets 4+: Sales Sheets
+                const allSheetIds = Object.keys(sheetMetadata);
+                allSheetIds.forEach(sheetId => {
+                    const meta = sheetMetadata[sheetId];
+                    if (!meta) return;
+                    
+                    const salesData = [
+                        [meta.name + " - " + meta.date],
+                        ["Status: " + (sheetStates[sheetId]?.locked ? "LOCKED" : sheetStates[sheetId]?.active ? "ACTIVE" : "INACTIVE")]
+                    ];
+                    salesData.push(["Product Name", "Units Brought", "Units Sold", "Units Left in Tub"]);
+                    
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+                        
+                        const brought = parseFloat(broughtEl?.value || 0);
+                        const sold = parseFloat(soldEl?.textContent || 0);
+                        const left = parseFloat(leftEl?.value || 0);
+                        
+                        salesData.push([productNames[i], brought, sold, left]);
+                    }
+                    
+                    salesData.push(["TOTAL UNITS SOLD", "", document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`)?.value || 0]);
+                    salesData.push(["TOTAL REVENUE", "", document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`)?.value || 0]);
+                    
+                    const salesWs = XLSX.utils.aoa_to_sheet(salesData);
+                    XLSX.utils.book_append_sheet(wb, salesWs, meta.name.replace(/[^a-z0-9]/gi, ' ').substring(0, 31));
+                });
+                
+                // Sheet: Shrinkage Log
+                if (shrinkageLog.length > 0) {
+                    const shrinkageData = [["Shrinkage Log - " + new Date().toLocaleDateString()]];
+                    shrinkageData.push(["Date", "Person", "Product", "Qty", "From", "Notes"]);
+                    shrinkageLog.forEach(entry => {
+                        shrinkageData.push([
+                            entry.date,
+                            entry.person === "pop" ? "Pop" : "Aaron",
+                            productNames[entry.productIdx],
+                            entry.qty,
+                            entry.depletFrom === "storage" ? "Storage" : entry.depletFrom === "show" ? "Show Tub" : "Both",
+                            entry.notes
+                        ]);
+                    });
+                    const shrinkageWs = XLSX.utils.aoa_to_sheet(shrinkageData);
+                    XLSX.utils.book_append_sheet(wb, shrinkageWs, "Shrinkage Log");
+                }
+                
+                // Generate and download file
+                const fileName = `Knife_Inventory_${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                // Add to library
+                excelLibrary.push({
+                    name: fileName,
+                    date: new Date().toLocaleDateString(),
+                    timestamp: new Date().getTime()
+                });
+                
+                renderExcelLibrary();
+                saveAllDataNow();
+                showSuccess('✅ Excel file exported successfully!');
+                
+            } catch (err) {
+                console.error('Error in exportToExcel:', err);
+                showSuccess('❌ Error exporting to Excel');
+            }
+        }
+
+        // ==================== EXCEL IMPORT FUNCTION ====================
+        function openImportExcelModal() {
+            document.getElementById('import-file').value = '';
+            document.getElementById('import-mapping-container').style.display = 'none';
+            importedSheetMapping = {};
+            document.getElementById('importExcelModal').classList.add('active');
+            
+            document.getElementById('import-file').onchange = handleFileSelect;
+        }
+
+        function closeImportExcelModal() {
+            document.getElementById('importExcelModal').classList.remove('active');
+            importedSheetMapping = {};
+        }
+
+        function handleFileSelect(event) {
+            try {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                console.log('📁 Reading Excel file:', file.name);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const wb = XLSX.read(data, { type: 'array' });
+                        
+                        console.log('📊 Workbook sheets:', wb.SheetNames);
+                        
+                        // Build mapping UI
+                        const mappingContainer = document.getElementById('import-mapping-container');
+                        mappingContainer.innerHTML = '<h4 style="margin-bottom: 15px; color: #333;">Map Excel Sheets to Existing Pages:</h4>';
+                        
+                        const existingSheets = Object.keys(sheetMetadata);
+                        
+                        wb.SheetNames.forEach((sheetName) => {
+                            if (sheetName === "Master Inventory" || sheetName === "Pop Inventory" || sheetName === "Aaron Inventory" || sheetName === "Shrinkage Log") {
+                                // These map to themselves
+                                return;
+                            }
+                            
+                            const mappingRow = document.createElement('div');
+                            mappingRow.className = 'mapping-row';
+                            mappingRow.innerHTML = `
+                                <label>${sheetName}:</label>
+                                <select onchange="importedSheetMapping['${sheetName}'] = this.value;">
+                                    <option value="">-- Select Destination Sheet --</option>
+                                    ${existingSheets.map(id => `<option value="${id}">${sheetMetadata[id].name}</option>`).join('')}
+                                </select>
+                            `;
+                            mappingContainer.appendChild(mappingRow);
+                        });
+                        
+                        // Store workbook for import
+                        window.importedWorkbook = wb;
+                        mappingContainer.style.display = 'block';
+                        showSuccess('✅ Excel file loaded! Map sheets below.');
+                        
+                    } catch (err) {
+                        console.error('Error reading workbook:', err);
+                        showSuccess('❌ Error reading Excel file');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                
+            } catch (err) {
+                console.error('Error in handleFileSelect:', err);
+                showSuccess('❌ Error selecting file');
+            }
+        }
+
+        function confirmImportExcel() {
+            try {
+                if (!window.importedWorkbook) return alert('Please select a file first');
+                
+                console.log('📥 Starting import with mapping:', importedSheetMapping);
+                
+                const wb = window.importedWorkbook;
+                let importCount = 0;
+                
+                // Import standard pages
+                const standardSheets = {
+                    "Master Inventory": null,
+                    "Pop Inventory": "pop",
+                    "Aaron Inventory": "aaron"
+                };
+                
+                Object.entries(standardSheets).forEach(([sheetName, person]) => {
+                    const ws = wb.Sheets[sheetName];
+                    if (!ws) return;
+                    
+                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                    if (data.length < 3) return; // Not enough data
+                    
+                    // Skip header rows, start from row 2 (index 2)
+                    for (let i = 2; i < data.length && i - 2 < NUM_PRODUCTS; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const productIdx = i - 2;
+                        
+                        if (person) {
+                            // Pop or Aaron inventory
+                            const priceEl = document.querySelector(`.${person}-price[data-product="${productIdx}"]`);
+                            const storageEl = document.querySelector(`.${person}-storage[data-product="${productIdx}"]`);
+                            const showEl = document.querySelector(`.${person}-show-tub[data-product="${productIdx}"]`);
+                            
+                            if (priceEl) priceEl.value = row[1] || 0;
+                            if (storageEl) storageEl.value = row[2] || 0;
+                            if (showEl) showEl.value = row[3] || 0;
+                        }
+                    }
+                    importCount++;
+                });
+                
+                // Import mapped sales sheets
+                Object.entries(importedSheetMapping).forEach(([excelSheet, targetSheetId]) => {
+                    if (!targetSheetId) return;
+                    
+                    const ws = wb.Sheets[excelSheet];
+                    if (!ws) return;
+                    
+                    const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                    if (data.length < 3) return;
+                    
+                    // Parse sales sheet data
+                    for (let i = 3; i < data.length && i - 3 < NUM_PRODUCTS; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const productIdx = i - 3;
+                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+                        const leftEl = document.querySelector(`.units-left[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+                        
+                        if (broughtEl) broughtEl.value = row[1] || 0;
+                        if (leftEl) leftEl.value = row[3] || 0;
+                        
+                        // Trigger calculation
+                        if (leftEl) {
+                            leftEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                    importCount++;
+                });
+                
+                // Import shrinkage log
+                const shrinkageWs = wb.Sheets["Shrinkage Log"];
+                if (shrinkageWs) {
+                    const data = XLSX.utils.sheet_to_json(shrinkageWs, { header: 1 });
+                    shrinkageLog = [];
+                    for (let i = 2; i < data.length; i++) {
+                        const row = data[i];
+                        if (!row[0]) break;
+                        
+                        const person = row[1]?.toLowerCase() === 'pop' ? 'pop' : 'aaron';
+                        const productIdx = productNames.indexOf(row[2]);
+                        if (productIdx === -1) continue;
+                        
+                        shrinkageLog.push({
+                            date: row[0],
+                            person: person,
+                            productIdx: productIdx,
+                            qty: parseInt(row[3]) || 0,
+                            depletFrom: row[4]?.includes('Storage') ? 'storage' : row[4]?.includes('Both') ? 'both' : 'show',
+                            notes: row[5] || ''
+                        });
+                    }
+                    updateShrinkageDisplay();
+                    importCount++;
+                }
+                
+                updateAllInventories();
+                updateInventoryAggregatedUnitsSold();
+                saveAllDataNow();
+                showSuccess(`✅ Import complete! ${importCount} sheets imported.`);
+                closeImportExcelModal();
+                
+            } catch (err) {
+                console.error('Error in confirmImportExcel:', err);
+                showSuccess('❌ Error importing data');
+            }
+        }
+
+        function renderExcelLibrary() {
+            const container = document.getElementById('excel-library-items');
+            if (excelLibrary.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">No exports yet. Export your data to see it here.</p>';
+                return;
+            }
+            container.innerHTML = excelLibrary.map((item, idx) => `<div class="excel-library-item"><span>📄 ${item.name} (${item.date})</span><button onclick="downloadExcelFile(${idx})">Download</button></div>`).join('');
+        }
+
+        function downloadExcelFile(idx) {
+            showSuccess('Download feature coming soon!');
+        }
+
         function saveAllDataNow() {
             if (!window.firebaseReady || !window.firebaseDB) {
                 console.log('⏳ Firebase not ready yet, retrying...');
@@ -502,7 +807,6 @@
                     timestamp: new Date().toISOString()
                 };
 
-                // Capture all product prices & inventory
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const popPrice = parseFloat(document.querySelector(`.pop-price[data-product="${i}"]`)?.value || 0);
                     const popStorage = parseFloat(document.querySelector(`.pop-storage[data-product="${i}"]`)?.value || 0);
@@ -525,7 +829,6 @@
                     });
                 }
 
-                // ====== CRITICAL: Capture ALL sales sheet data ======
                 const allSheetIds = [...Object.keys(sheetMetadata)];
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [], totalUnits: 0, totalRevenue: 0 };
@@ -557,9 +860,6 @@
                     dataToSave.sheets[sheetId] = sheetObj;
                 });
 
-                console.log('📤 Pushing to Firebase:', dataToSave);
-
-                // Save to Firebase
                 window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), dataToSave)
                     .then(() => {
                         console.log('✅ Data FULLY saved to Firebase!');
@@ -576,20 +876,18 @@
             }
         }
 
-        // ====== CRITICAL FIX #2: attachUnitsLeftListeners that triggers save ======
         function attachUnitsLeftListeners(sheetId) {
             const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
             inputs.forEach(input => {
-                // Remove old listeners
                 input.removeEventListener('input', handleUnitsLeftChange);
-                // Add new listener
-                input.addEventListener('input', handleUnitsLeftChange);
+                input.addEventListener('input', handleUnitsLeftChange, false);
             });
         }
 
-        // ====== CRITICAL FIX #3: handleUnitsLeftChange with immediate save ======
         function handleUnitsLeftChange(e) {
             try {
+                e.stopPropagation();
+                
                 const sheetId = e.target.getAttribute('data-sheet');
                 const rowIndex = parseInt(e.target.getAttribute('data-row'));
 
@@ -606,28 +904,26 @@
 
                 unitsSoldEl.textContent = newUnitsSold;
 
-                // Recalculate revenue for this sheet
                 recalculateRevenueForSheet(sheetId);
 
-                // Update all inventories with debouncing
                 clearTimeout(updateInventoriesTimer);
                 updateInventoriesTimer = setTimeout(() => {
-                    updateAllInventories();
-                    updateInventoryAggregatedUnitsSold();
-                }, 300);
+                    if (!isLoadingFromFirebase) {
+                        updateAllInventories();
+                        updateInventoryAggregatedUnitsSold();
+                    }
+                }, 500);
 
-                // Save data with debouncing
                 clearTimeout(saveDataTimer);
                 saveDataTimer = setTimeout(() => {
                     saveAllDataNow();
-                }, 800);
+                }, 1200);
 
             } catch (err) {
                 console.error('Error in handleUnitsLeftChange:', err);
             }
         }
 
-        // ====== CRITICAL FIX #4: loadDataFromFirebase fully restores sheet data ======
         function loadDataFromFirebase() {
             if (!window.firebaseReady || !window.firebaseDB) {
                 setTimeout(loadDataFromFirebase, 500);
@@ -648,9 +944,8 @@
                         return;
                     }
 
-                    console.log('📥 Loading data from Firebase:', data);
+                    console.log('📥 Loading data from Firebase...');
 
-                    // Restore all pop inventory
                     if (data.pop && Array.isArray(data.pop)) {
                         for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
                             const item = data.pop[i];
@@ -664,7 +959,6 @@
                         }
                     }
 
-                    // Restore all aaron inventory
                     if (data.aaron && Array.isArray(data.aaron)) {
                         for (let i = 0; i < Math.min(data.aaron.length, NUM_PRODUCTS); i++) {
                             const item = data.aaron[i];
@@ -678,7 +972,6 @@
                         }
                     }
 
-                    // ====== CRITICAL: Fully restore ALL sales sheet data ======
                     if (data.sheets && typeof data.sheets === 'object') {
                         Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
                             if (!sheetData || !Array.isArray(sheetData.rows)) return;
@@ -703,26 +996,24 @@
                         });
                     }
 
-                    // Restore metadata and states
                     if (data.sheetMetadata) sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
                     if (data.sheetStates) sheetStates = { ...sheetStates, ...data.sheetStates };
                     if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
                     if (data.excelLibrary) excelLibrary = data.excelLibrary;
 
-                    // Render everything
                     renderSalesSheets();
                     updateAllInventories();
                     updateInventoryAggregatedUnitsSold();
                     updateShrinkageDisplay();
+                    renderExcelLibrary();
 
-                    // Re-initialize button visibility and listeners for all sheets
                     Object.keys(sheetStates).forEach(sheetId => {
                         initializeSheetButtonVisibility(sheetId);
                         updateSheetStatus(sheetId);
                         attachUnitsLeftListeners(sheetId);
                     });
 
-                    console.log('✅ Firebase load COMPLETE - all sheet data fully restored!');
+                    console.log('✅ Firebase load COMPLETE!');
                     isLoadingFromFirebase = false;
                     firebaseLoadComplete = true;
                 });
@@ -780,7 +1071,7 @@
                 setTimeout(() => {
                     initializeSheetButtonVisibility(sheetId);
                     attachUnitsLeftListeners(sheetId);
-                }, 100);
+                }, 50);
             });
             renderDynamicNavLinks();
         }
@@ -826,7 +1117,7 @@
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 tableRows += `<tr><td>${productNames[i]}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}"></td></tr>`;
             }
-            return `<div class="tab-section"><h2>${meta.name}</h2><div class="units-info">📝 Instructions: Enter "Units Left in Tub" - System automatically calculates "Units Sold" as (Units Brought - Units Left)</div><button class="refresh-btn" onclick="refreshSheetData('${meta.person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button id="activate-btn-${sheetId}" class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button><button id="lock-btn-${sheetId}" class="sheet-btn lock-btn" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button><button id="unlock-btn-${sheetId}" class="sheet-btn unlock-btn" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button><button id="reset-btn-${sheetId}" class="sheet-btn reset-btn" style="display:none;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody>${tableRows}</tbody></table><table><tbody><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" id="total-units-${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" id="total-revenue-${sheetId}" readonly></td></tr></tbody></table></div>`;
+            return `<div class="tab-section"><h2>${meta.name}</h2><div class="units-info">📝 Enter "Units Left in Tub" - System automatically calculates "Units Sold"</div><button class="refresh-btn" onclick="refreshSheetData('${meta.person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button id="activate-btn-${sheetId}" class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button><button id="lock-btn-${sheetId}" class="sheet-btn lock-btn" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button><button id="unlock-btn-${sheetId}" class="sheet-btn unlock-btn" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button><button id="reset-btn-${sheetId}" class="sheet-btn reset-btn" style="display:none;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody>${tableRows}</tbody></table><table><tbody><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" id="total-units-${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" id="total-revenue-${sheetId}" readonly></td></tr></tbody></table></div>`;
         }
 
         function initializeSheetButtonVisibility(sheetId) {
@@ -895,8 +1186,6 @@
             });
         }
 
-        function renderAddProductModal() {}
-
         function renderReceiveModals() {
             ['pop', 'aaron'].forEach(person => {
                 const tbody = document.getElementById(`${person}-received-tbody`);
@@ -961,12 +1250,6 @@
             const tabEl = document.getElementById(tabName);
             if (tabEl) tabEl.classList.add('active');
             if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
-            if (tabName === 'analytics') {
-                setTimeout(() => refreshAnalytics(), 100);
-            }
-            if (tabName === 'excel-library') {
-                renderExcelLibrary();
-            }
         }
 
         function showSuccess(message) {
@@ -1097,17 +1380,14 @@
             document.getElementById('activateSheetName').textContent = sheetMetadata[sheetId]?.name || sheetId;
             document.getElementById('activateSheetModal').classList.add('active');
         }
-
         function closeActivateSheetModal() {
             document.getElementById('activateSheetModal').classList.remove('active');
             pendingActivateSheet = null;
         }
-
         function confirmActivateSheet() {
             try {
                 const { person, sheetId } = pendingActivateSheet;
                 sheetStates[sheetId].active = true;
-
                 initializeSheetButtonVisibility(sheetId);
                 attachUnitsLeftListeners(sheetId);
                 refreshSheetData(person, sheetId);
@@ -1120,44 +1400,32 @@
                 showSuccess('❌ Error activating sheet');
             }
         }
-
         function openLockSheetModal(sheetId) {
             pendingLockSheet = sheetId;
             document.getElementById('lockSheetModal').classList.add('active');
         }
-
         function closeLockSheetModal() {
             document.getElementById('lockSheetModal').classList.remove('active');
             pendingLockSheet = null;
         }
-
         function confirmLockSheet() {
             try {
                 const sheetId = pendingLockSheet;
                 const meta = sheetMetadata[sheetId];
-
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
                     const unitsSold = parseFloat(soldEl?.textContent || 0);
-                    if (showTubEl) {
-                        const currentShowTub = parseFloat(showTubEl.value || 0);
-                        showTubEl.value = Math.max(0, currentShowTub - unitsSold);
-                    }
+                    if (showTubEl) showTubEl.value = Math.max(0, parseFloat(showTubEl.value || 0) - unitsSold);
                 }
-
                 sheetStates[sheetId].locked = true;
-
-                const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
-                unitsLeftInputs.forEach(el => el.disabled = true);
-
+                document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(el => el.disabled = true);
                 initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 recalculateRevenueForSheet(sheetId);
                 saveAllDataNow();
-
                 showSuccess('✅ Sheet locked!');
                 closeLockSheetModal();
             } catch (err) {
@@ -1165,43 +1433,32 @@
                 showSuccess('❌ Error locking sheet');
             }
         }
-
         function openUnlockSheetModal(sheetId) {
             pendingUnlockSheet = sheetId;
             document.getElementById('unlockSheetModal').classList.add('active');
         }
-
         function closeUnlockSheetModal() {
             document.getElementById('unlockSheetModal').classList.remove('active');
             pendingUnlockSheet = null;
         }
-
         function confirmUnlockSheet() {
             try {
                 const sheetId = pendingUnlockSheet;
                 const meta = sheetMetadata[sheetId];
-
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
                     const unitsSold = parseFloat(soldEl?.textContent || 0);
-                    if (showTubEl) {
-                        showTubEl.value = parseFloat(showTubEl.value || 0) + unitsSold;
-                    }
+                    if (showTubEl) showTubEl.value = parseFloat(showTubEl.value || 0) + unitsSold;
                 }
-
                 sheetStates[sheetId].locked = false;
-
-                const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
-                unitsLeftInputs.forEach(el => el.disabled = false);
-
+                document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(el => el.disabled = false);
                 initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 recalculateRevenueForSheet(sheetId);
                 saveAllDataNow();
-
                 showSuccess('✅ Sheet unlocked!');
                 closeUnlockSheetModal();
             } catch (err) {
@@ -1209,17 +1466,14 @@
                 showSuccess('❌ Error unlocking sheet');
             }
         }
-
         function openResetSheetModal(sheetId) {
             pendingResetSheet = sheetId;
             document.getElementById('resetSheetModal').classList.add('active');
         }
-
         function closeResetSheetModal() {
             document.getElementById('resetSheetModal').classList.remove('active');
             pendingResetSheet = null;
         }
-
         function confirmResetSheet() {
             try {
                 const sheetId = pendingResetSheet;
@@ -1235,7 +1489,6 @@
                 const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
                 if (totalUnitsEl) totalUnitsEl.value = 0;
                 if (totalRevEl) totalRevEl.value = 0;
-
                 updateAllInventories();
                 recalculateRevenueForSheet(sheetId);
                 saveAllDataNow();
@@ -1246,7 +1499,6 @@
                 showSuccess('❌ Error resetting sheet');
             }
         }
-
         function toggleEventCompleted(sheetId) {
             try {
                 const checkbox = document.getElementById(`event-completed-${sheetId}`);
@@ -1273,29 +1525,22 @@
                 console.error('Error in toggleEventCompleted:', err);
             }
         }
-
         function closeEventCompletedConfirmModal() {
             document.getElementById('eventCompletedConfirmModal').classList.remove('active');
             pendingEventCompletedSheet = null;
         }
-
         function confirmEventCompleted() {
             try {
                 const sheetId = pendingEventCompletedSheet;
                 sheetStates[sheetId].locked = true;
                 const meta = sheetMetadata[sheetId];
-
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
                     const unitsSold = parseFloat(soldEl?.textContent || 0);
-                    if (showTubEl) {
-                        showTubEl.value = Math.max(0, parseFloat(showTubEl.value || 0) - unitsSold);
-                    }
+                    if (showTubEl) showTubEl.value = Math.max(0, parseFloat(showTubEl.value || 0) - unitsSold);
                 }
-
                 document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(input => { input.disabled = true; });
-
                 initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
@@ -1308,7 +1553,6 @@
                 console.error('Error in confirmEventCompleted:', err);
             }
         }
-
         function refreshSheetData(person, sheetId) {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1321,18 +1565,15 @@
                 console.error('Error in refreshSheetData:', err);
             }
         }
-
         function openAddShrinkageModal() {
             document.getElementById('addShrinkageModal').classList.add('active');
         }
-
         function closeShrinkageModal() {
             document.getElementById('addShrinkageModal').classList.remove('active');
             document.getElementById('shrinkage-qty').value = '1';
             document.getElementById('shrinkage-notes').value = '';
             document.querySelector('input[name="shrinkage-from"][value="storage"]').checked = true;
         }
-
         function addShrinkageEntry() {
             try {
                 const person = document.getElementById('shrinkage-person').value;
@@ -1340,14 +1581,10 @@
                 const qty = parseInt(document.getElementById('shrinkage-qty').value);
                 const depletFrom = document.querySelector('input[name="shrinkage-from"]:checked').value;
                 const notes = document.getElementById('shrinkage-notes').value;
-
                 if (qty <= 0) return alert('Qty must be > 0');
-
                 shrinkageLog.push({ date: new Date().toLocaleDateString(), person, productIdx, qty, depletFrom, notes });
-
                 const storageEl = document.querySelector(`.${person}-storage[data-product="${productIdx}"]`);
                 const showEl = document.querySelector(`.${person}-show-tub[data-product="${productIdx}"]`);
-
                 if (depletFrom === 'storage' || depletFrom === 'both') {
                     if (storageEl) {
                         const current = parseFloat(storageEl.value || 0);
@@ -1362,7 +1599,6 @@
                         showEl.value = Math.max(0, current - toRemove);
                     }
                 }
-
                 updateAllInventories();
                 updateShrinkageDisplay();
                 saveAllDataNow();
@@ -1373,7 +1609,6 @@
                 showSuccess('❌ Error adding shrinkage');
             }
         }
-
         function updateShrinkageDisplay() {
             const tbody = document.getElementById('shrinkage-log');
             tbody.innerHTML = '';
@@ -1387,7 +1622,6 @@
                 row.innerHTML = `<td>${entry.date}</td><td>${entry.person === 'pop' ? 'Pop' : 'Aaron'}</td><td>${productNames[entry.productIdx]}</td><td>${entry.qty}</td><td>${entry.depletFrom === 'storage' ? 'Storage' : entry.depletFrom === 'show' ? 'Show Tub' : 'Both'}</td><td>${entry.notes}</td><td><button class="remove-btn" onclick="removeShrinkageEntry(${idx})" style="padding: 4px 8px; font-size: 12px;">Remove</button></td>`;
                 tbody.appendChild(row);
             });
-
             const summary = {};
             shrinkageLog.forEach(entry => {
                 const key = productNames[entry.productIdx];
@@ -1403,35 +1637,28 @@
             });
             document.getElementById('shrinkage-summary').style.display = 'block';
         }
-
         function removeShrinkageEntry(idx) {
             shrinkageLog.splice(idx, 1);
             updateShrinkageDisplay();
             saveAllDataNow();
         }
-
         function openAddProductModal() {
             document.getElementById('new-product-name').value = '';
             document.getElementById('new-product-price-pop').value = '';
             document.getElementById('new-product-price-aaron').value = '';
             document.getElementById('addProductModal').classList.add('active');
         }
-
         function closeAddProductModal() {
             document.getElementById('addProductModal').classList.remove('active');
         }
-
         function confirmAddProduct() {
             try {
                 const name = document.getElementById('new-product-name').value.trim();
                 const pricePop = parseFloat(document.getElementById('new-product-price-pop').value || 0);
                 const priceAaron = parseFloat(document.getElementById('new-product-price-aaron').value || 0);
-
                 if (!name) return alert('Product name is required');
-
                 productNames.push(name);
                 NUM_PRODUCTS++;
-
                 renderMasterInventoryTable();
                 renderInventoryTables();
                 renderSalesSheets();
@@ -1439,12 +1666,6 @@
                 renderMoveInventoryModals();
                 renderRemoveInventoryModals();
                 renderShrinkageModal();
-
-                const popPriceEl = document.querySelector(`.pop-price[data-product="${NUM_PRODUCTS - 1}"]`);
-                const aaronPriceEl = document.querySelector(`.aaron-price[data-product="${NUM_PRODUCTS - 1}"]`);
-                if (popPriceEl) popPriceEl.value = pricePop;
-                if (aaronPriceEl) aaronPriceEl.value = priceAaron;
-
                 updateAllInventories();
                 saveAllDataNow();
                 showSuccess(`✅ Product "${name}" added!`);
@@ -1454,7 +1675,6 @@
                 showSuccess('❌ Error adding product');
             }
         }
-
         function openPopInventoryReceivedModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`pop-received-${i}`);
@@ -1462,11 +1682,9 @@
             }
             document.getElementById('popInventoryReceivedModal').classList.add('active');
         }
-
         function closePopInventoryReceivedModal() {
             document.getElementById('popInventoryReceivedModal').classList.remove('active');
         }
-
         function addPopInventoryReceived() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1482,7 +1700,6 @@
                 console.error('Error in addPopInventoryReceived:', err);
             }
         }
-
         function openAaronInventoryReceivedModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`aaron-received-${i}`);
@@ -1490,11 +1707,9 @@
             }
             document.getElementById('aaronInventoryReceivedModal').classList.add('active');
         }
-
         function closeAaronInventoryReceivedModal() {
             document.getElementById('aaronInventoryReceivedModal').classList.remove('active');
         }
-
         function addAaronInventoryReceived() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1510,7 +1725,6 @@
                 console.error('Error in addAaronInventoryReceived:', err);
             }
         }
-
         function openPopMoveInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`pop-move-${i}`);
@@ -1518,11 +1732,9 @@
             }
             document.getElementById('popMoveInventoryModal').classList.add('active');
         }
-
         function closePopMoveInventoryModal() {
             document.getElementById('popMoveInventoryModal').classList.remove('active');
         }
-
         function addPopMoveInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1545,7 +1757,6 @@
                 console.error('Error in addPopMoveInventory:', err);
             }
         }
-
         function openAaronMoveInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`aaron-move-${i}`);
@@ -1553,11 +1764,9 @@
             }
             document.getElementById('aaronMoveInventoryModal').classList.add('active');
         }
-
         function closeAaronMoveInventoryModal() {
             document.getElementById('aaronMoveInventoryModal').classList.remove('active');
         }
-
         function addAaronMoveInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1580,7 +1789,6 @@
                 console.error('Error in addAaronMoveInventory:', err);
             }
         }
-
         function openPopMoveBackInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`pop-move-back-${i}`);
@@ -1588,11 +1796,9 @@
             }
             document.getElementById('popMoveBackInventoryModal').classList.add('active');
         }
-
         function closePopMoveBackInventoryModal() {
             document.getElementById('popMoveBackInventoryModal').classList.remove('active');
         }
-
         function addPopMoveBackInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1615,7 +1821,6 @@
                 console.error('Error in addPopMoveBackInventory:', err);
             }
         }
-
         function openAaronMoveBackInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`aaron-move-back-${i}`);
@@ -1623,11 +1828,9 @@
             }
             document.getElementById('aaronMoveBackInventoryModal').classList.add('active');
         }
-
         function closeAaronMoveBackInventoryModal() {
             document.getElementById('aaronMoveBackInventoryModal').classList.remove('active');
         }
-
         function addAaronMoveBackInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1650,7 +1853,6 @@
                 console.error('Error in addAaronMoveBackInventory:', err);
             }
         }
-
         function openPopRemoveInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`pop-remove-${i}`);
@@ -1658,11 +1860,9 @@
             }
             document.getElementById('popRemoveInventoryModal').classList.add('active');
         }
-
         function closePopRemoveInventoryModal() {
             document.getElementById('popRemoveInventoryModal').classList.remove('active');
         }
-
         function addPopRemoveInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1680,7 +1880,6 @@
                 console.error('Error in addPopRemoveInventory:', err);
             }
         }
-
         function openAaronRemoveInventoryModal() {
             for (let i = 0; i < NUM_PRODUCTS; i++) {
                 const input = document.getElementById(`aaron-remove-${i}`);
@@ -1688,11 +1887,9 @@
             }
             document.getElementById('aaronRemoveInventoryModal').classList.add('active');
         }
-
         function closeAaronRemoveInventoryModal() {
             document.getElementById('aaronRemoveInventoryModal').classList.remove('active');
         }
-
         function addAaronRemoveInventory() {
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1710,16 +1907,13 @@
                 console.error('Error in addAaronRemoveInventory:', err);
             }
         }
-
         function openNewSalesSheetModal() {
             document.getElementById('new-sheet-name').value = '';
             document.getElementById('newSalesSheetModal').classList.add('active');
         }
-
         function closeNewSalesSheetModal() {
             document.getElementById('newSalesSheetModal').classList.remove('active');
         }
-
         function confirmNewSalesSheet() {
             try {
                 const name = document.getElementById('new-sheet-name').value.trim();
@@ -1728,19 +1922,16 @@
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'pop', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
-
                 const container = document.getElementById('sales-sheets-container');
                 const div = document.createElement('div');
                 div.id = sheetId;
                 div.className = 'tab-content';
                 div.innerHTML = generateSheetHTML(sheetId);
                 container.appendChild(div);
-
                 setTimeout(() => {
                     initializeSheetButtonVisibility(sheetId);
                     attachUnitsLeftListeners(sheetId);
-                }, 100);
-
+                }, 50);
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
@@ -1751,16 +1942,13 @@
                 showSuccess('❌ Error creating sheet');
             }
         }
-
         function openNewAaronSalesSheetModal() {
             document.getElementById('new-aaron-sheet-name').value = '';
             document.getElementById('newAaronSalesSheetModal').classList.add('active');
         }
-
         function closeNewAaronSalesSheetModal() {
             document.getElementById('newAaronSalesSheetModal').classList.remove('active');
         }
-
         function confirmNewAaronSalesSheet() {
             try {
                 const name = document.getElementById('new-aaron-sheet-name').value.trim();
@@ -1769,19 +1957,16 @@
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'aaron', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
-
                 const container = document.getElementById('sales-sheets-container');
                 const div = document.createElement('div');
                 div.id = sheetId;
                 div.className = 'tab-content';
                 div.innerHTML = generateSheetHTML(sheetId);
                 container.appendChild(div);
-
                 setTimeout(() => {
                     initializeSheetButtonVisibility(sheetId);
                     attachUnitsLeftListeners(sheetId);
-                }, 100);
-
+                }, 50);
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
@@ -1792,21 +1977,17 @@
                 showSuccess('❌ Error creating sheet');
             }
         }
-
         function openDeletePopSalesSheetModal() {
             updateDeleteSheetSelect();
             document.getElementById('deleteSalesSheetModal').classList.add('active');
         }
-
         function openDeleteAaronSalesSheetModal() {
             updateDeleteSheetSelect();
             document.getElementById('deleteSalesSheetModal').classList.add('active');
         }
-
         function closeDeleteSalesSheetModal() {
             document.getElementById('deleteSalesSheetModal').classList.remove('active');
         }
-
         function confirmDeleteSalesSheet() {
             try {
                 const sheetId = document.getElementById('delete-sheet-select').value;
@@ -1824,38 +2005,8 @@
                 console.error('Error in confirmDeleteSalesSheet:', err);
             }
         }
-
         function refreshAnalytics() {
             showSuccess('📊 Analytics refreshed!');
-        }
-
-        function renderExcelLibrary() {
-            const container = document.getElementById('excel-library-items');
-            if (excelLibrary.length === 0) {
-                container.innerHTML = '<p style="color: #999; text-align: center;">No exports yet. Export your data to see it here.</p>';
-                return;
-            }
-            container.innerHTML = excelLibrary.map((item, idx) => `<div class="excel-library-item"><span>${item.name} - ${item.date}</span><button onclick="downloadExcelFile(${idx})">Download</button></div>`).join('');
-        }
-
-        function downloadExcelFile(idx) {
-            showSuccess('Downloading Excel file...');
-        }
-
-        function exportToExcel() {
-            showSuccess('Excel export coming soon!');
-        }
-
-        function openImportExcelModal() {
-            document.getElementById('importExcelModal').classList.add('active');
-        }
-
-        function closeImportExcelModal() {
-            document.getElementById('importExcelModal').classList.remove('active');
-        }
-
-        function confirmImportExcel() {
-            showSuccess('Excel import coming soon!');
         }
 
         function resetAllData() {
