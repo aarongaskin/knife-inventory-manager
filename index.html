@@ -102,8 +102,15 @@
         .success-banner.show { display: block; }
         .aggregation-info { background: #fff3cd; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; color: #856404; font-size: 12px; border-left: 4px solid #ffc107; }
         .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .chart-container { background: #f8f9fa; padding: 20px; border-radius: 8px; }
-        .chart-container h3 { margin-bottom: 20px; color: #333; }
+        .analytics-grid-full { display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 30px; }
+        .chart-container { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .chart-container h3 { margin-bottom: 20px; color: #333; font-size: 1.2em; }
+        .chart-wrapper { position: relative; height: 400px; margin-bottom: 20px; }
+        .analytics-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .analytics-table thead { background: #667eea; color: white; }
+        .analytics-table th, .analytics-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        .analytics-table tbody tr:nth-child(even) { background: #f8f9fa; }
+        .analytics-table .total-row { font-weight: 700; background: #fffacd; border-top: 2px solid #667eea; }
         .shrinkage-table { width: 100%; border-collapse: collapse; }
         .shrinkage-table thead { background: #ff6b6b; color: white; }
         .shrinkage-table th, .shrinkage-table td { padding: 10px; text-align: left; border: 1px solid #ddd; }
@@ -129,6 +136,7 @@
             .sheet-controls { flex-direction: column; align-items: flex-start; }
             .inventory-controls { flex-direction: column; }
             .analytics-grid { grid-template-columns: 1fr; }
+            .analytics-grid-full { grid-template-columns: 1fr; }
             .radio-group { flex-direction: column; }
         }
     </style>
@@ -361,8 +369,52 @@
             <div class="tab-section">
                 <h2>📊 Sales Analytics Dashboard</h2>
                 <p>Track your top sellers and sales trends over time.</p>
-                <div style="margin-top: 20px;">
-                    <button class="refresh-btn" onclick="refreshAnalytics()">Refresh Analytics</button>
+                <button class="refresh-btn" onclick="renderAnalytics()">Refresh Analytics</button>
+
+                <!-- Master Analytics -->
+                <div class="analytics-grid-full">
+                    <div class="chart-container">
+                        <h3>🎯 Master Analytics - All Units Sold</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="masterChart"></canvas>
+                        </div>
+                        <table class="analytics-table" id="master-analytics-table">
+                            <thead>
+                                <tr><th>Product</th><th>Units Sold</th><th>% of Total</th></tr>
+                            </thead>
+                            <tbody id="master-analytics-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pop Analytics -->
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>📈 Pop's Sales Analytics</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="popChart"></canvas>
+                        </div>
+                        <table class="analytics-table" id="pop-analytics-table">
+                            <thead>
+                                <tr><th>Product</th><th>Units Sold</th><th>% of Total</th></tr>
+                            </thead>
+                            <tbody id="pop-analytics-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Aaron Analytics -->
+                    <div class="chart-container">
+                        <h3>📊 Aaron's Sales Analytics</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="aaronChart"></canvas>
+                        </div>
+                        <table class="analytics-table" id="aaron-analytics-table">
+                            <thead>
+                                <tr><th>Product</th><th>Units Sold</th><th>% of Total</th></tr>
+                            </thead>
+                            <tbody id="aaron-analytics-tbody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -513,8 +565,10 @@
                     });
                 }
 
-                // Save all sales sheets data - ONLY raw values (brought and left)
+                // FIX: Save all sales sheets data - CORRECTLY iterate through ALL sheets
                 const allSheetIds = Object.keys(sheetMetadata);
+                console.log(`📊 Saving ${allSheetIds.length} sheets:`, allSheetIds);
+
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [] };
 
@@ -534,11 +588,15 @@
                     }
 
                     dataToSave.sheets[sheetId] = sheetObj;
+                    console.log(`✅ Sheet "${sheetId}" data prepared for save`);
                 });
 
+                console.log('📦 Data structure ready, uploading to Firebase...');
+                
                 window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), dataToSave)
                     .then(() => {
                         console.log('✅ Data FULLY saved to Firebase!');
+                        console.log('📊 Saved sheets:', Object.keys(dataToSave.sheets));
                         showSuccess('✅ All data saved successfully!');
                     })
                     .catch(err => {
@@ -625,12 +683,19 @@
                         console.log('✅ Aaron inventory loaded');
                     }
 
-                    // Load sales sheets data
+                    // FIX: Load all sales sheets data - CORRECTLY iterate through ALL sheets
                     if (data.sheets && typeof data.sheets === 'object') {
-                        Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
-                            if (!sheetData || !Array.isArray(sheetData.rows)) return;
+                        const loadedSheetIds = Object.keys(data.sheets);
+                        console.log(`📊 Loading ${loadedSheetIds.length} sheets from Firebase:`, loadedSheetIds);
 
-                            console.log(`📊 Loading sales sheet: ${sheetId}`);
+                        loadedSheetIds.forEach(sheetId => {
+                            const sheetData = data.sheets[sheetId];
+                            if (!sheetData || !Array.isArray(sheetData.rows)) {
+                                console.warn(`⚠️ Sheet "${sheetId}" has no rows data`);
+                                return;
+                            }
+
+                            console.log(`📥 Loading sheet: ${sheetId}`);
 
                             sheetData.rows.forEach((row, idx) => {
                                 if (idx >= NUM_PRODUCTS) return;
@@ -647,8 +712,9 @@
                                     }, 100);
                                 }
                             });
+                            console.log(`✅ Sheet "${sheetId}" loaded successfully`);
                         });
-                        console.log('✅ Sales sheets data loaded');
+                        console.log('✅ All sales sheets data loaded');
                     }
 
                     // Load metadata and states
@@ -669,6 +735,7 @@
                     updateInventoryAggregatedUnitsSold();
                     updateShrinkageDisplay();
                     renderExcelLibrary();
+                    renderAnalytics();
 
                     console.log('✅ Firebase load COMPLETE!');
                     firebaseLoadComplete = true;
@@ -706,6 +773,7 @@
                 clearTimeout(saveDataTimer);
                 saveDataTimer = setTimeout(() => {
                     saveAllDataNow();
+                    renderAnalytics();
                 }, 800);
 
             } catch (err) {
@@ -729,6 +797,7 @@
             recalculateRevenueForSheet(sheetId);
             updateAllInventories();
             updateInventoryAggregatedUnitsSold();
+            renderAnalytics();
         }
 
         function makeSheetReadOnlyIfLocked(sheetId) {
@@ -751,6 +820,269 @@
                     input.removeEventListener('input', handleUnitsLeftChange);
                 });
             }
+        }
+
+        // ==================== ANALYTICS ====================
+        function renderAnalytics() {
+            try {
+                renderMasterAnalytics();
+                renderPopAnalytics();
+                renderAaronAnalytics();
+            } catch (err) {
+                console.error('Error in renderAnalytics:', err);
+            }
+        }
+
+        function renderMasterAnalytics() {
+            try {
+                // Calculate totals for all products
+                const totals = {};
+                let grandTotal = 0;
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    let productTotal = 0;
+                    Object.keys(sheetMetadata).forEach(sheetId => {
+                        if (sheetStates[sheetId]?.locked) {
+                            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                            if (soldEl) {
+                                productTotal += parseFloat(soldEl.textContent || 0);
+                            }
+                        }
+                    });
+                    if (productTotal > 0) {
+                        totals[productNames[i]] = productTotal;
+                        grandTotal += productTotal;
+                    }
+                }
+
+                // Render table
+                const tbody = document.getElementById('master-analytics-tbody');
+                tbody.innerHTML = '';
+
+                Object.entries(totals).forEach(([name, units]) => {
+                    const percentage = grandTotal > 0 ? ((units / grandTotal) * 100).toFixed(1) : 0;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${name}</td><td>${units}</td><td>${percentage}%</td>`;
+                    tbody.appendChild(row);
+                });
+
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `<td><strong>TOTAL</strong></td><td><strong>${grandTotal}</strong></td><td><strong>100%</strong></td>`;
+                tbody.appendChild(totalRow);
+
+                // Render chart
+                renderMasterChart(totals);
+            } catch (err) {
+                console.error('Error in renderMasterAnalytics:', err);
+            }
+        }
+
+        function renderPopAnalytics() {
+            try {
+                const totals = {};
+                let grandTotal = 0;
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    let productTotal = 0;
+                    Object.keys(sheetMetadata).forEach(sheetId => {
+                        if (sheetMetadata[sheetId]?.person === 'pop' && sheetStates[sheetId]?.locked) {
+                            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                            if (soldEl) {
+                                productTotal += parseFloat(soldEl.textContent || 0);
+                            }
+                        }
+                    });
+                    if (productTotal > 0) {
+                        totals[productNames[i]] = productTotal;
+                        grandTotal += productTotal;
+                    }
+                }
+
+                // Render table
+                const tbody = document.getElementById('pop-analytics-tbody');
+                tbody.innerHTML = '';
+
+                Object.entries(totals).forEach(([name, units]) => {
+                    const percentage = grandTotal > 0 ? ((units / grandTotal) * 100).toFixed(1) : 0;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${name}</td><td>${units}</td><td>${percentage}%</td>`;
+                    tbody.appendChild(row);
+                });
+
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `<td><strong>TOTAL</strong></td><td><strong>${grandTotal}</strong></td><td><strong>100%</strong></td>`;
+                tbody.appendChild(totalRow);
+
+                // Render chart
+                renderPopChart(totals);
+            } catch (err) {
+                console.error('Error in renderPopAnalytics:', err);
+            }
+        }
+
+        function renderAaronAnalytics() {
+            try {
+                const totals = {};
+                let grandTotal = 0;
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    let productTotal = 0;
+                    Object.keys(sheetMetadata).forEach(sheetId => {
+                        if (sheetMetadata[sheetId]?.person === 'aaron' && sheetStates[sheetId]?.locked) {
+                            const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
+                            if (soldEl) {
+                                productTotal += parseFloat(soldEl.textContent || 0);
+                            }
+                        }
+                    });
+                    if (productTotal > 0) {
+                        totals[productNames[i]] = productTotal;
+                        grandTotal += productTotal;
+                    }
+                }
+
+                // Render table
+                const tbody = document.getElementById('aaron-analytics-tbody');
+                tbody.innerHTML = '';
+
+                Object.entries(totals).forEach(([name, units]) => {
+                    const percentage = grandTotal > 0 ? ((units / grandTotal) * 100).toFixed(1) : 0;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${name}</td><td>${units}</td><td>${percentage}%</td>`;
+                    tbody.appendChild(row);
+                });
+
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `<td><strong>TOTAL</strong></td><td><strong>${grandTotal}</strong></td><td><strong>100%</strong></td>`;
+                tbody.appendChild(totalRow);
+
+                // Render chart
+                renderAaronChart(totals);
+            } catch (err) {
+                console.error('Error in renderAaronAnalytics:', err);
+            }
+        }
+
+        function renderMasterChart(totals) {
+            const ctx = document.getElementById('masterChart');
+            if (!ctx) return;
+
+            const labels = Object.keys(totals);
+            const data = Object.values(totals);
+
+            if (chartsInstances.master) {
+                chartsInstances.master.destroy();
+            }
+
+            chartsInstances.master = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: data,
+                        backgroundColor: '#667eea',
+                        borderColor: '#5568d3',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPopChart(totals) {
+            const ctx = document.getElementById('popChart');
+            if (!ctx) return;
+
+            const labels = Object.keys(totals);
+            const data = Object.values(totals);
+
+            if (chartsInstances.pop) {
+                chartsInstances.pop.destroy();
+            }
+
+            chartsInstances.pop = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#667eea', '#ff9800', '#4caf50', '#2196f3', '#f44336', '#9c27b0',
+                            '#00bcd4', '#ffc107', '#ff5722', '#e91e63', '#3f51b5', '#009688'
+                        ],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, padding: 15 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAaronChart(totals) {
+            const ctx = document.getElementById('aaronChart');
+            if (!ctx) return;
+
+            const labels = Object.keys(totals);
+            const data = Object.values(totals);
+
+            if (chartsInstances.aaron) {
+                chartsInstances.aaron.destroy();
+            }
+
+            chartsInstances.aaron = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#667eea', '#ff9800', '#4caf50', '#2196f3', '#f44336', '#9c27b0',
+                            '#00bcd4', '#ffc107', '#ff5722', '#e91e63', '#3f51b5', '#009688'
+                        ],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, padding: 15 }
+                        }
+                    }
+                }
+            });
         }
 
         // ==================== RENDERING FUNCTIONS ====================
@@ -1197,6 +1529,7 @@
 
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
+                renderAnalytics();
                 saveAllDataNow();
                 showSuccess('✅ Sheet locked!');
                 closeLockSheetModal();
@@ -1258,6 +1591,7 @@
 
                 attachAllUnitsLeftListeners();
                 updateAllInventories();
+                renderAnalytics();
                 saveAllDataNow();
                 showSuccess('✅ Sheet unlocked!');
                 closeUnlockSheetModal();
@@ -1296,6 +1630,7 @@
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
+                renderAnalytics();
                 saveAllDataNow();
                 showSuccess('✅ Sheet reset!');
                 closeResetSheetModal();
@@ -1363,6 +1698,7 @@
             try {
                 if (!pendingEventCompletedSheet) return;
                 sheetStates[pendingEventCompletedSheet].completed = true;
+                renderAnalytics();
                 saveAllDataNow();
                 showSuccess('✅ Event marked as completed!');
                 closeEventCompletedConfirmModal();
@@ -1831,6 +2167,7 @@
                 if (tabEl) tabEl.remove();
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
+                renderAnalytics();
                 showSuccess('✅ Sheet deleted!');
                 closeDeleteSalesSheetModal();
                 saveAllDataNow();
@@ -2163,11 +2500,12 @@
                         });
                     }
                     updateShrinkageDisplay();
-                    importCount++
+                    importCount++;
                 }
                 
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
+                renderAnalytics();
                 saveAllDataNow();
                 showSuccess(`✅ Import complete! ${importCount} sheets imported.`);
                 closeImportExcelModal();
@@ -2209,12 +2547,9 @@
             shrinkageLog = [];
             updateShrinkageDisplay();
             updateAllInventories();
+            renderAnalytics();
             saveAllDataNow();
             showSuccess('✅ Data reset!');
-        }
-
-        function refreshAnalytics() {
-            showSuccess('✅ Analytics refreshed!');
         }
 
         window.onload = initializeApp;
