@@ -552,7 +552,7 @@
                 setTimeout(() => {
                     initializeSheetButtonVisibility(sheetId);
                     attachUnitsLeftListeners(sheetId);
-                }, 50);
+                }, 100);
             });
         }
 
@@ -598,10 +598,13 @@
         function attachUnitsLeftListeners(sheetId) {
             const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
             inputs.forEach(input => {
+                // Remove old listeners
                 input.removeEventListener('change', handleUnitsLeftChange);
+                input.removeEventListener('input', handleUnitsLeftChange);
+                
+                // Add new listeners - 'input' for real-time, 'change' for final
+                input.addEventListener('input', handleUnitsLeftChange);
                 input.addEventListener('change', handleUnitsLeftChange);
-                input.removeEventListener('keyup', handleUnitsLeftChange);
-                input.addEventListener('keyup', handleUnitsLeftChange);
             });
         }
 
@@ -610,22 +613,40 @@
                 const sheetId = e.target.getAttribute('data-sheet');
                 const rowIndex = parseInt(e.target.getAttribute('data-row'));
                 
-                if (!sheetId || isNaN(rowIndex)) return;
+                if (!sheetId || isNaN(rowIndex)) {
+                    console.warn('Invalid sheet or row:', sheetId, rowIndex);
+                    return;
+                }
 
+                // Get the elements for this row
                 const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
                 const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
                 
-                if (!unitsBroughtEl || !unitsSoldEl) return;
+                if (!unitsBroughtEl || !unitsSoldEl) {
+                    console.warn('Missing elements for', sheetId, rowIndex);
+                    return;
+                }
 
+                // Get values
                 const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
                 const unitsLeft = parseFloat(e.target.value || 0);
+                
+                // Calculate units sold: brought - left
                 const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
 
+                // Update the span with the calculated value
                 unitsSoldEl.textContent = newUnitsSold;
 
+                // Recalculate revenue for this sheet
                 recalculateRevenueForSheet(sheetId);
+                
+                // Update inventory aggregations
                 updateAllInventories();
+                
+                // Save data
                 saveAllDataNow();
+                
+                console.log(`✅ Units sold calculated: ${unitsBrought} - ${unitsLeft} = ${newUnitsSold}`);
             } catch (err) {
                 console.error('Error in handleUnitsLeftChange:', err);
             }
@@ -642,19 +663,28 @@
                 const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
                 const eventBox = document.getElementById(`${sheetId}-event-box`);
 
-                if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) return;
-
-                if (state.active) {
-                    activateBtn.style.display = 'none';
-                    lockBtn.style.display = 'inline-flex';
-                    resetBtn.style.display = 'inline-flex';
-                    if (eventBox) eventBox.style.display = 'flex';
+                if (!activateBtn || !lockBtn || !unlockBtn || !resetBtn) {
+                    console.warn('Missing buttons for', sheetId);
+                    return;
                 }
 
                 if (state.locked) {
+                    activateBtn.style.display = 'none';
                     lockBtn.style.display = 'none';
                     unlockBtn.style.display = 'inline-flex';
+                    resetBtn.style.display = 'inline-flex';
+                } else if (state.active) {
                     activateBtn.style.display = 'none';
+                    lockBtn.style.display = 'inline-flex';
+                    unlockBtn.style.display = 'none';
+                    resetBtn.style.display = 'inline-flex';
+                    if (eventBox) eventBox.style.display = 'flex';
+                } else {
+                    activateBtn.style.display = 'inline-flex';
+                    lockBtn.style.display = 'none';
+                    unlockBtn.style.display = 'none';
+                    resetBtn.style.display = 'none';
+                    if (eventBox) eventBox.style.display = 'none';
                 }
             } catch (err) {
                 console.error('Error in initializeSheetButtonVisibility:', err);
@@ -757,6 +787,7 @@
         // INVENTORY CALCULATIONS
         function updateAllInventories() {
             try {
+                // Update current stock (storage + show tub)
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     ['pop', 'aaron'].forEach(person => {
                         const storage = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
@@ -813,6 +844,7 @@
                 if (popTotHand) popTotHand.value = popCombined;
                 if (aaronTotHand) aaronTotHand.value = aaronCombined;
 
+                // Update aggregated units sold from locked sheets
                 updateInventoryAggregatedUnitsSold();
             } catch (err) {
                 console.error('Error in updateAllInventories:', err);
@@ -824,9 +856,10 @@
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     ['pop', 'aaron'].forEach(person => {
                         let total = 0;
-                        const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
+                        const allSheetIds = [...Object.keys(sheetMetadata)];
                         allSheetIds.forEach(sheetId => {
                             const meta = sheetMetadata[sheetId];
+                            // Only count from locked sheets for this person
                             if (meta?.person !== person || !sheetStates[sheetId]?.locked) return;
                             const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                             if (soldEl) total += parseFloat(soldEl.textContent || 0);
@@ -841,7 +874,7 @@
         }
 
         function recalculateAllRevenue() {
-            const allSheetIds = [...staticSheets, ...Object.keys(sheetMetadata).filter(k => !staticSheets.includes(k))];
+            const allSheetIds = [...Object.keys(sheetMetadata)];
             allSheetIds.forEach(sheetId => {
                 recalculateRevenueForSheet(sheetId);
             });
@@ -888,18 +921,13 @@
                 const { person, sheetId } = pendingActivateSheet;
                 sheetStates[sheetId].active = true;
                 
-                const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
-                const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                const resetBtn = document.getElementById(`reset-btn-${sheetId}`);
-                const eventBox = document.getElementById(`${sheetId}-event-box`);
-
-                if (activateBtn) activateBtn.style.display = 'none';
-                if (lockBtn) lockBtn.style.display = 'inline-flex';
-                if (resetBtn) resetBtn.style.display = 'inline-flex';
-                if (eventBox) eventBox.style.display = 'flex';
-
-                updateSheetStatus(sheetId);
+                initializeSheetButtonVisibility(sheetId);
                 attachUnitsLeftListeners(sheetId);
+                
+                // Set units brought from show tub
+                refreshSheetData(person, sheetId);
+                
+                updateSheetStatus(sheetId);
                 saveAllDataNow();
                 showSuccess('✅ Sheet activated!');
                 closeActivateSheetModal();
@@ -924,37 +952,34 @@
                 const sheetId = pendingLockSheet;
                 const meta = sheetMetadata[sheetId];
                 
-                // Update show tub values FIRST - before changing UI
+                // Step 1: Update show tub by depleting units sold
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const showTubEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
                     const unitsSold = parseFloat(soldEl?.textContent || 0);
                     if (showTubEl) {
-                        showTubEl.value = Math.max(0, parseFloat(showTubEl.value || 0) - unitsSold);
+                        const currentShowTub = parseFloat(showTubEl.value || 0);
+                        showTubEl.value = Math.max(0, currentShowTub - unitsSold);
                     }
                 }
 
-                // Then update state
+                // Step 2: Update sheet state to locked
                 sheetStates[sheetId].locked = true;
 
-                // Disable inputs
+                // Step 3: Disable inputs for units left
                 const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
                 unitsLeftInputs.forEach(el => el.disabled = true);
 
-                // Update buttons
-                const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
-                const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
+                // Step 4: Update button visibility
+                initializeSheetButtonVisibility(sheetId);
                 
-                if (lockBtn) lockBtn.style.display = 'none';
-                if (unlockBtn) unlockBtn.style.display = 'inline-flex';
-                if (activateBtn) activateBtn.style.display = 'none';
-
-                // Update display
+                // Step 5: Update displays
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 recalculateRevenueForSheet(sheetId);
+                
+                // Step 6: Save
                 saveAllDataNow();
                 
                 showSuccess('✅ Sheet locked!');
@@ -997,14 +1022,8 @@
                 const unitsLeftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
                 unitsLeftInputs.forEach(el => el.disabled = false);
 
-                // Update buttons
-                const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
-                
-                if (unlockBtn) unlockBtn.style.display = 'none';
-                if (lockBtn) lockBtn.style.display = 'inline-flex';
-
-                // Update display
+                // Update buttons and displays
+                initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
@@ -1609,14 +1628,7 @@
                 
                 document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`).forEach(input => { input.disabled = true; });
                 
-                const lockBtn = document.getElementById(`lock-btn-${sheetId}`);
-                const unlockBtn = document.getElementById(`unlock-btn-${sheetId}`);
-                const activateBtn = document.getElementById(`activate-btn-${sheetId}`);
-                
-                if (lockBtn) lockBtn.style.display = 'none';
-                if (unlockBtn) unlockBtn.style.display = 'inline-flex';
-                if (activateBtn) activateBtn.style.display = 'none';
-
+                initializeSheetButtonVisibility(sheetId);
                 updateSheetStatus(sheetId);
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
@@ -2031,6 +2043,7 @@
                     Object.keys(sheetStates).forEach(sheetId => {
                         initializeSheetButtonVisibility(sheetId);
                         updateSheetStatus(sheetId);
+                        attachUnitsLeftListeners(sheetId);
                     });
                     updateShrinkageDisplay();
                     console.log('✅ Firebase load complete');
