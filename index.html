@@ -565,7 +565,7 @@
                     });
                 }
 
-                // FIX: Save all sales sheets data - CORRECTLY iterate through ALL sheets
+                // Save all sales sheets data - CORRECTLY iterate through ALL sheets
                 const allSheetIds = Object.keys(sheetMetadata);
                 console.log(`📊 Saving ${allSheetIds.length} sheets:`, allSheetIds);
 
@@ -635,110 +635,139 @@
                         return;
                     }
 
-                    // Load metadata first
-                    if (data.sheetMetadata) {
-                        sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
-                        console.log('✅ Sheet metadata loaded:', Object.keys(sheetMetadata));
-                    }
-
-                    if (data.sheetStates) {
-                        sheetStates = { ...sheetStates, ...data.sheetStates };
-                    }
-
-                    if (data.sheetPreDepletionShowTub) {
-                        sheetPreDepletionShowTub = data.sheetPreDepletionShowTub;
-                    }
-
-                    // NOW render all sheets from loaded metadata
-                    renderSalesSheets();
-                    renderDynamicNavLinks();
-
-                    // Load Pop inventory
-                    if (data.pop && Array.isArray(data.pop)) {
-                        for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
-                            const item = data.pop[i];
-                            const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
-                            const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-
-                            if (priceEl) priceEl.value = item.price ?? 0;
-                            if (storageEl) storageEl.value = item.storage ?? 0;
-                            if (showEl) showEl.value = item.showTub ?? 0;
-                        }
-                        console.log('✅ Pop inventory loaded');
-                    }
-
-                    // Load Aaron inventory
-                    if (data.aaron && Array.isArray(data.aaron)) {
-                        for (let i = 0; i < Math.min(data.aaron.length, NUM_PRODUCTS); i++) {
-                            const item = data.aaron[i];
-                            const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
-                            const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
-                            const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-
-                            if (priceEl) priceEl.value = item.price ?? 0;
-                            if (storageEl) storageEl.value = item.storage ?? 0;
-                            if (showEl) showEl.value = item.showTub ?? 0;
-                        }
-                        console.log('✅ Aaron inventory loaded');
-                    }
-
-                    // FIX: Load all sales sheets data - CORRECTLY iterate through ALL sheets
-                    if (data.sheets && typeof data.sheets === 'object') {
-                        const loadedSheetIds = Object.keys(data.sheets);
-                        console.log(`📊 Loading ${loadedSheetIds.length} sheets from Firebase:`, loadedSheetIds);
-
-                        loadedSheetIds.forEach(sheetId => {
-                            const sheetData = data.sheets[sheetId];
-                            if (!sheetData || !Array.isArray(sheetData.rows)) {
-                                console.warn(`⚠️ Sheet "${sheetId}" has no rows data`);
-                                return;
-                            }
-
-                            console.log(`📥 Loading sheet: ${sheetId}`);
-
-                            sheetData.rows.forEach((row, idx) => {
-                                if (idx >= NUM_PRODUCTS) return;
-
-                                const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
-                                const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
-
-                                if (broughtEl) broughtEl.value = row.brought ?? 0;
-                                if (leftEl) {
-                                    leftEl.value = row.left ?? 0;
-                                    // Trigger calculation when value is loaded
-                                    setTimeout(() => {
-                                        recalculateUnitsForRow(sheetId, idx);
-                                    }, 100);
+                    try {
+                        // FIX: Properly rebuild sheetMetadata from Firebase, ensuring all sheets are loaded
+                        if (data.sheetMetadata && typeof data.sheetMetadata === 'object') {
+                            // Completely rebuild sheetMetadata from Firebase data
+                            sheetMetadata = {};
+                            
+                            // First, add back static sheets
+                            sheetMetadata["wetumpka"] = { name: "Wetumpka, Alabama", person: "pop", date: "2024-12-12" };
+                            sheetMetadata["trussville"] = { name: "Trussville, Alabama", person: "pop", date: "2024-01-03" };
+                            sheetMetadata["columbia"] = { name: "Columbia, Tennessee", person: "pop", date: "2024-01-10" };
+                            sheetMetadata["hattiesburg"] = { name: "Hattiesburg, Mississippi", person: "pop", date: "2024-01-17" };
+                            
+                            // Now add ALL custom sheets from Firebase
+                            Object.entries(data.sheetMetadata).forEach(([sheetId, meta]) => {
+                                if (!staticSheets.includes(sheetId)) {
+                                    sheetMetadata[sheetId] = meta;
                                 }
                             });
-                            console.log(`✅ Sheet "${sheetId}" loaded successfully`);
-                        });
-                        console.log('✅ All sales sheets data loaded');
+                            
+                            console.log('✅ Sheet metadata rebuilt:', Object.keys(sheetMetadata));
+                        }
+
+                        if (data.sheetStates && typeof data.sheetStates === 'object') {
+                            sheetStates = { ...sheetStates, ...data.sheetStates };
+                        }
+
+                        if (data.sheetPreDepletionShowTub && typeof data.sheetPreDepletionShowTub === 'object') {
+                            sheetPreDepletionShowTub = data.sheetPreDepletionShowTub;
+                        }
+
+                        // Delay rendering to ensure DOM is ready
+                        setTimeout(() => {
+                            // NOW render all sheets from loaded metadata
+                            renderSalesSheets();
+                            renderDynamicNavLinks();
+
+                            // Load Pop inventory
+                            if (data.pop && Array.isArray(data.pop)) {
+                                for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
+                                    const item = data.pop[i];
+                                    const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
+                                    const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
+                                    const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
+
+                                    if (priceEl) priceEl.value = item.price ?? 0;
+                                    if (storageEl) storageEl.value = item.storage ?? 0;
+                                    if (showEl) showEl.value = item.showTub ?? 0;
+                                }
+                                console.log('✅ Pop inventory loaded');
+                            }
+
+                            // Load Aaron inventory
+                            if (data.aaron && Array.isArray(data.aaron)) {
+                                for (let i = 0; i < Math.min(data.aaron.length, NUM_PRODUCTS); i++) {
+                                    const item = data.aaron[i];
+                                    const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
+                                    const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
+                                    const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
+
+                                    if (priceEl) priceEl.value = item.price ?? 0;
+                                    if (storageEl) storageEl.value = item.storage ?? 0;
+                                    if (showEl) showEl.value = item.showTub ?? 0;
+                                }
+                                console.log('✅ Aaron inventory loaded');
+                            }
+
+                            // FIX: Load all sales sheets data - CORRECTLY iterate through ALL sheets
+                            if (data.sheets && typeof data.sheets === 'object') {
+                                const loadedSheetIds = Object.keys(data.sheets);
+                                console.log(`📊 Loading ${loadedSheetIds.length} sheets from Firebase:`, loadedSheetIds);
+
+                                loadedSheetIds.forEach(sheetId => {
+                                    const sheetData = data.sheets[sheetId];
+                                    if (!sheetData || !Array.isArray(sheetData.rows)) {
+                                        console.warn(`⚠️ Sheet "${sheetId}" has no rows data`);
+                                        return;
+                                    }
+
+                                    console.log(`📥 Loading sheet: ${sheetId}`);
+
+                                    // Double-check DOM elements exist before populating
+                                    let elementsFound = 0;
+                                    sheetData.rows.forEach((row, idx) => {
+                                        if (idx >= NUM_PRODUCTS) return;
+
+                                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
+                                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
+
+                                        if (broughtEl && leftEl) {
+                                            broughtEl.value = row.brought ?? 0;
+                                            leftEl.value = row.left ?? 0;
+                                            elementsFound++;
+                                            
+                                            // Trigger calculation when value is loaded
+                                            setTimeout(() => {
+                                                recalculateUnitsForRow(sheetId, idx);
+                                            }, 50);
+                                        }
+                                    });
+                                    
+                                    console.log(`✅ Sheet "${sheetId}" loaded with ${elementsFound}/${NUM_PRODUCTS} elements populated`);
+                                });
+                                console.log('✅ All sales sheets data loaded');
+                            }
+
+                            // Load metadata and states
+                            if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
+                            if (data.excelLibrary) excelLibrary = data.excelLibrary;
+
+                            // Update UI with loaded states
+                            Object.keys(sheetStates).forEach(sheetId => {
+                                updateSheetStatus(sheetId);
+                                initializeSheetButtonVisibility(sheetId);
+                                makeSheetReadOnlyIfLocked(sheetId);
+                            });
+
+                            // Attach event listeners to all sales sheet inputs
+                            attachAllUnitsLeftListeners();
+
+                            updateAllInventories();
+                            updateInventoryAggregatedUnitsSold();
+                            updateShrinkageDisplay();
+                            renderExcelLibrary();
+                            renderAnalytics();
+
+                            console.log('✅ Firebase load COMPLETE!');
+                            firebaseLoadComplete = true;
+                        }, 200); // Small delay to ensure DOM rendering is complete
+
+                    } catch (loadErr) {
+                        console.error('❌ Error during data loading:', loadErr);
+                        firebaseLoadComplete = true;
                     }
-
-                    // Load metadata and states
-                    if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
-                    if (data.excelLibrary) excelLibrary = data.excelLibrary;
-
-                    // Update UI with loaded states
-                    Object.keys(sheetStates).forEach(sheetId => {
-                        updateSheetStatus(sheetId);
-                        initializeSheetButtonVisibility(sheetId);
-                        makeSheetReadOnlyIfLocked(sheetId);
-                    });
-
-                    // Attach event listeners to all sales sheet inputs
-                    attachAllUnitsLeftListeners();
-
-                    updateAllInventories();
-                    updateInventoryAggregatedUnitsSold();
-                    updateShrinkageDisplay();
-                    renderExcelLibrary();
-                    renderAnalytics();
-
-                    console.log('✅ Firebase load COMPLETE!');
-                    firebaseLoadComplete = true;
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
