@@ -381,7 +381,7 @@
         <!-- MODALS -->
         <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
         <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and lock all data (read-only).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
-        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking will make data editable again (Show Tub stays depleted).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
+        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking will make data editable again (Show Tub restored to pre-lock amount).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
         <div id="resetSheetModal" class="modal"><div class="modal-content"><h3>⚠️ Reset Sheet to 0?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">This will clear all data in this sheet. This action cannot be undone.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeResetSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmResetSheet()" style="background: #ff6b6b;">Reset</button></div></div></div>
         <div id="eventCompletedConfirmModal" class="modal"><div class="modal-content"><h3>✅ Event Completed?</h3><div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;"><span id="confirmEventSheetName"></span></p><p style="margin: 10px 0 0 0;">Units: <strong id="confirmEventUnits">--</strong> | Revenue: <strong id="confirmEventRevenue">--</strong></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Complete</button></div></div></div>
         <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>Add Shrinkage Entry</h3><div class="form-group"><label>Person:</label><select id="shrinkage-person"><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product:</label><select id="shrinkage-product"></select></div><div class="form-group"><label>Quantity:</label><input type="number" id="shrinkage-qty" value="1" min="1"></div><div class="form-group"><label>Deplete From:</label><div class="radio-group"><label><input type="radio" name="shrinkage-from" value="storage" checked> Storage Tub</label><label><input type="radio" name="shrinkage-from" value="show"> Show Tub</label><label><input type="radio" name="shrinkage-from" value="both"> Both (equal split)</label></div></div><div class="form-group"><label>Notes:</label><input type="text" id="shrinkage-notes" placeholder="e.g., Broken handle"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addShrinkageEntry()">Add</button></div></div></div>
@@ -427,13 +427,9 @@
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
-        let sheetMetadata = {
-            "wetumpka": { name: "Wetumpka, Alabama", person: "pop", date: "2024-12-12" },
-            "trussville": { name: "Trussville, Alabama", person: "pop", date: "2024-01-03" },
-            "columbia": { name: "Columbia, Tennessee", person: "pop", date: "2024-01-10" },
-            "hattiesburg": { name: "Hattiesburg, Mississippi", person: "pop", date: "2024-01-17" }
-        };
+        let sheetMetadata = {};
         let sheetStates = {};
+        let sheetPreDepletionShowTub = {};
         let shrinkageLog = [];
         let excelLibrary = [];
         let pendingActivateSheet = null;
@@ -446,10 +442,9 @@
 
         function initializeApp() {
             console.log('🚀 Initializing app...');
-            initSheetStates();
+            initStaticSheets();
             renderMasterInventoryTable();
             renderInventoryTables();
-            renderSalesSheets();
             renderShrinkageModal();
             renderReceiveModals();
             renderMoveInventoryModals();
@@ -457,10 +452,19 @@
             loadDataFromFirebase();
         }
 
-        function initSheetStates() {
+        function initStaticSheets() {
+            sheetMetadata["wetumpka"] = { name: "Wetumpka, Alabama", person: "pop", date: "2024-12-12" };
+            sheetMetadata["trussville"] = { name: "Trussville, Alabama", person: "pop", date: "2024-01-03" };
+            sheetMetadata["columbia"] = { name: "Columbia, Tennessee", person: "pop", date: "2024-01-10" };
+            sheetMetadata["hattiesburg"] = { name: "Hattiesburg, Mississippi", person: "pop", date: "2024-01-17" };
+
             staticSheets.forEach(sheet => {
                 sheetStates[sheet] = { active: false, locked: false, completed: false };
+                sheetPreDepletionShowTub[sheet] = {};
             });
+
+            renderSalesSheets();
+            renderDynamicNavLinks();
         }
 
         // ==================== FIREBASE DATA PERSISTENCE ====================
@@ -480,6 +484,7 @@
                     sheets: {},
                     sheetMetadata: sheetMetadata,
                     sheetStates: sheetStates,
+                    sheetPreDepletionShowTub: sheetPreDepletionShowTub,
                     shrinkageLog: shrinkageLog,
                     excelLibrary: excelLibrary || [],
                     timestamp: new Date().toISOString()
@@ -509,7 +514,7 @@
                 }
 
                 // Save all sales sheets data - ONLY raw values (brought and left)
-                const allSheetIds = [...Object.keys(sheetMetadata)];
+                const allSheetIds = Object.keys(sheetMetadata);
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [] };
 
@@ -572,6 +577,24 @@
                         return;
                     }
 
+                    // Load metadata first
+                    if (data.sheetMetadata) {
+                        sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
+                        console.log('✅ Sheet metadata loaded:', Object.keys(sheetMetadata));
+                    }
+
+                    if (data.sheetStates) {
+                        sheetStates = { ...sheetStates, ...data.sheetStates };
+                    }
+
+                    if (data.sheetPreDepletionShowTub) {
+                        sheetPreDepletionShowTub = data.sheetPreDepletionShowTub;
+                    }
+
+                    // NOW render all sheets from loaded metadata
+                    renderSalesSheets();
+                    renderDynamicNavLinks();
+
                     // Load Pop inventory
                     if (data.pop && Array.isArray(data.pop)) {
                         for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
@@ -629,8 +652,6 @@
                     }
 
                     // Load metadata and states
-                    if (data.sheetMetadata) sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
-                    if (data.sheetStates) sheetStates = { ...sheetStates, ...data.sheetStates };
                     if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
                     if (data.excelLibrary) excelLibrary = data.excelLibrary;
 
@@ -769,7 +790,7 @@
         function renderSalesSheets() {
             const container = document.getElementById('sales-sheets-container');
             container.innerHTML = '';
-            const allSheets = [...Object.keys(sheetMetadata)];
+            const allSheets = Object.keys(sheetMetadata);
             allSheets.forEach(sheetId => {
                 if (!sheetMetadata[sheetId]) return;
                 const div = document.createElement('div');
@@ -778,7 +799,6 @@
                 div.innerHTML = generateSheetHTML(sheetId);
                 container.appendChild(div);
             });
-            renderDynamicNavLinks();
         }
 
         function renderDynamicNavLinks() {
@@ -938,7 +958,7 @@
         function updateDeleteSheetSelect() {
             const select = document.getElementById('delete-sheet-select');
             select.innerHTML = '';
-            const allSheets = [...Object.keys(sheetMetadata)];
+            const allSheets = Object.keys(sheetMetadata);
             allSheets.forEach(sheetId => {
                 if (!sheetMetadata[sheetId]) return;
                 const option = document.createElement('option');
@@ -1112,7 +1132,7 @@
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
 
-                // Populate Units Brought from Show Tub ONLY (not storage + show)
+                // Populate Units Brought from Show Tub ONLY
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
                     const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
@@ -1146,6 +1166,17 @@
                 const sheetId = pendingLockSheet;
                 const meta = sheetMetadata[sheetId];
                 if (!meta) return;
+
+                // Store pre-depletion Show Tub values
+                if (!sheetPreDepletionShowTub[sheetId]) {
+                    sheetPreDepletionShowTub[sheetId] = {};
+                }
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const showEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
+                    if (showEl) {
+                        sheetPreDepletionShowTub[sheetId][i] = parseFloat(showEl.value || 0);
+                    }
+                }
 
                 // Deplete Show Tub by units sold
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -1189,6 +1220,17 @@
             try {
                 if (!pendingUnlockSheet) return;
                 const sheetId = pendingUnlockSheet;
+                const meta = sheetMetadata[sheetId];
+
+                // Restore Show Tub to pre-depletion values
+                if (sheetPreDepletionShowTub[sheetId]) {
+                    for (let i = 0; i < NUM_PRODUCTS; i++) {
+                        const showEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
+                        if (showEl && sheetPreDepletionShowTub[sheetId][i] !== undefined) {
+                            showEl.value = sheetPreDepletionShowTub[sheetId][i];
+                        }
+                    }
+                }
 
                 // Unlock the sheet
                 sheetStates[sheetId].locked = false;
@@ -1720,7 +1762,9 @@
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'pop', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
+                sheetPreDepletionShowTub[sheetId] = {};
                 renderSalesSheets();
+                renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewSalesSheetModal();
@@ -1748,7 +1792,9 @@
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'aaron', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
+                sheetPreDepletionShowTub[sheetId] = {};
                 renderSalesSheets();
+                renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewAaronSalesSheetModal();
@@ -1780,6 +1826,7 @@
                 if (!sheetMetadata[sheetId]) return alert('Sheet not found');
                 delete sheetMetadata[sheetId];
                 delete sheetStates[sheetId];
+                delete sheetPreDepletionShowTub[sheetId];
                 const tabEl = document.getElementById(sheetId);
                 if (tabEl) tabEl.remove();
                 renderDynamicNavLinks();
