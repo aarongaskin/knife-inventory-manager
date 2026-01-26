@@ -447,11 +447,9 @@
     </div>
 
     <script>
-        // ====== CRITICAL FIX: PREVENT FIREBASE LISTENER FROM REBUILDING DOM ======
-        let loadingFromFirebase = false;
-        let isUserEditing = false;
+        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH NO-BLANK FIX ======
+        // CRITICAL: Never rebuild HTML during Firebase sync - only update values
 
-        // GLOBAL STATE
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -475,6 +473,10 @@
         // DEBOUNCE TIMERS
         let updateInventoriesTimer = null;
         let saveDataTimer = null;
+
+        // ====== CRITICAL FIX: NEVER rebuild DOM during Firebase loads ======
+        let isLoadingFromFirebase = false;
+        let isUserEditing = false;
 
         // INITIALIZATION
         function initializeApp() {
@@ -639,7 +641,9 @@
                 clearTimeout(saveDataTimer);
 
                 updateInventoriesTimer = setTimeout(() => {
-                    updateAllInventories();
+                    if (!isLoadingFromFirebase) {
+                        updateAllInventories();
+                    }
                 }, 500);
 
                 saveDataTimer = setTimeout(() => {
@@ -784,8 +788,7 @@
 
         // INVENTORY CALCULATIONS
         function updateAllInventories() {
-            // ===== CRITICAL: SKIP IF FIREBASE IS LOADING OR USER IS EDITING =====
-            if (loadingFromFirebase || isUserEditing) return;
+            if (isLoadingFromFirebase || isUserEditing) return;
 
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -879,7 +882,7 @@
         }
 
         function recalculateRevenueForSheet(sheetId) {
-            if (loadingFromFirebase || isUserEditing) return;
+            if (isLoadingFromFirebase || isUserEditing) return;
             try {
                 const meta = sheetMetadata[sheetId];
                 if (!meta) return;
@@ -1755,7 +1758,7 @@
             });
         }
 
-        // EXCEL EXPORT/IMPORT
+        // EXCEL FUNCTIONS
         function exportToExcel() {
             try {
                 const workbook = XLSX.utils.book_new();
@@ -1903,7 +1906,8 @@
             alert(`Download Excel file: ${excelLibrary[idx].filename}`);
         }
 
-        // ====== CRITICAL FIX: FIREBASE SYNC - PREVENT DOM REBUILD ======
+        // ====== CRITICAL: FIREBASE SYNC - NEVER REBUILD HTML ======
+
         function saveAllDataNow() {
             if (!window.firebaseReady) return;
             try {
@@ -1958,49 +1962,41 @@
             if (!window.firebaseReady) return;
             try {
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
-                    loadingFromFirebase = true;
+                    isLoadingFromFirebase = true;
                     const data = snapshot.val();
                     if (!data) {
-                        loadingFromFirebase = false;
+                        isLoadingFromFirebase = false;
                         return;
                     }
 
-                    if (data.products) {
-                        productNames = data.products;
-                        NUM_PRODUCTS = productNames.length;
-                        renderMasterInventoryTable();
-                        renderInventoryTables();
-                        renderSalesSheets();
-                        renderReceiveModals();
-                        renderMoveInventoryModals();
-                        renderRemoveInventoryModals();
-                        renderShrinkageModal();
-                    }
-
+                    // ====== CRITICAL: ONLY UPDATE VALUES, NEVER REBUILD HTML ======
+                    // Update pop inventory
                     if (data.pop) {
                         for (let i = 0; i < Math.min(data.pop.length, NUM_PRODUCTS); i++) {
                             const item = data.pop[i] || {};
                             const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
                             const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                             const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                            if (priceEl && priceEl.value === '') priceEl.value = item.price ?? '';
-                            if (storageEl && storageEl.value === '0') storageEl.value = item.storage ?? 0;
-                            if (showTubEl && showTubEl.value === '0') showTubEl.value = item.showTub ?? 0;
+                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (storageEl) storageEl.value = item.storage ?? 0;
+                            if (showTubEl) showTubEl.value = item.showTub ?? 0;
                         }
                     }
 
+                    // Update aaron inventory
                     if (data.aaron) {
                         for (let i = 0; i < Math.min(data.aaron.length, NUM_PRODUCTS); i++) {
                             const item = data.aaron[i] || {};
                             const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
                             const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                             const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                            if (priceEl && priceEl.value === '') priceEl.value = item.price ?? '';
-                            if (storageEl && storageEl.value === '0') storageEl.value = item.storage ?? 0;
-                            if (showTubEl && showTubEl.value === '0') showTubEl.value = item.showTub ?? 0;
+                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (storageEl) storageEl.value = item.storage ?? 0;
+                            if (showTubEl) showTubEl.value = item.showTub ?? 0;
                         }
                     }
 
+                    // Update sheet data
                     if (data.sheets) {
                         Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
                             if (!sheetData?.rows) return;
@@ -2009,17 +2005,18 @@
                                 const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
-                                if (broughtEl && broughtEl.value === '0') broughtEl.value = row.brought ?? 0;
-                                if (soldEl && soldEl.textContent === '0') soldEl.textContent = row.sold ?? 0;
-                                if (leftEl && leftEl.value === '0') leftEl.value = row.left ?? 0;
+                                if (broughtEl) broughtEl.value = row.brought ?? 0;
+                                if (soldEl) soldEl.textContent = row.sold ?? 0;
+                                if (leftEl) leftEl.value = row.left ?? 0;
                             });
                             const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
                             const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-                            if (totalUnitsEl && totalUnitsEl.value === '0') totalUnitsEl.value = sheetData.totalUnits ?? 0;
-                            if (totalRevEl && totalRevEl.value === '0') totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
+                            if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0;
+                            if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
                         });
                     }
 
+                    // Update metadata
                     if (data.sheetMetadata) sheetMetadata = { ...sheetMetadata, ...data.sheetMetadata };
                     if (data.sheetStates) sheetStates = { ...sheetStates, ...data.sheetStates };
                     if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
@@ -2035,13 +2032,13 @@
                     updateShrinkageDisplay();
                     
                     setTimeout(() => {
-                        loadingFromFirebase = false;
+                        isLoadingFromFirebase = false;
                         console.log('✅ Firebase load complete');
                     }, 100);
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
-                loadingFromFirebase = false;
+                isLoadingFromFirebase = false;
             }
         }
 
@@ -2072,44 +2069,6 @@
             } catch (err) {
                 console.error('Error in resetAllData:', err);
             }
-        }
-
-        function updateShrinkageDisplay() {
-            const tbody = document.getElementById('shrinkage-log');
-            tbody.innerHTML = '';
-            if (shrinkageLog.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No shrinkage recorded yet.</td></tr>';
-                document.getElementById('shrinkage-summary').style.display = 'none';
-                return;
-            }
-            shrinkageLog.forEach((entry, idx) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${entry.date}</td>
-                    <td>${entry.person === 'pop' ? 'Pop' : 'Aaron'}</td>
-                    <td>${productNames[entry.productIdx]}</td>
-                    <td>${entry.qty}</td>
-                    <td>${entry.depletFrom === 'storage' ? 'Storage' : entry.depletFrom === 'show' ? 'Show Tub' : 'Both'}</td>
-                    <td>${entry.notes}</td>
-                    <td><button class="remove-btn" onclick="removeShrinkageEntry(${idx})" style="padding: 4px 8px; font-size: 12px;">Remove</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            const summary = {};
-            shrinkageLog.forEach(entry => {
-                const key = productNames[entry.productIdx];
-                if (!summary[key]) summary[key] = { pop: 0, aaron: 0 };
-                summary[key][entry.person] += entry.qty;
-            });
-            const summaryTbody = document.getElementById('shrinkage-summary-tbody');
-            summaryTbody.innerHTML = '';
-            Object.entries(summary).forEach(([name, data]) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${name}</td><td>${data.pop}</td><td>${data.aaron}</td><td>${data.pop + data.aaron}</td>`;
-                summaryTbody.appendChild(row);
-            });
-            document.getElementById('shrinkage-summary').style.display = 'block';
         }
 
         // Initialize on load
