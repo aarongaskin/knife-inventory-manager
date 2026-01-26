@@ -380,7 +380,7 @@
 
         <!-- MODALS -->
         <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
-        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and lock all data.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
+        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and lock all data (read-only).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
         <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking will make data editable again (Show Tub stays depleted).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
         <div id="resetSheetModal" class="modal"><div class="modal-content"><h3>⚠️ Reset Sheet to 0?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">This will clear all data in this sheet. This action cannot be undone.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeResetSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmResetSheet()" style="background: #ff6b6b;">Reset</button></div></div></div>
         <div id="eventCompletedConfirmModal" class="modal"><div class="modal-content"><h3>✅ Event Completed?</h3><div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;"><span id="confirmEventSheetName"></span></p><p style="margin: 10px 0 0 0;">Units: <strong id="confirmEventUnits">--</strong> | Revenue: <strong id="confirmEventRevenue">--</strong></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Complete</button></div></div></div>
@@ -508,7 +508,7 @@
                     });
                 }
 
-                // Save all sales sheets data - ONLY raw values
+                // Save all sales sheets data - ONLY raw values (brought and left)
                 const allSheetIds = [...Object.keys(sheetMetadata)];
                 allSheetIds.forEach(sheetId => {
                     const sheetObj = { rows: [] };
@@ -638,6 +638,7 @@
                     Object.keys(sheetStates).forEach(sheetId => {
                         updateSheetStatus(sheetId);
                         initializeSheetButtonVisibility(sheetId);
+                        makeSheetReadOnlyIfLocked(sheetId);
                     });
 
                     // Attach event listeners to all sales sheet inputs
@@ -662,7 +663,9 @@
                 const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
                 inputs.forEach(input => {
                     input.removeEventListener('input', handleUnitsLeftChange);
-                    input.addEventListener('input', handleUnitsLeftChange, false);
+                    if (!sheetStates[sheetId]?.locked) {
+                        input.addEventListener('input', handleUnitsLeftChange, false);
+                    }
                 });
             });
             console.log('🎯 Event listeners attached to all units-left inputs');
@@ -705,6 +708,28 @@
             recalculateRevenueForSheet(sheetId);
             updateAllInventories();
             updateInventoryAggregatedUnitsSold();
+        }
+
+        function makeSheetReadOnlyIfLocked(sheetId) {
+            if (sheetStates[sheetId]?.locked) {
+                const broughtInputs = document.querySelectorAll(`.units-brought[data-sheet="${sheetId}"]`);
+                const leftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
+                
+                broughtInputs.forEach(input => {
+                    input.setAttribute('readonly', 'readonly');
+                    input.style.backgroundColor = '#f8f9fa';
+                    input.style.color = '#666';
+                    input.style.cursor = 'not-allowed';
+                });
+                
+                leftInputs.forEach(input => {
+                    input.setAttribute('readonly', 'readonly');
+                    input.style.backgroundColor = '#f8f9fa';
+                    input.style.color = '#666';
+                    input.style.cursor = 'not-allowed';
+                    input.removeEventListener('input', handleUnitsLeftChange);
+                });
+            }
         }
 
         // ==================== RENDERING FUNCTIONS ====================
@@ -1087,13 +1112,11 @@
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
 
-                // Populate Units Brought from current inventory (Storage + Show Tub)
+                // Populate Units Brought from Show Tub ONLY (not storage + show)
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
-                    const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
                     const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
-                    const total = storageVal + showVal;
                     const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    if (broughtEl) broughtEl.value = total;
+                    if (broughtEl) broughtEl.value = showVal;
                 }
 
                 recalculateAllRevenue();
@@ -1134,10 +1157,13 @@
                     }
                 }
 
+                // Lock the sheet
                 sheetStates[sheetId].locked = true;
                 sheetStates[sheetId].active = false;
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
+                makeSheetReadOnlyIfLocked(sheetId);
+
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 saveAllDataNow();
@@ -1164,9 +1190,30 @@
                 if (!pendingUnlockSheet) return;
                 const sheetId = pendingUnlockSheet;
 
+                // Unlock the sheet
                 sheetStates[sheetId].locked = false;
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
+
+                // Make inputs editable again
+                const broughtInputs = document.querySelectorAll(`.units-brought[data-sheet="${sheetId}"]`);
+                const leftInputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
+                
+                broughtInputs.forEach(input => {
+                    input.removeAttribute('readonly');
+                    input.style.backgroundColor = '';
+                    input.style.color = '';
+                    input.style.cursor = '';
+                });
+                
+                leftInputs.forEach(input => {
+                    input.removeAttribute('readonly');
+                    input.style.backgroundColor = '';
+                    input.style.color = '';
+                    input.style.cursor = '';
+                    input.addEventListener('input', handleUnitsLeftChange, false);
+                });
+
                 attachAllUnitsLeftListeners();
                 updateAllInventories();
                 saveAllDataNow();
@@ -1218,14 +1265,20 @@
 
         function refreshSheetData(person, sheetId) {
             try {
-                for (let i = 0; i < NUM_PRODUCTS; i++) {
-                    const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
-                    const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
-                    const total = storageVal + showVal;
-                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    if (broughtEl) broughtEl.value = total;
+                // Only update if sheet is active
+                if (!sheetStates[sheetId]?.active && !sheetStates[sheetId]?.locked) {
+                    showSuccess('⚠️ Sheet must be activated first!');
+                    return;
                 }
-                showSuccess('✅ Units brought updated from inventory!');
+
+                for (let i = 0; i < NUM_PRODUCTS; i++) {
+                    const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
+                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    if (broughtEl && !sheetStates[sheetId]?.locked) {
+                        broughtEl.value = showVal;
+                    }
+                }
+                showSuccess('✅ Units brought updated from Show Tub!');
                 saveAllDataNow();
             } catch (err) {
                 console.error('Error in refreshSheetData:', err);
