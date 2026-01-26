@@ -447,6 +447,10 @@
     </div>
 
     <script>
+        // ====== CRITICAL FIX: PREVENT FIREBASE LISTENER FROM REBUILDING DOM ======
+        let loadingFromFirebase = false;
+        let isUserEditing = false;
+
         // GLOBAL STATE
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
@@ -609,6 +613,7 @@
 
         function handleUnitsLeftChange(e) {
             try {
+                isUserEditing = true;
                 const sheetId = e.target.getAttribute('data-sheet');
                 const rowIndex = parseInt(e.target.getAttribute('data-row'));
                 
@@ -623,7 +628,7 @@
                 const unitsLeft = parseFloat(e.target.value || 0);
                 const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
 
-                // Update units sold immediately (no debounce)
+                // Update units sold immediately (no debounce, no DOM rebuild)
                 unitsSoldEl.textContent = newUnitsSold;
 
                 // Recalculate revenue immediately (lightweight)
@@ -641,8 +646,10 @@
                     saveAllDataNow();
                 }, 1000);
 
+                isUserEditing = false;
             } catch (err) {
                 console.error('Error in handleUnitsLeftChange:', err);
+                isUserEditing = false;
             }
         }
 
@@ -777,6 +784,9 @@
 
         // INVENTORY CALCULATIONS
         function updateAllInventories() {
+            // ===== CRITICAL: SKIP IF FIREBASE IS LOADING OR USER IS EDITING =====
+            if (loadingFromFirebase || isUserEditing) return;
+
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     ['pop', 'aaron'].forEach(person => {
@@ -869,6 +879,7 @@
         }
 
         function recalculateRevenueForSheet(sheetId) {
+            if (loadingFromFirebase || isUserEditing) return;
             try {
                 const meta = sheetMetadata[sheetId];
                 if (!meta) return;
@@ -1892,7 +1903,7 @@
             alert(`Download Excel file: ${excelLibrary[idx].filename}`);
         }
 
-        // FIREBASE SYNC
+        // ====== CRITICAL FIX: FIREBASE SYNC - PREVENT DOM REBUILD ======
         function saveAllDataNow() {
             if (!window.firebaseReady) return;
             try {
@@ -1947,8 +1958,12 @@
             if (!window.firebaseReady) return;
             try {
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
+                    loadingFromFirebase = true;
                     const data = snapshot.val();
-                    if (!data) return;
+                    if (!data) {
+                        loadingFromFirebase = false;
+                        return;
+                    }
 
                     if (data.products) {
                         productNames = data.products;
@@ -1968,9 +1983,9 @@
                             const priceEl = document.querySelector(`.pop-price[data-product="${i}"]`);
                             const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                             const showTubEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
-                            if (priceEl) priceEl.value = item.price ?? '';
-                            if (storageEl) storageEl.value = item.storage ?? 0;
-                            if (showTubEl) showTubEl.value = item.showTub ?? 0;
+                            if (priceEl && priceEl.value === '') priceEl.value = item.price ?? '';
+                            if (storageEl && storageEl.value === '0') storageEl.value = item.storage ?? 0;
+                            if (showTubEl && showTubEl.value === '0') showTubEl.value = item.showTub ?? 0;
                         }
                     }
 
@@ -1980,9 +1995,9 @@
                             const priceEl = document.querySelector(`.aaron-price[data-product="${i}"]`);
                             const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                             const showTubEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
-                            if (priceEl) priceEl.value = item.price ?? '';
-                            if (storageEl) storageEl.value = item.storage ?? 0;
-                            if (showTubEl) showTubEl.value = item.showTub ?? 0;
+                            if (priceEl && priceEl.value === '') priceEl.value = item.price ?? '';
+                            if (storageEl && storageEl.value === '0') storageEl.value = item.storage ?? 0;
+                            if (showTubEl && showTubEl.value === '0') showTubEl.value = item.showTub ?? 0;
                         }
                     }
 
@@ -1994,14 +2009,14 @@
                                 const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
-                                if (broughtEl) broughtEl.value = row.brought ?? 0;
-                                if (soldEl) soldEl.textContent = row.sold ?? 0;
-                                if (leftEl) leftEl.value = row.left ?? 0;
+                                if (broughtEl && broughtEl.value === '0') broughtEl.value = row.brought ?? 0;
+                                if (soldEl && soldEl.textContent === '0') soldEl.textContent = row.sold ?? 0;
+                                if (leftEl && leftEl.value === '0') leftEl.value = row.left ?? 0;
                             });
                             const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
                             const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-                            if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0;
-                            if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
+                            if (totalUnitsEl && totalUnitsEl.value === '0') totalUnitsEl.value = sheetData.totalUnits ?? 0;
+                            if (totalRevEl && totalRevEl.value === '0') totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
                         });
                     }
 
@@ -2018,10 +2033,15 @@
                         attachUnitsLeftListeners(sheetId);
                     });
                     updateShrinkageDisplay();
-                    console.log('✅ Firebase load complete');
+                    
+                    setTimeout(() => {
+                        loadingFromFirebase = false;
+                        console.log('✅ Firebase load complete');
+                    }, 100);
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
+                loadingFromFirebase = false;
             }
         }
 
