@@ -450,7 +450,7 @@
         // ====== CRITICAL FIX: Firebase only loads ONCE, not on every change ======
         let firebaseLoadComplete = false;
 
-        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH PERSISTENCE & NO INPUT BLANKING ======
+        // ====== KNIFE INVENTORY MANAGER v30 - ALL FIXES APPLIED ======
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
         let staticSheets = ["wetumpka", "trussville", "columbia", "hattiesburg"];
@@ -767,7 +767,6 @@
         }
 
         function updateAllInventories() {
-            if (isLoadingFromFirebase || isUserEditing) return;
             try {
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     ['pop', 'aaron'].forEach(person => {
@@ -1808,7 +1807,9 @@
                     const totalRevenue = parseFloat(document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`)?.value || 0);
                     salesData.push(['TOTAL UNITS SOLD', '', totalUnits, '']);
                     salesData.push(['TOTAL REVENUE', '', totalRevenue, '']);
-                    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(salesData), meta.name.substring(0, 31));
+                    // ====== FIX: Remove colons and special characters from sheet names ======
+                    const safeName = meta.name.replace(/[\/\\?*\[\]:]/g, '').substring(0, 31);
+                    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(salesData), safeName);
                 });
 
                 const shrinkageData = [];
@@ -1839,7 +1840,7 @@
                 showSuccess('✅ Excel file exported!');
             } catch (err) {
                 console.error('Error in exportToExcel:', err);
-                showSuccess('❌ Error exporting file');
+                showSuccess('❌ Error exporting file: ' + err.message);
             }
         }
 
@@ -1893,7 +1894,11 @@
         }
 
         function saveAllDataNow() {
-            if (!window.firebaseReady) return;
+            if (!window.firebaseReady) {
+                console.error('Firebase not ready');
+                showSuccess('❌ Firebase not ready');
+                return;
+            }
             try {
                 const data = {
                     products: productNames,
@@ -1936,9 +1941,15 @@
                     };
                 });
 
-                window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), data).catch(err => console.error('Save error:', err));
+                window.firebaseSet(window.firebaseRef(window.firebaseDB, 'inventoryData'), data).then(() => {
+                    showSuccess('✅ Data saved to Firebase!');
+                }).catch(err => {
+                    console.error('Save error:', err);
+                    showSuccess('❌ Error saving data: ' + err.message);
+                });
             } catch (err) {
                 console.error('Error in saveAllDataNow:', err);
+                showSuccess('❌ Error saving data: ' + err.message);
             }
         }
 
