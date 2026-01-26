@@ -380,8 +380,8 @@
 
         <!-- MODALS -->
         <div id="activateSheetModal" class="modal"><div class="modal-content"><h3>📋 Activate Sales Sheet</h3><div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;">Sheet: <span id="activateSheetName"></span></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeActivateSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmActivateSheet()" style="background: #2196f3;">✓ Activate</button></div></div></div>
-        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and add to inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
-        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking removes units sold from inventory total.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
+        <div id="lockSheetModal" class="modal"><div class="modal-content"><h3>🔒 Lock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Locking will deplete Show Tub by units sold and lock all data.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeLockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmLockSheet()" style="background: #ff9800;">🔒 Lock</button></div></div></div>
+        <div id="unlockSheetModal" class="modal"><div class="modal-content"><h3>🔓 Unlock Sheet?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">⚠️ Unlocking will make data editable again (Show Tub stays depleted).</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeUnlockSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmUnlockSheet()" style="background: #4caf50;">🔓 Unlock</button></div></div></div>
         <div id="resetSheetModal" class="modal"><div class="modal-content"><h3>⚠️ Reset Sheet to 0?</h3><div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-size: 13px; color: #856404;">This will clear all data in this sheet. This action cannot be undone.</p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeResetSheetModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmResetSheet()" style="background: #ff6b6b;">Reset</button></div></div></div>
         <div id="eventCompletedConfirmModal" class="modal"><div class="modal-content"><h3>✅ Event Completed?</h3><div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><p style="margin: 0; font-weight: 600;"><span id="confirmEventSheetName"></span></p><p style="margin: 10px 0 0 0;">Units: <strong id="confirmEventUnits">--</strong> | Revenue: <strong id="confirmEventRevenue">--</strong></p></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeEventCompletedConfirmModal()">Cancel</button><button type="button" class="btn-create" onclick="confirmEventCompleted()" style="background: #4caf50;">✅ Complete</button></div></div></div>
         <div id="addShrinkageModal" class="modal"><div class="modal-content"><h3>Add Shrinkage Entry</h3><div class="form-group"><label>Person:</label><select id="shrinkage-person"><option value="pop">Pop</option><option value="aaron">Aaron</option></select></div><div class="form-group"><label>Product:</label><select id="shrinkage-product"></select></div><div class="form-group"><label>Quantity:</label><input type="number" id="shrinkage-qty" value="1" min="1"></div><div class="form-group"><label>Deplete From:</label><div class="radio-group"><label><input type="radio" name="shrinkage-from" value="storage" checked> Storage Tub</label><label><input type="radio" name="shrinkage-from" value="show"> Show Tub</label><label><input type="radio" name="shrinkage-from" value="both"> Both (equal split)</label></div></div><div class="form-group"><label>Notes:</label><input type="text" id="shrinkage-notes" placeholder="e.g., Broken handle"></div><div class="modal-buttons"><button type="button" class="btn-cancel" onclick="closeShrinkageModal()">Cancel</button><button type="button" class="btn-add-inventory" onclick="addShrinkageEntry()">Add</button></div></div></div>
@@ -421,9 +421,7 @@
 
     <script>
         let firebaseLoadComplete = false;
-        let isLoadingFromFirebase = false;
         let saveDataTimer = null;
-        let updateInventoriesTimer = null;
         let importedSheetMapping = {};
 
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
@@ -447,6 +445,7 @@
         let chartsInstances = {};
 
         function initializeApp() {
+            console.log('🚀 Initializing app...');
             initSheetStates();
             renderMasterInventoryTable();
             renderInventoryTables();
@@ -509,34 +508,25 @@
                     });
                 }
 
-                // Save all sales sheets data
+                // Save all sales sheets data - ONLY raw values
                 const allSheetIds = [...Object.keys(sheetMetadata)];
                 allSheetIds.forEach(sheetId => {
-                    const sheetObj = { rows: [], totalUnits: 0, totalRevenue: 0 };
+                    const sheetObj = { rows: [] };
 
                     for (let i = 0; i < NUM_PRODUCTS; i++) {
                         const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                        const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                         const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
 
-                        let brought = 0, sold = 0, left = 0;
+                        let brought = 0, left = 0;
 
                         if (broughtEl) brought = parseFloat(broughtEl.value || 0);
-                        if (soldEl) sold = parseFloat(soldEl.textContent || 0);
                         if (leftEl) left = parseFloat(leftEl.value || 0);
 
                         sheetObj.rows.push({
                             brought: brought,
-                            sold: sold,
                             left: left
                         });
                     }
-
-                    const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
-                    const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-
-                    if (totalUnitsEl) sheetObj.totalUnits = parseFloat(totalUnitsEl.value || 0);
-                    if (totalRevEl) sheetObj.totalRevenue = parseFloat(totalRevEl.value || 0);
 
                     dataToSave.sheets[sheetId] = sheetObj;
                 });
@@ -557,52 +547,6 @@
             }
         }
 
-        function attachUnitsLeftListeners(sheetId) {
-            const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
-            inputs.forEach(input => {
-                input.removeEventListener('input', handleUnitsLeftChange);
-                input.addEventListener('input', handleUnitsLeftChange, false);
-            });
-        }
-
-        function handleUnitsLeftChange(e) {
-            try {
-                e.stopPropagation();
-                
-                const sheetId = e.target.getAttribute('data-sheet');
-                const rowIndex = parseInt(e.target.getAttribute('data-row'));
-
-                if (!sheetId || isNaN(rowIndex)) return;
-
-                const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
-                const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
-
-                if (!unitsBroughtEl || !unitsSoldEl) return;
-
-                const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
-                const unitsLeft = parseFloat(e.target.value || 0);
-                const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
-
-                unitsSoldEl.textContent = newUnitsSold;
-
-                recalculateRevenueForSheet(sheetId);
-
-                clearTimeout(updateInventoriesTimer);
-                updateInventoriesTimer = setTimeout(() => {
-                    updateAllInventories();
-                    updateInventoryAggregatedUnitsSold();
-                }, 500);
-
-                clearTimeout(saveDataTimer);
-                saveDataTimer = setTimeout(() => {
-                    saveAllDataNow();
-                }, 800);
-
-            } catch (err) {
-                console.error('Error in handleUnitsLeftChange:', err);
-            }
-        }
-
         function loadDataFromFirebase() {
             if (!window.firebaseReady || !window.firebaseDB) {
                 setTimeout(loadDataFromFirebase, 500);
@@ -615,19 +559,18 @@
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
                     const data = snapshot.val();
 
+                    // Only load on first page load
+                    if (firebaseLoadComplete) {
+                        return;
+                    }
+
+                    console.log('📥 Loading data from Firebase...');
+
                     if (!data) {
-                        console.log('📭 No existing Firebase data');
+                        console.log('📭 No existing Firebase data - starting fresh');
                         firebaseLoadComplete = true;
                         return;
                     }
-
-                    // Only load on first page load, not on updates
-                    if (firebaseLoadComplete) {
-                        console.log('✅ Firebase listener active (first load already done)');
-                        return;
-                    }
-
-                    console.log('📥 Loading data from Firebase on page load...');
 
                     // Load Pop inventory
                     if (data.pop && Array.isArray(data.pop)) {
@@ -637,10 +580,11 @@
                             const storageEl = document.querySelector(`.pop-storage[data-product="${i}"]`);
                             const showEl = document.querySelector(`.pop-show-tub[data-product="${i}"]`);
 
-                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (priceEl) priceEl.value = item.price ?? 0;
                             if (storageEl) storageEl.value = item.storage ?? 0;
                             if (showEl) showEl.value = item.showTub ?? 0;
                         }
+                        console.log('✅ Pop inventory loaded');
                     }
 
                     // Load Aaron inventory
@@ -651,10 +595,11 @@
                             const storageEl = document.querySelector(`.aaron-storage[data-product="${i}"]`);
                             const showEl = document.querySelector(`.aaron-show-tub[data-product="${i}"]`);
 
-                            if (priceEl) priceEl.value = item.price ?? '';
+                            if (priceEl) priceEl.value = item.price ?? 0;
                             if (storageEl) storageEl.value = item.storage ?? 0;
                             if (showEl) showEl.value = item.showTub ?? 0;
                         }
+                        console.log('✅ Aaron inventory loaded');
                     }
 
                     // Load sales sheets data
@@ -662,24 +607,25 @@
                         Object.entries(data.sheets).forEach(([sheetId, sheetData]) => {
                             if (!sheetData || !Array.isArray(sheetData.rows)) return;
 
+                            console.log(`📊 Loading sales sheet: ${sheetId}`);
+
                             sheetData.rows.forEach((row, idx) => {
                                 if (idx >= NUM_PRODUCTS) return;
 
                                 const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${idx}"]`);
-                                const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${idx}"]`);
                                 const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${idx}"]`);
 
                                 if (broughtEl) broughtEl.value = row.brought ?? 0;
-                                if (soldEl) soldEl.textContent = row.sold ?? 0;
-                                if (leftEl) leftEl.value = row.left ?? 0;
+                                if (leftEl) {
+                                    leftEl.value = row.left ?? 0;
+                                    // Trigger calculation when value is loaded
+                                    setTimeout(() => {
+                                        recalculateUnitsForRow(sheetId, idx);
+                                    }, 100);
+                                }
                             });
-
-                            const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
-                            const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-
-                            if (totalUnitsEl) totalUnitsEl.value = sheetData.totalUnits ?? 0;
-                            if (totalRevEl) totalRevEl.value = (sheetData.totalRevenue ?? 0).toFixed(2);
                         });
+                        console.log('✅ Sales sheets data loaded');
                     }
 
                     // Load metadata and states
@@ -688,27 +634,77 @@
                     if (data.shrinkageLog) shrinkageLog = data.shrinkageLog;
                     if (data.excelLibrary) excelLibrary = data.excelLibrary;
 
-                    // Re-render all sheets and attach listeners
-                    renderSalesSheets();
+                    // Update UI with loaded states
+                    Object.keys(sheetStates).forEach(sheetId => {
+                        updateSheetStatus(sheetId);
+                        initializeSheetButtonVisibility(sheetId);
+                    });
+
+                    // Attach event listeners to all sales sheet inputs
+                    attachAllUnitsLeftListeners();
+
                     updateAllInventories();
                     updateInventoryAggregatedUnitsSold();
                     updateShrinkageDisplay();
                     renderExcelLibrary();
 
-                    // Attach event listeners to all sales sheet inputs
-                    Object.keys(sheetStates).forEach(sheetId => {
-                        initializeSheetButtonVisibility(sheetId);
-                        updateSheetStatus(sheetId);
-                        attachUnitsLeftListeners(sheetId);
-                    });
-
-                    console.log('✅ Firebase load COMPLETE! All data loaded and listeners attached.');
+                    console.log('✅ Firebase load COMPLETE!');
                     firebaseLoadComplete = true;
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
                 firebaseLoadComplete = true;
             }
+        }
+
+        function attachAllUnitsLeftListeners() {
+            Object.keys(sheetMetadata).forEach(sheetId => {
+                const inputs = document.querySelectorAll(`.units-left[data-sheet="${sheetId}"]`);
+                inputs.forEach(input => {
+                    input.removeEventListener('input', handleUnitsLeftChange);
+                    input.addEventListener('input', handleUnitsLeftChange, false);
+                });
+            });
+            console.log('🎯 Event listeners attached to all units-left inputs');
+        }
+
+        function handleUnitsLeftChange(e) {
+            try {
+                e.stopPropagation();
+                
+                const sheetId = e.target.getAttribute('data-sheet');
+                const rowIndex = parseInt(e.target.getAttribute('data-row'));
+
+                if (!sheetId || isNaN(rowIndex)) return;
+
+                recalculateUnitsForRow(sheetId, rowIndex);
+
+                clearTimeout(saveDataTimer);
+                saveDataTimer = setTimeout(() => {
+                    saveAllDataNow();
+                }, 800);
+
+            } catch (err) {
+                console.error('Error in handleUnitsLeftChange:', err);
+            }
+        }
+
+        function recalculateUnitsForRow(sheetId, rowIndex) {
+            const unitsBroughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
+            const unitsLeftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
+            const unitsSoldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${rowIndex}"]`);
+
+            if (!unitsBroughtEl || !unitsLeftEl || !unitsSoldEl) return;
+
+            const unitsBrought = parseFloat(unitsBroughtEl.value || 0);
+            const unitsLeft = parseFloat(unitsLeftEl.value || 0);
+            const newUnitsSold = Math.max(0, unitsBrought - unitsLeft);
+
+            unitsSoldEl.textContent = newUnitsSold;
+
+            recalculateRevenueForSheet(sheetId);
+            updateAllInventories();
+            updateInventoryAggregatedUnitsSold();
         }
 
         // ==================== RENDERING FUNCTIONS ====================
@@ -799,7 +795,7 @@
             if (!meta) return '';
             let tableRows = '';
             for (let i = 0; i < NUM_PRODUCTS; i++) {
-                tableRows += `<tr><td>${productNames[i]}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" value="0"></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}" value="0"></td></tr>`;
+                tableRows += `<tr><td>${productNames[i]}</td><td><input type="number" class="units-brought" data-sheet="${sheetId}" data-row="${i}" value="0" readonly></td><td><span class="units-sold" data-sheet="${sheetId}" data-row="${i}">0</span></td><td><input type="number" class="units-left" data-sheet="${sheetId}" data-row="${i}" value="0"></td></tr>`;
             }
             return `<div class="tab-section"><h2>${meta.name}</h2><div class="units-info">📝 Enter "Units Left in Tub" - System automatically calculates "Units Sold"</div><button class="refresh-btn" onclick="refreshSheetData('${meta.person}', '${sheetId}')">Refresh Units Brought</button><div class="sheet-controls"><div class="sheet-status inactive" id="${sheetId}-status">● Inactive</div><button id="activate-btn-${sheetId}" class="sheet-btn" onclick="openActivateSheetModal('${meta.person}', '${sheetId}')">📋 Activate Sheet</button><button id="lock-btn-${sheetId}" class="sheet-btn lock-btn" style="display:none;" onclick="openLockSheetModal('${sheetId}')">🔒 Lock Sheet</button><button id="unlock-btn-${sheetId}" class="sheet-btn unlock-btn" style="display:none;" onclick="openUnlockSheetModal('${sheetId}')">🔓 Unlock Sheet</button><button id="reset-btn-${sheetId}" class="sheet-btn reset-btn" style="display:none;" onclick="openResetSheetModal('${sheetId}')">⟲ Reset Sheet</button></div><div class="event-checkbox" id="${sheetId}-event-box" style="display: none;"><input type="checkbox" id="event-completed-${sheetId}" onchange="toggleEventCompleted('${sheetId}')"><label for="event-completed-${sheetId}">✅ Event Completed (Locks Data)</label></div><table><thead><tr><th>Product Name</th><th>Units Brought</th><th>Units Sold</th><th>Units Left in Tub</th></tr></thead><tbody>${tableRows}</tbody></table><table><tbody><tr class="units-sold-row"><td><strong>TOTAL UNITS SOLD</strong></td><td colspan="3"><input type="number" class="total-units-sold" data-sheet="${sheetId}" id="total-units-${sheetId}" readonly></td></tr><tr class="revenue-row"><td colspan="1"><strong>TOTAL REVENUE</strong></td><td colspan="3"><input type="number" class="revenue-total" data-sheet="${sheetId}" id="total-revenue-${sheetId}" readonly></td></tr></tbody></table></div>`;
         }
@@ -822,6 +818,7 @@
                     lockBtn.style.display = 'none';
                     unlockBtn.style.display = 'inline-flex';
                     resetBtn.style.display = 'inline-flex';
+                    if (eventBox) eventBox.style.display = 'none';
                 } else if (state.active) {
                     activateBtn.style.display = 'none';
                     lockBtn.style.display = 'inline-flex';
@@ -1011,7 +1008,7 @@
                     ['pop', 'aaron'].forEach(person => {
                         let totalSold = 0;
                         Object.keys(sheetMetadata).forEach(sheetId => {
-                            if (sheetStates[sheetId]?.locked) {
+                            if (sheetMetadata[sheetId]?.person === person && sheetStates[sheetId]?.locked) {
                                 const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                                 if (soldEl) totalSold += parseFloat(soldEl.textContent || 0);
                             }
@@ -1037,19 +1034,19 @@
                 if (!meta) return;
 
                 let totalRevenue = 0;
+                let totalUnits = 0;
+
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const price = parseFloat(document.querySelector(`.${meta.person}-price[data-product="${i}"]`)?.value || 0);
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
                     totalRevenue += price * sold;
+                    totalUnits += sold;
                 }
+
                 const totalUnitsEl = document.querySelector(`.total-units-sold[data-sheet="${sheetId}"]`);
                 const totalRevEl = document.querySelector(`.revenue-total[data-sheet="${sheetId}"]`);
-                let totalUnits = 0;
-                for (let i = 0; i < NUM_PRODUCTS; i++) {
-                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    totalUnits += soldEl ? parseFloat(soldEl.textContent || 0) : 0;
-                }
+
                 if (totalUnitsEl) totalUnitsEl.value = totalUnits;
                 if (totalRevEl) totalRevEl.value = totalRevenue.toFixed(2);
             } catch (err) {
@@ -1073,28 +1070,34 @@
             try {
                 if (!pendingActivateSheet) return;
                 const { sheetId } = pendingActivateSheet;
+                const person = sheetMetadata[sheetId].person;
+
+                // Deactivate other active sheets for this person
+                Object.keys(sheetMetadata).forEach(sid => {
+                    if (sid !== sheetId && sheetMetadata[sid]?.person === person && sheetStates[sid]?.active) {
+                        sheetStates[sid].active = false;
+                        updateSheetStatus(sid);
+                        initializeSheetButtonVisibility(sid);
+                    }
+                });
+
+                // Activate this sheet
                 sheetStates[sheetId].active = true;
                 sheetStates[sheetId].locked = false;
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
-                Object.keys(sheetMetadata).forEach(sid => {
-                    if (sid !== sheetId && sheetMetadata[sid]?.person === sheetMetadata[sheetId]?.person) {
-                        if (sheetStates[sid]?.active) {
-                            sheetStates[sid].active = false;
-                            updateSheetStatus(sid);
-                            initializeSheetButtonVisibility(sid);
-                        }
-                    }
-                });
+
+                // Populate Units Brought from current inventory (Storage + Show Tub)
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
-                    const person = sheetMetadata[sheetId].person;
-                    const price = parseFloat(document.querySelector(`.${person}-price[data-product="${i}"]`)?.value || 0);
                     const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
                     const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
                     const total = storageVal + showVal;
-                    document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`).value = total;
+                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    if (broughtEl) broughtEl.value = total;
                 }
+
                 recalculateAllRevenue();
+                attachAllUnitsLeftListeners();
                 saveAllDataNow();
                 showSuccess('✅ Sheet activated!');
                 closeActivateSheetModal();
@@ -1121,6 +1124,7 @@
                 const meta = sheetMetadata[sheetId];
                 if (!meta) return;
 
+                // Deplete Show Tub by units sold
                 for (let i = 0; i < NUM_PRODUCTS; i++) {
                     const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
                     const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
@@ -1159,23 +1163,12 @@
             try {
                 if (!pendingUnlockSheet) return;
                 const sheetId = pendingUnlockSheet;
-                const meta = sheetMetadata[sheetId];
-                if (!meta) return;
-
-                for (let i = 0; i < NUM_PRODUCTS; i++) {
-                    const soldEl = document.querySelector(`.units-sold[data-sheet="${sheetId}"][data-row="${i}"]`);
-                    const sold = soldEl ? parseFloat(soldEl.textContent || 0) : 0;
-                    const showEl = document.querySelector(`.${meta.person}-show-tub[data-product="${i}"]`);
-                    if (showEl && sold > 0) {
-                        showEl.value = parseFloat(showEl.value || 0) + sold;
-                    }
-                }
 
                 sheetStates[sheetId].locked = false;
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
+                attachAllUnitsLeftListeners();
                 updateAllInventories();
-                updateInventoryAggregatedUnitsSold();
                 saveAllDataNow();
                 showSuccess('✅ Sheet unlocked!');
                 closeUnlockSheetModal();
@@ -1229,7 +1222,8 @@
                     const storageVal = parseFloat(document.querySelector(`.${person}-storage[data-product="${i}"]`)?.value || 0);
                     const showVal = parseFloat(document.querySelector(`.${person}-show-tub[data-product="${i}"]`)?.value || 0);
                     const total = storageVal + showVal;
-                    document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`).value = total;
+                    const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+                    if (broughtEl) broughtEl.value = total;
                 }
                 showSuccess('✅ Units brought updated from inventory!');
                 saveAllDataNow();
@@ -2035,11 +2029,12 @@
                         const leftEl = document.querySelector(`.units-left[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
                         
                         if (broughtEl) broughtEl.value = row[1] || 0;
-                        if (leftEl) leftEl.value = row[3] || 0;
-                        
-                        // Trigger calculation
                         if (leftEl) {
-                            leftEl.dispatchEvent(new Event('input', { bubbles: true }));
+                            leftEl.value = row[3] || 0;
+                            // Trigger calculation
+                            setTimeout(() => {
+                                recalculateUnitsForRow(targetSheetId, productIdx);
+                            }, 50);
                         }
                     }
                     importCount++;
