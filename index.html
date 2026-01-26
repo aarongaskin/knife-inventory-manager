@@ -620,9 +620,43 @@
                         
                         const existingSheets = Object.keys(sheetMetadata);
                         
+                        // Add inventory mapping section
+                        const inventorySection = document.createElement('div');
+                        inventorySection.style.marginBottom = '20px';
+                        inventorySection.style.borderBottom = '1px solid #ddd';
+                        inventorySection.style.paddingBottom = '15px';
+                        inventorySection.innerHTML = '<h5 style="color: #667eea; margin-bottom: 10px;">📦 Inventory Pages</h5>';
+                        mappingContainer.appendChild(inventorySection);
+                        
+                        // Pop Inventory mapping
+                        if (wb.SheetNames.includes("Pop Inventory")) {
+                            const popRow = document.createElement('div');
+                            popRow.className = 'mapping-row';
+                            popRow.innerHTML = `
+                                <label style="font-weight: 600; color: #333;">Pop Inventory:</label>
+                                <span style="flex: 1; padding: 8px 12px; background: #f0f4ff; border-radius: 5px; color: #667eea;">Auto-imported</span>
+                            `;
+                            inventorySection.appendChild(popRow);
+                        }
+                        
+                        // Aaron Inventory mapping
+                        if (wb.SheetNames.includes("Aaron Inventory")) {
+                            const aaronRow = document.createElement('div');
+                            aaronRow.className = 'mapping-row';
+                            aaronRow.innerHTML = `
+                                <label style="font-weight: 600; color: #333;">Aaron Inventory:</label>
+                                <span style="flex: 1; padding: 8px 12px; background: #f0f4ff; border-radius: 5px; color: #667eea;">Auto-imported</span>
+                            `;
+                            inventorySection.appendChild(aaronRow);
+                        }
+                        
+                        // Add sales sheets mapping section
+                        const salesSection = document.createElement('div');
+                        salesSection.innerHTML = '<h5 style="color: #667eea; margin-bottom: 10px;">📊 Sales Sheets</h5>';
+                        mappingContainer.appendChild(salesSection);
+                        
                         wb.SheetNames.forEach((sheetName) => {
                             if (sheetName === "Master Inventory" || sheetName === "Pop Inventory" || sheetName === "Aaron Inventory" || sheetName === "Shrinkage Log") {
-                                // These map to themselves
                                 return;
                             }
                             
@@ -635,13 +669,13 @@
                                     ${existingSheets.map(id => `<option value="${id}">${sheetMetadata[id].name}</option>`).join('')}
                                 </select>
                             `;
-                            mappingContainer.appendChild(mappingRow);
+                            salesSection.appendChild(mappingRow);
                         });
                         
                         // Store workbook for import
                         window.importedWorkbook = wb;
                         mappingContainer.style.display = 'block';
-                        showSuccess('✅ Excel file loaded! Map sheets below.');
+                        showSuccess('✅ Excel file loaded! Inventories auto-imported, map sales sheets below.');
                         
                     } catch (err) {
                         console.error('Error reading workbook:', err);
@@ -932,15 +966,23 @@
 
             try {
                 console.log('🔄 Setting up Firebase listener...');
-                isLoadingFromFirebase = true;
+                let isFirstLoad = true;
 
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
                     const data = snapshot.val();
 
                     if (!data) {
                         console.log('📭 No existing Firebase data');
-                        isLoadingFromFirebase = false;
-                        firebaseLoadComplete = true;
+                        if (isFirstLoad) {
+                            isFirstLoad = false;
+                            firebaseLoadComplete = true;
+                        }
+                        return;
+                    }
+
+                    // Only load from Firebase on FIRST load, not on every change
+                    if (!isFirstLoad) {
+                        console.log('⏭️ Skipping Firebase update (user may be typing)');
                         return;
                     }
 
@@ -1014,12 +1056,11 @@
                     });
 
                     console.log('✅ Firebase load COMPLETE!');
-                    isLoadingFromFirebase = false;
+                    isFirstLoad = false;
                     firebaseLoadComplete = true;
                 });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
-                isLoadingFromFirebase = false;
                 firebaseLoadComplete = true;
             }
         }
