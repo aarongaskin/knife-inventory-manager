@@ -447,8 +447,9 @@
     </div>
 
     <script>
-        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH NO-BLANK FIX ======
+        // ====== KNIFE INVENTORY MANAGER v30 - COMPLETE SCRIPT WITH SHEET CREATION FIX ======
         // CRITICAL: Never rebuild HTML during Firebase sync - only update values
+        // FIXED: Dynamic sheet creation now works correctly!
 
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
         let NUM_PRODUCTS = productNames.length;
@@ -1480,7 +1481,7 @@
             }
         }
 
-        // SALES SHEETS
+        // ====== CRITICAL FIX: Dynamic sales sheet creation ======
         function openNewSalesSheetModal() {
             document.getElementById('new-sheet-name').value = '';
             document.getElementById('newSalesSheetModal').classList.add('active');
@@ -1494,17 +1495,40 @@
             try {
                 const name = document.getElementById('new-sheet-name').value.trim();
                 if (!name) return alert('Sheet name is required');
-                const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'pop', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
-                renderSalesSheets();
+                
+                // ✅ CREATE THE NEW SHEET TAB DIRECTLY (don't rebuild all sheets)
+                const container = document.getElementById('sales-sheets-container');
+                const div = document.createElement('div');
+                div.id = sheetId;
+                div.className = 'tab-content';
+                div.innerHTML = generateSheetHTML(sheetId);
+                container.appendChild(div);
+                
+                // Setup the new sheet
+                setTimeout(() => {
+                    initializeSheetButtonVisibility(sheetId);
+                    attachUnitsLeftListeners(sheetId);
+                }, 100);
+                
+                // Add navigation link
+                const navContainer = document.getElementById('dynamic-sales-links');
+                const navLink = document.createElement('button');
+                navLink.className = 'nav-link';
+                navLink.textContent = name;
+                navLink.onclick = (e) => openTab(e, sheetId);
+                navContainer.appendChild(navLink);
+                
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewSalesSheetModal();
                 saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmNewSalesSheet:', err);
+                showSuccess('❌ Error creating sheet');
             }
         }
 
@@ -1521,17 +1545,40 @@
             try {
                 const name = document.getElementById('new-aaron-sheet-name').value.trim();
                 if (!name) return alert('Sheet name is required');
-                const sheetId = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
                 sheetMetadata[sheetId] = { name, person: 'aaron', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
-                renderSalesSheets();
+                
+                // ✅ CREATE THE NEW SHEET TAB DIRECTLY (don't rebuild all sheets)
+                const container = document.getElementById('sales-sheets-container');
+                const div = document.createElement('div');
+                div.id = sheetId;
+                div.className = 'tab-content';
+                div.innerHTML = generateSheetHTML(sheetId);
+                container.appendChild(div);
+                
+                // Setup the new sheet
+                setTimeout(() => {
+                    initializeSheetButtonVisibility(sheetId);
+                    attachUnitsLeftListeners(sheetId);
+                }, 100);
+                
+                // Add navigation link
+                const navContainer = document.getElementById('dynamic-aaron-sales-links');
+                const navLink = document.createElement('button');
+                navLink.className = 'nav-link';
+                navLink.textContent = name;
+                navLink.onclick = (e) => openTab(e, sheetId);
+                navContainer.appendChild(navLink);
+                
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet created!');
                 closeNewAaronSalesSheetModal();
                 saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmNewAaronSalesSheet:', err);
+                showSuccess('❌ Error creating sheet');
             }
         }
 
@@ -1555,6 +1602,8 @@
                 if (!sheetId) return alert('Select a sheet');
                 delete sheetMetadata[sheetId];
                 delete sheetStates[sheetId];
+                const el = document.getElementById(sheetId);
+                if (el) el.remove();
                 renderSalesSheets();
                 updateDeleteSheetSelect();
                 showSuccess('✅ Sheet deleted!');
@@ -1906,7 +1955,7 @@
             alert(`Download Excel file: ${excelLibrary[idx].filename}`);
         }
 
-        // ====== CRITICAL: FIREBASE SYNC - NEVER REBUILD HTML ======
+        // ====== FIREBASE SYNC - NEVER REBUILD HTML ======
 
         function saveAllDataNow() {
             if (!window.firebaseReady) return;
