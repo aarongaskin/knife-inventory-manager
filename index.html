@@ -1122,15 +1122,33 @@
 
         function renderSalesSheets() {
             const container = document.getElementById('sales-sheets-container');
-            container.innerHTML = '';
+            
+            // Don't clear container - preserve existing sheets
             const allSheets = Object.keys(sheetMetadata);
             allSheets.forEach(sheetId => {
                 if (!sheetMetadata[sheetId]) return;
+                
+                // Check if sheet already exists in DOM
+                const existingSheet = document.getElementById(sheetId);
+                if (existingSheet) {
+                    console.log(`✅ Sheet ${sheetId} already exists, preserving data`);
+                    return; // Skip if already rendered - data is preserved
+                }
+                
+                // Only create new sheet if it doesn't exist
+                console.log(`➕ Creating new sheet: ${sheetId}`);
                 const div = document.createElement('div');
                 div.id = sheetId;
                 div.className = 'tab-content';
                 div.innerHTML = generateSheetHTML(sheetId);
                 container.appendChild(div);
+                
+                // Initialize button visibility and status for new sheet
+                setTimeout(() => {
+                    initializeSheetButtonVisibility(sheetId);
+                    updateSheetStatus(sheetId);
+                    attachAllUnitsLeftListeners();
+                }, 50);
             });
         }
 
@@ -2072,13 +2090,24 @@
                 if (!name) return alert('Sheet name is required');
                 const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
+                
+                console.log('📋 Creating new Pop sheet:', sheetId);
+                
                 sheetMetadata[sheetId] = { name, person: 'pop', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
                 sheetPreDepletionShowTub[sheetId] = {};
+                
+                // Render ONLY the new sheet, don't touch existing ones
                 renderSalesSheets();
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
-                showSuccess('✅ Sheet created! Click "Save All Data" to save.');
+                
+                // Auto-save after creating new sheet
+                setTimeout(() => {
+                    saveAllDataNow();
+                }, 200);
+                
+                showSuccess('✅ Sheet created and saved!');
                 closeNewSalesSheetModal();
             } catch (err) {
                 console.error('Error in confirmNewSalesSheet:', err);
@@ -2101,13 +2130,24 @@
                 if (!name) return alert('Sheet name is required');
                 const sheetId = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
                 if (sheetMetadata[sheetId]) return alert('Sheet already exists');
+                
+                console.log('📋 Creating new Aaron sheet:', sheetId);
+                
                 sheetMetadata[sheetId] = { name, person: 'aaron', date: new Date().toISOString().split('T')[0] };
                 sheetStates[sheetId] = { active: false, locked: false, completed: false };
                 sheetPreDepletionShowTub[sheetId] = {};
+                
+                // Render ONLY the new sheet, don't touch existing ones
                 renderSalesSheets();
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
-                showSuccess('✅ Sheet created! Click "Save All Data" to save.');
+                
+                // Auto-save after creating new sheet
+                setTimeout(() => {
+                    saveAllDataNow();
+                }, 200);
+                
+                showSuccess('✅ Sheet created and saved!');
                 closeNewAaronSalesSheetModal();
             } catch (err) {
                 console.error('Error in confirmNewAaronSalesSheet:', err);
