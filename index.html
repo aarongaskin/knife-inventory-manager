@@ -567,29 +567,38 @@
 
                 // Save all sales sheets data - CORRECTLY iterate through ALL sheets
                 const allSheetIds = Object.keys(sheetMetadata);
-                console.log(`📊 Saving ${allSheetIds.length} sheets:`, allSheetIds);
+console.log(`📊 Saving ${allSheetIds.length} sheets:`, allSheetIds);
 
-                allSheetIds.forEach(sheetId => {
-                    const sheetObj = { rows: [] };
+allSheetIds.forEach(sheetId => {
+    const sheetObj = { rows: [] };
 
-                    for (let i = 0; i < NUM_PRODUCTS; i++) {
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
+    for (let i = 0; i < NUM_PRODUCTS; i++) {
+        const broughtEl = document.querySelector(`.units-brought[data-sheet="${sheetId}"][data-row="${i}"]`);
+        const leftEl  = document.querySelector(`.units-left[data-sheet="${sheetId}"][data-row="${i}"]`);
 
-                        let brought = 0, left = 0;
+        // If neither input exists, skip this row (DOM not rendered yet)
+        if (!broughtEl && !leftEl) continue;
 
-                        if (broughtEl) brought = parseFloat(broughtEl.value || 0);
-                        if (leftEl) left = parseFloat(leftEl.value || 0);
+        const brought = parseFloat(broughtEl?.value || 0);
+        const left    = parseFloat(leftEl?.value  || 0);
 
-                        sheetObj.rows.push({
-                            brought: brought,
-                            left: left
-                        });
-                    }
+        sheetObj.rows.push({ brought, left });
+    }
 
-                    dataToSave.sheets[sheetId] = sheetObj;
-                    console.log(`✅ Sheet "${sheetId}" data prepared for save`);
-                });
+    if (sheetObj.rows.length > 0) {
+        dataToSave.sheets[sheetId] = sheetObj;
+        console.log(`✅ Sheet "${sheetId}" data prepared for save (${sheetObj.rows.length} rows)`);
+    } else {
+        console.warn(`⚠️ No rows found for sheet "${sheetId}" – skipping to protect Firebase data`);
+    }
+});
+
+// FINAL SAFETY: if no sheet has rows, don’t overwrite Firebase.sheets at all
+if (Object.keys(dataToSave.sheets).length === 0) {
+    console.warn('⚠️ No sheet rows detected; skipping sheets overwrite to protect data.');
+    delete dataToSave.sheets;
+}
+
 
                 console.log('📦 Data structure ready, uploading to Firebase...');
                 
@@ -2486,25 +2495,23 @@
                     if (data.length < 3) return;
                     
                     // Parse sales sheet data
-                    for (let i = 3; i < data.length && i - 3 < NUM_PRODUCTS; i++) {
-                        const row = data[i];
-                        if (!row[0]) break;
-                        
-                        const productIdx = i - 3;
-                        const broughtEl = document.querySelector(`.units-brought[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
-                        const leftEl = document.querySelector(`.units-left[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
-                        
-                        if (broughtEl) broughtEl.value = row[1] || 0;
-                        if (leftEl) {
-                            leftEl.value = row[3] || 0;
-                            // Trigger calculation
-                            setTimeout(() => {
-                                recalculateUnitsForRow(targetSheetId, productIdx);
-                            }, 50);
-                        }
-                    }
-                    importCount++;
-                });
+                    // Parse sales sheet data
+for (let i = 3; i < data.length && i - 3 < NUM_PRODUCTS; i++) {
+    const row = data[i];
+    if (!row) break;
+
+    const productIdx = i - 3;
+    const broughtEl = document.querySelector(`.units-brought[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+    const leftEl = document.querySelector(`.units-left[data-sheet="${targetSheetId}"][data-row="${productIdx}"]`);
+
+    if (broughtEl) broughtEl.value = row[2] || 0;
+    if (leftEl) {
+        leftEl.value = row[3] || 0;
+        // NEW: recalc Units Sold and totals for this row
+        recalculateUnitsForRow(targetSheetId, productIdx);
+    }
+}
+
                 
                 // Import shrinkage log
                 const shrinkageWs = wb.Sheets["Shrinkage Log"];
