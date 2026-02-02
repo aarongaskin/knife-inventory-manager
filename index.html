@@ -175,6 +175,7 @@
             <p>🎉 Complete Edition - Excel Export/Import + Data Persistence!</p>
             <div class="header-buttons">
                 <button class="nav-link" onclick="saveAllDataNow()">💾 Save All Data</button>
+                <button class="nav-link" onclick="loadDataFromFirebase(true)" style="background: #2196f3; color: white; border-color: #2196f3;">🔄 Restore from Firebase</button>
                 <button class="nav-link export-btn" onclick="exportToExcel()">📊 Export to Excel</button>
                 <button class="nav-link import-btn" onclick="openImportExcelModal()">📥 Import from Excel</button>
                 <button class="nav-link" onclick="openAddProductModal()" style="background: #9c27b0; color: white; border-color: #9c27b0;">➕ Add Product</button>
@@ -473,7 +474,6 @@
 
     <script>
         let firebaseLoadComplete = false;
-        let saveDataTimer = null;
         let importedSheetMapping = {};
 
         let productNames = ["Full Tang", "8\" Rat", "6\" Rat", "8\" Stag", "6\" Stag", "Grooved", "Folders", "Clipped Folder", "Bull Cutters", "Horizontal Sheaths", "Bowies", "Mini Folders"];
@@ -608,19 +608,19 @@
             }
         }
 
-        function loadDataFromFirebase() {
+        function loadDataFromFirebase(manualRestore = false) {
             if (!window.firebaseReady || !window.firebaseDB) {
-                setTimeout(loadDataFromFirebase, 500);
+                setTimeout(() => loadDataFromFirebase(manualRestore), 500);
                 return;
             }
 
             try {
-                console.log('🔄 Setting up Firebase listener...');
+                console.log(manualRestore ? '🔄 Manually restoring data from Firebase...' : '🔄 Setting up Firebase listener...');
 
                 window.firebaseOnValue(window.firebaseRef(window.firebaseDB, 'inventoryData'), (snapshot) => {
                     const data = snapshot.val();
 
-                    if (firebaseLoadComplete) {
+                    if (firebaseLoadComplete && !manualRestore) {
                         return;
                     }
 
@@ -740,16 +740,26 @@
 
                             console.log('✅ Firebase load COMPLETE!');
                             firebaseLoadComplete = true;
+                            
+                            if (manualRestore) {
+                                showSuccess('✅ All data restored from Firebase!');
+                            }
                         }, 200);
 
                     } catch (loadErr) {
                         console.error('❌ Error during data loading:', loadErr);
                         firebaseLoadComplete = true;
+                        if (manualRestore) {
+                            showSuccess('❌ Error restoring data');
+                        }
                     }
-                });
+                }, { onlyOnce: manualRestore });
             } catch (err) {
                 console.error('Error in loadDataFromFirebase:', err);
                 firebaseLoadComplete = true;
+                if (manualRestore) {
+                    showSuccess('❌ Error restoring data');
+                }
             }
         }
 
@@ -776,12 +786,6 @@
                 if (!sheetId || isNaN(rowIndex)) return;
 
                 recalculateUnitsForRow(sheetId, rowIndex);
-
-                clearTimeout(saveDataTimer);
-                saveDataTimer = setTimeout(() => {
-                    saveAllDataNow();
-                    renderAnalytics();
-                }, 800);
 
             } catch (err) {
                 console.error('Error in handleUnitsLeftChange:', err);
@@ -1467,8 +1471,7 @@
 
                 recalculateAllRevenue();
                 attachAllUnitsLeftListeners();
-                saveAllDataNow();
-                showSuccess('✅ Sheet activated!');
+                showSuccess('✅ Sheet activated! Click "Save All Data" to save.');
                 closeActivateSheetModal();
             } catch (err) {
                 console.error('Error in confirmActivateSheet:', err);
@@ -1521,8 +1524,7 @@
                 updateAllInventories();
                 updateInventoryAggregatedUnitsSold();
                 renderAnalytics();
-                saveAllDataNow();
-                showSuccess('✅ Sheet locked!');
+                showSuccess('✅ Sheet locked! Click "Save All Data" to save.');
                 closeLockSheetModal();
             } catch (err) {
                 console.error('Error in confirmLockSheet:', err);
@@ -1580,8 +1582,7 @@
                 attachAllUnitsLeftListeners();
                 updateAllInventories();
                 renderAnalytics();
-                saveAllDataNow();
-                showSuccess('✅ Sheet unlocked!');
+                showSuccess('✅ Sheet unlocked! Click "Save All Data" to save.');
                 closeUnlockSheetModal();
             } catch (err) {
                 console.error('Error in confirmUnlockSheet:', err);
@@ -1619,8 +1620,7 @@
                 updateSheetStatus(sheetId);
                 initializeSheetButtonVisibility(sheetId);
                 renderAnalytics();
-                saveAllDataNow();
-                showSuccess('✅ Sheet reset!');
+                showSuccess('✅ Sheet reset! Click "Save All Data" to save.');
                 closeResetSheetModal();
             } catch (err) {
                 console.error('Error in confirmResetSheet:', err);
@@ -1686,8 +1686,7 @@
                 if (!pendingEventCompletedSheet) return;
                 sheetStates[pendingEventCompletedSheet].completed = true;
                 renderAnalytics();
-                saveAllDataNow();
-                showSuccess('✅ Event marked as completed!');
+                showSuccess('✅ Event marked as completed! Click "Save All Data" to save.');
                 closeEventCompletedConfirmModal();
             } catch (err) {
                 console.error('Error in confirmEventCompleted:', err);
@@ -1733,8 +1732,7 @@
                 }
                 updateAllInventories();
                 updateShrinkageDisplay();
-                saveAllDataNow();
-                showSuccess('✅ Shrinkage logged!');
+                showSuccess('✅ Shrinkage logged! Click "Save All Data" to save.');
                 closeShrinkageModal();
             } catch (err) {
                 console.error('Error in addShrinkageEntry:', err);
@@ -1774,7 +1772,7 @@
         function removeShrinkageEntry(idx) {
             shrinkageLog.splice(idx, 1);
             updateShrinkageDisplay();
-            saveAllDataNow();
+            showSuccess('✅ Shrinkage entry removed! Click "Save All Data" to save.');
         }
 
         // ==================== INVENTORY MANAGEMENT ====================
@@ -1798,9 +1796,8 @@
                 renderInventoryTables();
                 renderSalesSheets();
                 renderShrinkageModal();
-                showSuccess('✅ Product added!');
+                showSuccess('✅ Product added! Click "Save All Data" to save.');
                 closeAddProductModal();
-                saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmAddProduct:', err);
                 showSuccess('❌ Error adding product');
@@ -1829,8 +1826,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory added!');
+                showSuccess('✅ Inventory added! Click "Save All Data" to save.');
                 closePopInventoryReceivedModal();
             } catch (err) {
                 console.error('Error in addPopInventoryReceived:', err);
@@ -1859,8 +1855,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory added!');
+                showSuccess('✅ Inventory added! Click "Save All Data" to save.');
                 closeAaronInventoryReceivedModal();
             } catch (err) {
                 console.error('Error in addAaronInventoryReceived:', err);
@@ -1894,8 +1889,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory moved!');
+                showSuccess('✅ Inventory moved! Click "Save All Data" to save.');
                 closePopMoveInventoryModal();
             } catch (err) {
                 console.error('Error in addPopMoveInventory:', err);
@@ -1929,8 +1923,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory moved!');
+                showSuccess('✅ Inventory moved! Click "Save All Data" to save.');
                 closeAaronMoveInventoryModal();
             } catch (err) {
                 console.error('Error in addAaronMoveInventory:', err);
@@ -1964,8 +1957,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory moved back!');
+                showSuccess('✅ Inventory moved back! Click "Save All Data" to save.');
                 closePopMoveBackInventoryModal();
             } catch (err) {
                 console.error('Error in addPopMoveBackInventory:', err);
@@ -1999,8 +1991,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory moved back!');
+                showSuccess('✅ Inventory moved back! Click "Save All Data" to save.');
                 closeAaronMoveBackInventoryModal();
             } catch (err) {
                 console.error('Error in addAaronMoveBackInventory:', err);
@@ -2029,8 +2020,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory removed!');
+                showSuccess('✅ Inventory removed! Click "Save All Data" to save.');
                 closePopRemoveInventoryModal();
             } catch (err) {
                 console.error('Error in addPopRemoveInventory:', err);
@@ -2059,8 +2049,7 @@
                     }
                 }
                 updateAllInventories();
-                saveAllDataNow();
-                showSuccess('✅ Inventory removed!');
+                showSuccess('✅ Inventory removed! Click "Save All Data" to save.');
                 closeAaronRemoveInventoryModal();
             } catch (err) {
                 console.error('Error in addAaronRemoveInventory:', err);
@@ -2089,9 +2078,8 @@
                 renderSalesSheets();
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
-                showSuccess('✅ Sheet created!');
+                showSuccess('✅ Sheet created! Click "Save All Data" to save.');
                 closeNewSalesSheetModal();
-                saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmNewSalesSheet:', err);
                 showSuccess('❌ Error creating sheet');
@@ -2119,9 +2107,8 @@
                 renderSalesSheets();
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
-                showSuccess('✅ Sheet created!');
+                showSuccess('✅ Sheet created! Click "Save All Data" to save.');
                 closeNewAaronSalesSheetModal();
-                saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmNewAaronSalesSheet:', err);
                 showSuccess('❌ Error creating sheet');
@@ -2155,9 +2142,8 @@
                 renderDynamicNavLinks();
                 updateDeleteSheetSelect();
                 renderAnalytics();
-                showSuccess('✅ Sheet deleted!');
+                showSuccess('✅ Sheet deleted! Click "Save All Data" to save.');
                 closeDeleteSalesSheetModal();
-                saveAllDataNow();
             } catch (err) {
                 console.error('Error in confirmDeleteSalesSheet:', err);
                 showSuccess('❌ Error deleting sheet');
@@ -2515,8 +2501,7 @@
             updateShrinkageDisplay();
             updateAllInventories();
             renderAnalytics();
-            saveAllDataNow();
-            showSuccess('✅ Data reset!');
+            showSuccess('✅ Data reset! Click "Save All Data" to save.');
         }
 
         window.onload = initializeApp;
